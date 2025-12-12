@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Shashka Pro — To‘liq</title>
+<title>Shashka Pro — To‘liq (Worker bot depth 10)</title>
 <style>
 :root{--size:min(92vmin,640px);--light:#efe9dd;--dark:#6b8a47;--bg:#f3f5f7}
 *{box-sizing:border-box}
@@ -55,9 +55,22 @@ button{padding:8px 16px;border-radius:10px;border:0;background:#2563eb;color:#ff
 <div id="gameOver"><div id="resultText"></div></div>
 
 <script>
+/* ==================== SOZLAMALAR ==================== */
+/* TIME_LIMIT_MS - worker uchun botga nechcha millisekund berish
+   Depth 10 tanlaganing uchun value yuqori bo'lishi mumkin:
+   - Mashinada tez bo'lsa 800-1200 yaxshi.
+   - Agar juda sekin bo'lsa 400-600 qilib qo'ying.
+*/
+const TIME_LIMIT_MS = 900; // kerak bo'lsa kamaytir yoki oshir
+
+/* ==================== DOM ELEMENTLAR ==================== */
 const boardEl=document.getElementById('board'),newBtn=document.getElementById('newBtn'),undoBtn=document.getElementById('undoBtn'),autoBotCB=document.getElementById('autoBot'),turnEl=document.getElementById('turn'),msgEl=document.getElementById('msg'),perfEl=document.getElementById('perf'),gameOverEl=document.getElementById('gameOver'),resultTextEl=document.getElementById('resultText');
+
+/* ==================== O'YIN HOLATI ==================== */
 let board=[],history=[],selected=null,legalMoves=[],playerTurn=true,autoBot=true;
 newBtn.onclick=()=>newGame();undoBtn.onclick=()=>undo();autoBotCB.onchange=()=>autoBot=autoBotCB.checked;
+
+/* ==================== BOSHLANG'ICH FUNKSIYALAR (sening original koding) ==================== */
 function initBoard(){board=Array.from({length:8},()=>Array(8).fill(null));for(let r=0;r<8;r++)for(let c=0;c<8;c++)if((r+c)%2===1){if(r<3)board[r][c]={color:'black',king:false};else if(r>4)board[r][c]={color:'white',king:false}}history=[];selected=null;legalMoves=[];playerTurn=true;updateTurn();setPerf('');hideGameOver();render()}
 function cloneBoard(b){return b.map(row=>row.map(cell=>cell?{color:cell.color,king:cell.king}:null))}
 function inBoard(r,c){return r>=0&&r<8&&c>=0&&c<8}
@@ -67,21 +80,298 @@ function updateTurn(){turnEl.textContent=playerTurn?"Navbat: Foydalanuvchi":"Nav
 function showResult(text,win){resultTextEl.textContent=text;resultTextEl.className=win?"win":"lose";gameOverEl.classList.add("show");setTimeout(()=>hideGameOver(),2100)}
 function hideGameOver(){gameOverEl.classList.remove("show")}
 function forwardDirsFor(color){return color==='white'?[[-1,1],[-1,-1]]:[[1,1],[1,-1]]}
+
+/* ==================== MOVE GENERATION (aslidagi kodlar) ==================== */
 function continueCaptures(boardState,r,c,visited=new Set()){const p=boardState[r][c];if(!p)return[];const color=p.color;let res=[];const dirs=[[1,1],[1,-1],[-1,1],[-1,-1]];if(p.king){for(const[dR,dC]of dirs){let sR=r+dR,sC=c+dC;while(inBoard(sR,sC)&&!boardState[sR][sC]){sR+=dR;sC+=dC}if(inBoard(sR,sC)&&boardState[sR][sC]&&boardState[sR][sC].color!==color){let lR=sR+dR,lC=sC+dC;while(inBoard(lR,lC)){if(boardState[lR][lC])break;const key=`${sR},${sC}`;if(visited.has(key)){lR+=dR;lC+=dC;continue}const nb=cloneBoard(boardState);nb[lR][lC]={...nb[r][c],king:true};nb[r][c]=null;nb[sR][sC]=null;const nv=new Set(visited);nv.add(key);const fut=continueCaptures(nb,lR,lC,nv);if(fut.length>0){fut.forEach(f=>res.push({from:[r,c],to:f.to,path:[[r,c],...f.path.slice(1)],captures:[[sR,sC],...f.captures]}))}else res.push({from:[r,c],to:[lR,lC],path:[[r,c],[lR,lC]],captures:[[sR,sC]]});lR+=dR;lC+=dC}}}}else{for(const[dR,dC]of dirs){const mR=r+dR,mC=c+dC,lR=r+2*dR,lC=c+2*dC;if(inBoard(lR,lC)&&boardState[mR][mC]&&boardState[mR][mC].color!==color&&!boardState[lR][lC]){const key=`${mR},${mC}`;if(visited.has(key))continue;const nb=cloneBoard(boardState);nb[lR][lC]={...nb[r][c]};nb[r][c]=null;nb[mR][mC]=null;if(nb[lR][lC]&&!nb[lR][lC].king){if(nb[lR][lC].color==='white'&&lR===0)nb[lR][lC].king=true;if(nb[lR][lC].color==='black'&&lR===7)nb[lR][lC].king=true}const nv=new Set(visited);nv.add(key);const fut=continueCaptures(nb,lR,lC,nv);if(fut.length>0){fut.forEach(f=>res.push({from:[r,c],to:f.to,path:[[r,c],...f.path.slice(1)],captures:[[mR,mC],...f.captures]}))}else res.push({from:[r,c],to:[lR,lC],path:[[r,c],[lR,lC]],captures:[[mR,mC]]})}}}return res}
 function movesFrom(boardState,r,c){const p=boardState[r][c];if(!p)return[];let moves=[];if(p.king){const dirs=[[1,1],[1,-1],[-1,1],[-1,-1]];for(const[dR,dC]of dirs){let nr=r+dR,nc=c+dC;while(inBoard(nr,nc)&&!boardState[nr][nc]){moves.push({from:[r,c],to:[nr,nc],path:[[r,c],[nr,nc]],captures:[]});nr+=dR;nc+=dC}}}else{const dirs=forwardDirsFor(p.color);for(const[dR,dC]of dirs){const nr=r+dR,nc=c+dC;if(inBoard(nr,nc)&&!boardState[nr][nc])moves.push({from:[r,c],to:[nr,nc],path:[[r,c],[nr,nc]],captures:[]})}}const caps=continueCaptures(boardState,r,c);return moves.concat(caps)}
 function allMovesFor(boardState,color){let moves=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=boardState[r][c];if(p&&p.color===color)moves=moves.concat(movesFrom(boardState,r,c))}const caps=moves.filter(m=>m.captures&&m.captures.length>0);if(caps.length>0)return caps;return moves}
 function applyMove(boardState,move){const b=cloneBoard(boardState);const piece=b[move.from[0]][move.from[1]];b[move.from[0]][move.from[1]]=null;b[move.to[0]][move.to[1]]=piece;if(move.captures&&move.captures.length>0)move.captures.forEach(([r,c])=>b[r][c]=null);if(piece&&!piece.king){if(piece.color==='white'&&move.to[0]===0)piece.king=true;if(piece.color==='black'&&move.to[0]===7)piece.king=true}return b}
 function heuristicBoardScore(bd){let s=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=bd[r][c];if(p)s+=(p.color==='black'?1:-1)*(p.king?2.2:1)}return s}
-function undo(){if(history.length===0)return;board=history.pop();selected=null;legalMoves=[];playerTurn=!playerTurn;render()}
+
+/* ==================== ANIMATE VA UI ==================== */
 async function animateMove(move,isBot=false){const path=move.path||[move.from,move.to];const fromPiece=board[move.from[0]][move.from[1]];const isKingBefore=fromPiece&&fromPiece.king;for(let i=1;i<path.length;i++){const from=path[i-1],to=path[i],fromCell=boardEl.children[from[0]*8+from[1]],pieceEl=fromCell.querySelector('.piece');if(!pieceEl)continue;const rf=fromCell.getBoundingClientRect(),rt=boardEl.children[to[0]*8+to[1]].getBoundingClientRect();pieceEl.style.setProperty('--dx',(rt.left-rf.left)+'px');pieceEl.style.setProperty('--dy',(rt.top-rf.top)+'px');pieceEl.classList.add('jumping');await new Promise(r=>setTimeout(r,520));pieceEl.classList.remove('jumping')}board=applyMove(board,move);render();const finalCell=boardEl.children[move.to[0]*8+move.to[1]];const finalPiece=finalCell.querySelector('.piece');if(finalPiece&&!isKingBefore&&board[move.to[0]][move.to[1]].king){finalPiece.style.animation='jumpSelect .9s ease-out';setTimeout(()=>finalPiece.style.animation='',1000)}}
-async function onCellClick(r,c){if(!playerTurn)return;const p=board[r][c];if(selected){const chosen=legalMoves.find(m=>m.to[0]===r&&m.to[1]===c&&arraysEqual(m.from,selected));if(chosen){history.push(cloneBoard(board));await animateMove(chosen,false);selected=null;legalMoves=[];if(checkEnd())return;playerTurn=false;setMsg("Bot o'ylayapti...");setTimeout(()=>botMoveFast(),220);return}else{selected=null;legalMoves=[];render();return}}if(p&&p.color==='white'){selected=[r,c];const globalCaps=allMovesFor(board,'white').filter(m=>m.captures?.length>0);legalMoves=movesFrom(board,r,c);if(globalCaps.length>0)legalMoves=legalMoves.filter(m=>m.captures?.length>0);render();const ce=boardEl.children[r*8+c].querySelector('.piece');if(ce){ce.classList.add('jumpingSelect');setTimeout(()=>ce.classList.remove('jumpingSelect'),360)}}}
-async function botMoveFast(){const start=performance.now();const moves=allMovesFor(board,'black');if(moves.length===0){showResult("Siz yutdingiz!",true);return}let chosen=null;const caps=moves.filter(m=>m.captures?.length>0);if(caps.length>0){caps.sort((a,b)=>(b.captures.length-a.captures.length)||((willPromote(board,a)?1:0)-(willPromote(board,b)?1:0))||(heuristicBoardScore(applyMove(board,a))-heuristicBoardScore(applyMove(board,b))));chosen=caps[0]}else{const safe=moves.filter(m=>{const after=applyMove(board,m);return !allMovesFor(after,'white').some(pr=>pr.captures?.length>0)});if(safe.length>0){safe.sort((a,b)=>heuristicBoardScore(applyMove(board,b))-heuristicBoardScore(applyMove(board,a)));chosen=safe[0]}else chosen=moves[0]}history.push(cloneBoard(board));await animateMove(chosen,true);setPerf(`Bot — ${(performance.now()-start).toFixed(1)}ms`);if(checkEnd())return;playerTurn=true;setMsg("Sizning navbatingiz.")}
-function willPromote(boardState,move){const p=boardState[move.from[0]][move.from[1]];if(!p||p.king)return false;if(p.color==='black'&&move.to[0]===7)return true;if(p.color==='white'&&move.to[0]===0)return true;return false}
-function checkEnd(){const wm=allMovesFor(board,'white'),bm=allMovesFor(board,'black');const wp=board.flat().filter(p=>p&&p.color==='white').length;const bp=board.flat().filter(p=>p&&p.color==='black').length;if(wp===0||wm.length===0){showResult("Yutqazdingiz!",false);playerTurn=false;return true}if(bp===0||bm.length===0){showResult("Siz yutdingiz!!!",true);playerTurn=false;return true}return false}
+async function onCellClick(r,c){if(!playerTurn)return;const p=board[r][c];if(selected){const chosen=legalMoves.find(m=>m.to[0]===r&&m.to[1]===c&&arraysEqual(m.from,selected));if(chosen){history.push(cloneBoard(board));await animateMove(chosen,false);selected=null;legalMoves=[];if(checkEnd())return;playerTurn=false;setMsg("Bot o'ylayapti...");setTimeout(()=>botMoveWrapper(),220);return}else{selected=null;legalMoves=[];render();return}}if(p&&p.color==='white'){selected=[r,c];const globalCaps=allMovesFor(board,'white').filter(m=>m.captures?.length>0);legalMoves=movesFrom(board,r,c);if(globalCaps.length>0)legalMoves=legalMoves.filter(m=>m.captures?.length>0);render();const ce=boardEl.children[r*8+c].querySelector('.piece');if(ce){ce.classList.add('jumpingSelect');setTimeout(()=>ce.classList.remove('jumpingSelect'),360)}}}
+
+/* ==================== UNDO ==================== */
+function undo(){if(history.length===0)return;board=history.pop();selected=null;legalMoves=[];playerTurn=!playerTurn;render()}
+
+/* ==================== CHECK END ==================== */
+function checkEnd(){const wm=allMovesFor(board,'white'),bm=allMovesFor(board,'black');const wp=board.flat().filter(p=>p&&p.color==='white').length;const bp=board.flat().filter(p=>p&&p.color==='black').length;if(wp===0||wm.length===0){showResult("Ha otam bormi og'riq!",false);playerTurn=false;return true}if(bp===0||bm.length===0){showResult("Siz yutdingiz!!!",true);playerTurn=false;return true}return false}
+
+/* ==================== RENDER ==================== */
 function render(){boardEl.innerHTML='';const whiteCaps=allMovesFor(board,'white').filter(m=>m.captures?.length>0);const blackCaps=allMovesFor(board,'black').filter(m=>m.captures?.length>0);for(let r=0;r<8;r++)for(let c=0;c<8;c++){const cell=document.createElement('div');cell.className='cell '+((r+c)%2===0?'light':'dark');cell.addEventListener('click',()=>onCellClick(r,c));if(legalMoves.some(m=>m.to[0]===r&&m.to[1]===c)){const dot=document.createElement('div');dot.className='dot';cell.appendChild(dot)}const p=board[r][c];if(p){const el=document.createElement('div');el.className='piece '+(p.color==='white'?'white':'black')+(p.king?' king':'');el.textContent=p.king?'👑':'';if(p.king){const crown=document.createElement('div');crown.style.position='absolute';crown.style.fontSize='0.8rem';crown.style.top='8%';crown.style.pointerEvents='none';crown.textContent='★';el.appendChild(crown)}if(whiteCaps.length>0&&p.color==='white'){if(allMovesFor(board,'white').some(m=>arraysEqual(m.from,[r,c])&&m.captures?.length>0)){el.classList.add('capture-outline')}}if(selected&&selected[0]===r&&selected[1]===c)el.classList.add('selected-outline');cell.appendChild(el)}boardEl.appendChild(cell)}updateTurn()}
+
+/* ==================== ARRAY UTILS ==================== */
 function arraysEqual(a,b){if(!a||!b)return false;if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true}
+
+/* ==================== NEW GAME ==================== */
 function newGame(){initBoard()}
+
+/* ==================== ENGINE (Web Worker) ====
+   Biz worker ichida iterative deepening + alpha-beta + transposition table
+   ishlatamiz. Worker kodini string qilib blob orqali yaratamiz.
+   Workerga board obyekti va timeLimit yuboriladi.
+=================================================*/
+
+/* Worker kodini string shaklda yasash */
+function getWorkerCode(){
+  return `
+  // Worker: iterative deepening alpha-beta for checkers (depth up to 10)
+  const MAX_DEPTH = 10;
+  let TIMER = {limit:0,start:0};
+
+  function now(){ return (typeof performance !== 'undefined') ? performance.now() : Date.now(); }
+  onmessage = function(e){
+    const d = e.data;
+    if(d.cmd === 'search'){
+      TIMER.limit = d.timeLimit || ${TIME_LIMIT_MS};
+      TIMER.start = now();
+      try{
+        const board = d.board;
+        const move = searchBest(board, 'black', TIMER.limit);
+        postMessage({type:'best', move: move});
+      }catch(err){
+        postMessage({type:'best', move:null});
+      }
+    }
+  };
+
+  function cloneBoard(b){ return b.map(r => r.map(c => c ? {color: c.color, king: c.king} : null)); }
+  function inBoard(r,c){ return r>=0 && r<8 && c>=0 && c<8; }
+  function forwardDirsFor(color){ return color==='white' ? [[-1,1],[-1,-1]] : [[1,1],[1,-1]]; }
+
+  function continueCaptures(boardState,r,c,visited=new Set()){
+    const p = boardState[r][c]; if(!p) return [];
+    const color = p.color; let res = []; const dirs = [[1,1],[1,-1],[-1,1],[-1,-1]];
+    if(p.king){
+      for(const [dR,dC] of dirs){
+        let sR=r+dR,sC=c+dC;
+        while(inBoard(sR,sC) && !boardState[sR][sC]){ sR+=dR; sC+=dC; }
+        if(inBoard(sR,sC) && boardState[sR][sC] && boardState[sR][sC].color !== color){
+          let lR = sR + dR, lC = sC + dC;
+          while(inBoard(lR,lC)){
+            if(boardState[lR][lC]) break;
+            const key = sR+','+sC;
+            if(visited.has(key)){ lR+=dR; lC+=dC; continue; }
+            const nb = cloneBoard(boardState);
+            nb[lR][lC] = {...nb[r][c], king:true}; nb[r][c] = null; nb[sR][sC] = null;
+            const nv = new Set(visited); nv.add(key);
+            const fut = continueCaptures(nb,lR,lC,nv);
+            if(fut.length>0) fut.forEach(f => res.push({from:[r,c], to:f.to, path:[[r,c],...f.path.slice(1)], captures:[[sR,sC],...f.captures]}));
+            else res.push({from:[r,c], to:[lR,lC], path:[[r,c],[lR,lC]], captures:[[sR,sC]]});
+            lR += dR; lC += dC;
+          }
+        }
+      }
+    } else {
+      for(const [dR,dC] of dirs){
+        const mR=r+dR, mC=c+dC, lR=r+2*dR, lC=c+2*dC;
+        if(inBoard(lR,lC) && boardState[mR][mC] && boardState[mR][mC].color !== color && !boardState[lR][lC]){
+          const key = mR+','+mC;
+          if(visited.has(key)) continue;
+          const nb = cloneBoard(boardState);
+          nb[lR][lC] = {...nb[r][c]}; nb[r][c] = null; nb[mR][mC] = null;
+          if(nb[lR][lC] && !nb[lR][lC].king){
+            if(nb[lR][lC].color === 'white' && lR === 0) nb[lR][lC].king = true;
+            if(nb[lR][lC].color === 'black' && lR === 7) nb[lR][lC].king = true;
+          }
+          const nv = new Set(visited); nv.add(key);
+          const fut = continueCaptures(nb,lR,lC,nv);
+          if(fut.length>0) fut.forEach(f => res.push({from:[r,c], to:f.to, path:[[r,c],...f.path.slice(1)], captures:[[mR,mC],...f.captures]}));
+          else res.push({from:[r,c], to:[lR,lC], path:[[r,c],[lR,lC]], captures:[[mR,mC]]});
+        }
+      }
+    }
+    return res;
+  }
+
+  function movesFrom(boardState,r,c){
+    const p = boardState[r][c]; if(!p) return [];
+    let moves = [];
+    if(p.king){
+      const dirs = [[1,1],[1,-1],[-1,1],[-1,-1]];
+      for(const [dR,dC] of dirs){
+        let nr=r+dR, nc=c+dC;
+        while(inBoard(nr,nc) && !boardState[nr][nc]){ moves.push({from:[r,c], to:[nr,nc], path:[[r,c],[nr,nc]], captures:[]}); nr+=dR; nc+=dC; }
+      }
+    } else {
+      const dirs = forwardDirsFor(p.color);
+      for(const [dR,dC] of dirs){
+        const nr=r+dR, nc=c+dC;
+        if(inBoard(nr,nc) && !boardState[nr][nc]) moves.push({from:[r,c], to:[nr,nc], path:[[r,c],[nr,nc]], captures:[]});
+      }
+    }
+    const caps = continueCaptures(boardState,r,c);
+    return moves.concat(caps);
+  }
+
+  function allMovesFor(boardState,color){
+    let moves = [];
+    for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+      const p = boardState[r][c];
+      if(p && p.color === color) moves = moves.concat(movesFrom(boardState,r,c));
+    }
+    const caps = moves.filter(m => m.captures && m.captures.length>0);
+    if(caps.length>0) return caps;
+    return moves;
+  }
+
+  function applyMove(boardState,move){
+    const b = cloneBoard(boardState);
+    const piece = b[move.from[0]][move.from[1]];
+    b[move.from[0]][move.from[1]] = null;
+    b[move.to[0]][move.to[1]] = piece;
+    if(move.captures && move.captures.length>0) move.captures.forEach(([r,c])=>b[r][c]=null);
+    if(piece && !piece.king){
+      if(piece.color === 'white' && move.to[0] === 0) piece.king = true;
+      if(piece.color === 'black' && move.to[0] === 7) piece.king = true;
+    }
+    return b;
+  }
+
+  function heuristic(bd){
+    // oddiy ammo samarali: dona qiymati + king qo'shimcha + pozitsion bonus
+    let s = 0;
+    for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+      const p = bd[r][c];
+      if(!p) continue;
+      const base = p.king ? 2.3 : 1.0;
+      const sign = p.color === 'black' ? 1 : -1;
+      // pozitsion: markaz va oldingi qatorlarni oshiramiz
+      let posBonus = 0;
+      posBonus += (3 - Math.abs(3.5 - c)) * 0.04; // markazga kichik bonus
+      posBonus += (p.color === 'black' ? (r/7) : ((7-r)/7)) * 0.1; // oldinga chiqqan dona qimmati
+      s += sign * (base + posBonus);
+    }
+    return s;
+  }
+
+  function boardKey(b){
+    let k = '';
+    for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+      const p = b[r][c];
+      if(!p) k += '.';
+      else k += (p.color[0] + (p.king ? 'K' : ' '));
+    }
+    return k;
+  }
+
+  const TT = new Map();
+
+  function timeUp(){ return (now() - TIMER.start) >= (TIMER.limit - 10); }
+
+  function alphaBeta(bd,depth,alpha,beta,maximizing){
+    if(depth === 0 || timeUp()) return heuristic(bd);
+    const key = boardKey(bd) + '|' + depth + '|' + (maximizing? '1':'0');
+    if(TT.has(key)) return TT.get(key);
+    const color = maximizing ? 'black' : 'white';
+    let moves = allMovesFor(bd, color);
+    if(moves.length === 0){
+      const val = maximizing ? -99999 : 99999;
+      TT.set(key, val);
+      return val;
+    }
+    // sort: captures first, else heuristic after applying
+    moves.sort((a,b) => (b.captures?.length || 0) - (a.captures?.length || 0));
+    let bestVal = maximizing ? -Infinity : Infinity;
+    if(maximizing){
+      for(const m of moves){
+        const nb = applyMove(bd, m);
+        const val = alphaBeta(nb, depth-1, alpha, beta, false);
+        if(val > bestVal) bestVal = val;
+        if(val > alpha) alpha = val;
+        if(alpha >= beta) break;
+        if(timeUp()) break;
+      }
+    } else {
+      for(const m of moves){
+        const nb = applyMove(bd, m);
+        const val = alphaBeta(nb, depth-1, alpha, beta, true);
+        if(val < bestVal) bestVal = val;
+        if(val < beta) beta = val;
+        if(alpha >= beta) break;
+        if(timeUp()) break;
+      }
+    }
+    TT.set(key, bestVal);
+    return bestVal;
+  }
+
+  function searchBest(board,color,limit){
+    TIMER.limit = limit;
+    TIMER.start = now();
+    TT.clear();
+    let bestMove = null;
+    let bestScore = -Infinity;
+    const moves = allMovesFor(board, 'black');
+    if(moves.length === 0) return null;
+    // iterative deepening 1..MAX_DEPTH
+    for(let depth=1; depth<=MAX_DEPTH; depth++){
+      if(timeUp()) break;
+      let localBest = null;
+      let localBestScore = -Infinity;
+      for(const m of moves){
+        if(timeUp()) break;
+        const nb = applyMove(board, m);
+        const score = alphaBeta(nb, depth-1, -999999, 999999, false);
+        if(score > localBestScore){ localBestScore = score; localBest = m; }
+      }
+      if(localBest !== null){
+        bestMove = localBest;
+        bestScore = localBestScore;
+      }
+      // small optimization: if forced win detected
+      if(bestScore > 9000) break;
+    }
+    return bestMove;
+  }
+  `; // end of worker string
+}
+
+/* Create worker from blob */
+let engineWorker = null;
+function ensureWorker(){
+  if(engineWorker) return;
+  const code = getWorkerCode();
+  const blob = new Blob([code], {type: 'application/javascript'});
+  const url = URL.createObjectURL(blob);
+  engineWorker = new Worker(url);
+}
+
+/* Bot wrapper: chaqirish va natijani qo'llash */
+async function botMoveWrapper(){
+  if(!autoBot) return;
+  ensureWorker();
+  const start = performance.now();
+  setMsg("Bot o'ylayapti...");
+  return new Promise((resolve)=>{
+    const onmsg = async (ev) => {
+      const data = ev.data;
+      if(data.type === 'best'){
+        engineWorker.removeEventListener('message', onmsg);
+        const move = data.move;
+        if(!move){
+          showResult("Siz yutdingiz!", true);
+          resolve();
+          return;
+        }
+        history.push(cloneBoard(board));
+        await animateMove(move, true);
+        setPerf('Bot — ' + (performance.now() - start).toFixed(1) + 'ms (qiyinlik darajasi 10)');
+        if(checkEnd()){ resolve(); return; }
+        playerTurn = true;
+        setMsg("Sizning navbatingiz.");
+        resolve();
+      }
+    };
+    engineWorker.addEventListener('message', onmsg);
+    engineWorker.postMessage({cmd:'search', board: board, timeLimit: TIME_LIMIT_MS});
+  });
+}
+
+/* ==================== INIT ==================== */
 initBoard();
+
 </script>
 </body>
 </html>
