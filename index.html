@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Shashka Pro — To‘liq</title>
+<style>
+:root{--size:min(92vmin,640px);--light:#efe9dd;--dark:#6b8a47;--bg:#f3f5f7}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#eef3f7);display:flex;flex-direction:column;align-items:center;padding:18px;color:#111;min-height:100vh}
+h1{margin:8px 0 14px;font-size:1.15rem}
+#boardWrap{padding:18px;border-radius:18px;box-shadow:0 20px 50px rgba(17,24,39,0.18)}
+#board{width:var(--size);height:var(--size);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:10px;overflow:hidden;position:relative}
+.cell{display:flex;align-items:center;justify-content:center;position:relative}
+.light{background:linear-gradient(180deg,#f9f7ee,#efe9dd)}
+.dark{background:linear-gradient(180deg,#6b8a47,#4b6a34)}
+.piece{width:78%;height:78%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.02rem;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,filter .18s;position:relative;z-index:2;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.9),rgba(255,255,255,0.1) 20%),#fff;box-shadow:0 8px 20px rgba(0,0,0,0.25),inset 0 -6px 12px rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.08)}
+.piece.white{background:radial-gradient(circle at 28% 28%,rgba(255,255,255,0.95),rgba(255,255,255,0.8) 18%),linear-gradient(180deg,#ffffff,#f2f2f2);color:#111}
+.piece.black{background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.12),rgba(255,255,255,0.02) 18%),linear-gradient(180deg,#1b1b1b,#0f0f0f);color:#fff}
+.piece.king{border:3px solid rgba(245,210,72,0.95);box-shadow:0 12px 30px rgba(0,0,0,0.35),0 0 14px rgba(245,210,72,0.08) inset}
+.dot{position:absolute;width:20%;height:20%;border-radius:50%;background:rgba(255,236,0,0.92);z-index:1}
+.selected-outline{box-shadow:0 0 0 6px rgba(59,130,246,0.85) inset !important}
+.capture-outline{box-shadow:0 0 0 8px rgba(239,68,68,0.9) inset !important}
+@keyframes jump{0%{transform:translate(0,0) scale(1);z-index:20}40%{transform:translate(var(--dx),var(--dy)) scale(1.25);z-index:20;filter:drop-shadow(0 12px 20px rgba(0,0,0,0.35))}100%{transform:translate(var(--dx),var(--dy)) scale(1);z-index:2}}
+.jumping{animation:jump .55s cubic-bezier(.2,.8,.4,1) forwards !important}
+@keyframes jumpSelect{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
+.jumpingSelect{animation:jumpSelect .36s ease forwards}
+#gameOver{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;pointer-events:none;opacity:0;transition:opacity .45s}
+#gameOver.show{opacity:1;pointer-events:all}
+#gameOver div{font-size:3.2rem;font-weight:900;color:#fff;padding:22px 36px;border-radius:18px;background:rgba(0,0,0,0.36);text-align:center}
+.win{color:#34d399!important}.lose{color:#fb7185!important}
+.controls{display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap}
+button{padding:8px 16px;border-radius:10px;border:0;background:#2563eb;color:#fff;cursor:pointer;font-weight:700}
+.info{margin-top:12px;padding:14px;border-radius:12px;background:#fff;box-shadow:0 6px 18px rgba(2,6,23,0.06);width:90vmin;max-width:720px}
+.small{font-size:.95rem;color:#333}
+.legend{display:flex;gap:8px;align-items:center;margin-top:10px}
+.legend .sw{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,0.06)}
+@media(max-width:420px){h1{font-size:1rem}.piece{font-size:.88rem}#gameOver div{font-size:2.2rem}}
+</style>
+</head>
+<body>
+<h1>Shashka — Toʻliq oʻyin</h1>
+<div id="boardWrap"><div id="board"></div></div>
+<div class="controls">
+  <button id="newBtn">Yangi o'yin</button>
+  <button id="undoBtn">Orqaga</button>
+  <label><input id="autoBot" type="checkbox" checked/> Bot avtomatik yurishi</label>
+</div>
+<div class="info">
+  <div id="turn" class="small">Navbat: Foydalanuvchi</div>
+  <div id="msg" class="small" style="margin-top:6px">Dona tanlang. Majburiy olish mavjud.</div>
+  <div id="perf" class="small" style="margin-top:6px;color:#555"></div>
+  <div class="legend"><div class="sw" style="background:#fff"></div><div class="small">Siz (oq)</div><div class="sw" style="background:#111"></div><div class="small">Bot (qora)</div></div>
+</div>
+<div id="gameOver"><div id="resultText"></div></div>
+
+<script>
+const boardEl=document.getElementById('board'),newBtn=document.getElementById('newBtn'),undoBtn=document.getElementById('undoBtn'),autoBotCB=document.getElementById('autoBot'),turnEl=document.getElementById('turn'),msgEl=document.getElementById('msg'),perfEl=document.getElementById('perf'),gameOverEl=document.getElementById('gameOver'),resultTextEl=document.getElementById('resultText');
+let board=[],history=[],selected=null,legalMoves=[],playerTurn=true,autoBot=true;
+newBtn.onclick=()=>newGame();undoBtn.onclick=()=>undo();autoBotCB.onchange=()=>autoBot=autoBotCB.checked;
+function initBoard(){board=Array.from({length:8},()=>Array(8).fill(null));for(let r=0;r<8;r++)for(let c=0;c<8;c++)if((r+c)%2===1){if(r<3)board[r][c]={color:'black',king:false};else if(r>4)board[r][c]={color:'white',king:false}}history=[];selected=null;legalMoves=[];playerTurn=true;updateTurn();setPerf('');hideGameOver();render()}
+function cloneBoard(b){return b.map(row=>row.map(cell=>cell?{color:cell.color,king:cell.king}:null))}
+function inBoard(r,c){return r>=0&&r<8&&c>=0&&c<8}
+function setMsg(s){msgEl.textContent=s}
+function setPerf(s){perfEl.textContent=s}
+function updateTurn(){turnEl.textContent=playerTurn?"Navbat: Foydalanuvchi":"Navbat: Bot"}
+function showResult(text,win){resultTextEl.textContent=text;resultTextEl.className=win?"win":"lose";gameOverEl.classList.add("show");setTimeout(()=>hideGameOver(),2100)}
+function hideGameOver(){gameOverEl.classList.remove("show")}
+function forwardDirsFor(color){return color==='white'?[[-1,1],[-1,-1]]:[[1,1],[1,-1]]}
+function continueCaptures(boardState,r,c,visited=new Set()){const p=boardState[r][c];if(!p)return[];const color=p.color;let res=[];const dirs=[[1,1],[1,-1],[-1,1],[-1,-1]];if(p.king){for(const[dR,dC]of dirs){let sR=r+dR,sC=c+dC;while(inBoard(sR,sC)&&!boardState[sR][sC]){sR+=dR;sC+=dC}if(inBoard(sR,sC)&&boardState[sR][sC]&&boardState[sR][sC].color!==color){let lR=sR+dR,lC=sC+dC;while(inBoard(lR,lC)){if(boardState[lR][lC])break;const key=`${sR},${sC}`;if(visited.has(key)){lR+=dR;lC+=dC;continue}const nb=cloneBoard(boardState);nb[lR][lC]={...nb[r][c],king:true};nb[r][c]=null;nb[sR][sC]=null;const nv=new Set(visited);nv.add(key);const fut=continueCaptures(nb,lR,lC,nv);if(fut.length>0){fut.forEach(f=>res.push({from:[r,c],to:f.to,path:[[r,c],...f.path.slice(1)],captures:[[sR,sC],...f.captures]}))}else res.push({from:[r,c],to:[lR,lC],path:[[r,c],[lR,lC]],captures:[[sR,sC]]});lR+=dR;lC+=dC}}}}else{for(const[dR,dC]of dirs){const mR=r+dR,mC=c+dC,lR=r+2*dR,lC=c+2*dC;if(inBoard(lR,lC)&&boardState[mR][mC]&&boardState[mR][mC].color!==color&&!boardState[lR][lC]){const key=`${mR},${mC}`;if(visited.has(key))continue;const nb=cloneBoard(boardState);nb[lR][lC]={...nb[r][c]};nb[r][c]=null;nb[mR][mC]=null;if(nb[lR][lC]&&!nb[lR][lC].king){if(nb[lR][lC].color==='white'&&lR===0)nb[lR][lC].king=true;if(nb[lR][lC].color==='black'&&lR===7)nb[lR][lC].king=true}const nv=new Set(visited);nv.add(key);const fut=continueCaptures(nb,lR,lC,nv);if(fut.length>0){fut.forEach(f=>res.push({from:[r,c],to:f.to,path:[[r,c],...f.path.slice(1)],captures:[[mR,mC],...f.captures]}))}else res.push({from:[r,c],to:[lR,lC],path:[[r,c],[lR,lC]],captures:[[mR,mC]]})}}}return res}
+function movesFrom(boardState,r,c){const p=boardState[r][c];if(!p)return[];let moves=[];if(p.king){const dirs=[[1,1],[1,-1],[-1,1],[-1,-1]];for(const[dR,dC]of dirs){let nr=r+dR,nc=c+dC;while(inBoard(nr,nc)&&!boardState[nr][nc]){moves.push({from:[r,c],to:[nr,nc],path:[[r,c],[nr,nc]],captures:[]});nr+=dR;nc+=dC}}}else{const dirs=forwardDirsFor(p.color);for(const[dR,dC]of dirs){const nr=r+dR,nc=c+dC;if(inBoard(nr,nc)&&!boardState[nr][nc])moves.push({from:[r,c],to:[nr,nc],path:[[r,c],[nr,nc]],captures:[]})}}const caps=continueCaptures(boardState,r,c);return moves.concat(caps)}
+function allMovesFor(boardState,color){let moves=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=boardState[r][c];if(p&&p.color===color)moves=moves.concat(movesFrom(boardState,r,c))}const caps=moves.filter(m=>m.captures&&m.captures.length>0);if(caps.length>0)return caps;return moves}
+function applyMove(boardState,move){const b=cloneBoard(boardState);const piece=b[move.from[0]][move.from[1]];b[move.from[0]][move.from[1]]=null;b[move.to[0]][move.to[1]]=piece;if(move.captures&&move.captures.length>0)move.captures.forEach(([r,c])=>b[r][c]=null);if(piece&&!piece.king){if(piece.color==='white'&&move.to[0]===0)piece.king=true;if(piece.color==='black'&&move.to[0]===7)piece.king=true}return b}
+function heuristicBoardScore(bd){let s=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=bd[r][c];if(p)s+=(p.color==='black'?1:-1)*(p.king?2.2:1)}return s}
+function undo(){if(history.length===0)return;board=history.pop();selected=null;legalMoves=[];playerTurn=!playerTurn;render()}
+async function animateMove(move,isBot=false){const path=move.path||[move.from,move.to];const fromPiece=board[move.from[0]][move.from[1]];const isKingBefore=fromPiece&&fromPiece.king;for(let i=1;i<path.length;i++){const from=path[i-1],to=path[i],fromCell=boardEl.children[from[0]*8+from[1]],pieceEl=fromCell.querySelector('.piece');if(!pieceEl)continue;const rf=fromCell.getBoundingClientRect(),rt=boardEl.children[to[0]*8+to[1]].getBoundingClientRect();pieceEl.style.setProperty('--dx',(rt.left-rf.left)+'px');pieceEl.style.setProperty('--dy',(rt.top-rf.top)+'px');pieceEl.classList.add('jumping');await new Promise(r=>setTimeout(r,520));pieceEl.classList.remove('jumping')}board=applyMove(board,move);render();const finalCell=boardEl.children[move.to[0]*8+move.to[1]];const finalPiece=finalCell.querySelector('.piece');if(finalPiece&&!isKingBefore&&board[move.to[0]][move.to[1]].king){finalPiece.style.animation='jumpSelect .9s ease-out';setTimeout(()=>finalPiece.style.animation='',1000)}}
+async function onCellClick(r,c){if(!playerTurn)return;const p=board[r][c];if(selected){const chosen=legalMoves.find(m=>m.to[0]===r&&m.to[1]===c&&arraysEqual(m.from,selected));if(chosen){history.push(cloneBoard(board));await animateMove(chosen,false);selected=null;legalMoves=[];if(checkEnd())return;playerTurn=false;setMsg("Bot o'ylayapti...");setTimeout(()=>botMoveFast(),220);return}else{selected=null;legalMoves=[];render();return}}if(p&&p.color==='white'){selected=[r,c];const globalCaps=allMovesFor(board,'white').filter(m=>m.captures?.length>0);legalMoves=movesFrom(board,r,c);if(globalCaps.length>0)legalMoves=legalMoves.filter(m=>m.captures?.length>0);render();const ce=boardEl.children[r*8+c].querySelector('.piece');if(ce){ce.classList.add('jumpingSelect');setTimeout(()=>ce.classList.remove('jumpingSelect'),360)}}}
+async function botMoveFast(){const start=performance.now();const moves=allMovesFor(board,'black');if(moves.length===0){showResult("Siz yutdingiz!",true);return}let chosen=null;const caps=moves.filter(m=>m.captures?.length>0);if(caps.length>0){caps.sort((a,b)=>(b.captures.length-a.captures.length)||((willPromote(board,a)?1:0)-(willPromote(board,b)?1:0))||(heuristicBoardScore(applyMove(board,a))-heuristicBoardScore(applyMove(board,b))));chosen=caps[0]}else{const safe=moves.filter(m=>{const after=applyMove(board,m);return !allMovesFor(after,'white').some(pr=>pr.captures?.length>0)});if(safe.length>0){safe.sort((a,b)=>heuristicBoardScore(applyMove(board,b))-heuristicBoardScore(applyMove(board,a)));chosen=safe[0]}else chosen=moves[0]}history.push(cloneBoard(board));await animateMove(chosen,true);setPerf(`Bot — ${(performance.now()-start).toFixed(1)}ms`);if(checkEnd())return;playerTurn=true;setMsg("Sizning navbatingiz.")}
+function willPromote(boardState,move){const p=boardState[move.from[0]][move.from[1]];if(!p||p.king)return false;if(p.color==='black'&&move.to[0]===7)return true;if(p.color==='white'&&move.to[0]===0)return true;return false}
+function checkEnd(){const wm=allMovesFor(board,'white'),bm=allMovesFor(board,'black');const wp=board.flat().filter(p=>p&&p.color==='white').length;const bp=board.flat().filter(p=>p&&p.color==='black').length;if(wp===0||wm.length===0){showResult("Yutqazdingiz!",false);playerTurn=false;return true}if(bp===0||bm.length===0){showResult("Siz yutdingiz!!!",true);playerTurn=false;return true}return false}
+function render(){boardEl.innerHTML='';const whiteCaps=allMovesFor(board,'white').filter(m=>m.captures?.length>0);const blackCaps=allMovesFor(board,'black').filter(m=>m.captures?.length>0);for(let r=0;r<8;r++)for(let c=0;c<8;c++){const cell=document.createElement('div');cell.className='cell '+((r+c)%2===0?'light':'dark');cell.addEventListener('click',()=>onCellClick(r,c));if(legalMoves.some(m=>m.to[0]===r&&m.to[1]===c)){const dot=document.createElement('div');dot.className='dot';cell.appendChild(dot)}const p=board[r][c];if(p){const el=document.createElement('div');el.className='piece '+(p.color==='white'?'white':'black')+(p.king?' king':'');el.textContent=p.king?'👑':'';if(p.king){const crown=document.createElement('div');crown.style.position='absolute';crown.style.fontSize='0.8rem';crown.style.top='8%';crown.style.pointerEvents='none';crown.textContent='★';el.appendChild(crown)}if(whiteCaps.length>0&&p.color==='white'){if(allMovesFor(board,'white').some(m=>arraysEqual(m.from,[r,c])&&m.captures?.length>0)){el.classList.add('capture-outline')}}if(selected&&selected[0]===r&&selected[1]===c)el.classList.add('selected-outline');cell.appendChild(el)}boardEl.appendChild(cell)}updateTurn()}
+function arraysEqual(a,b){if(!a||!b)return false;if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true}
+function newGame(){initBoard()}
+initBoard();
+</script>
+</body>
+</html>
