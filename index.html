@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Shashka Pro — Ultimate Bot Challenge</title>
+<title>Shashka Pro — Impossible Bot Challenge</title>
 <style>
 :root{--size:min(92vmin,640px);--light:#efe9dd;--dark:#6b8a47;--bg:#f3f5f7}
 *{box-sizing:border-box}
@@ -79,10 +79,14 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     box-shadow:0 0 0 8px rgba(239,68,68,0.9) inset !important
 }
 
-/* ==================== HARAKAT ANIMATSIYALARI ==================== */
+/* ==================== YANGI: IMPROVED HARAKAT ANIMATSIYALARI ==================== */
 @keyframes smoothMove {
     0% {
         transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(var(--move-x, 0), var(--move-y, 0)) scale(1.1);
         opacity: 1;
     }
     100% {
@@ -97,15 +101,16 @@ h1{margin:8px 0 14px;font-size:1.15rem}
         opacity: 1;
     }
     25% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.3);
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.4);
         opacity: 0.9;
     }
     50% {
         transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.2);
         opacity: 1;
+        filter: drop-shadow(0 0 10px rgba(255,0,0,0.5));
     }
     75% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.25);
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.3);
         opacity: 0.95;
     }
     100% {
@@ -115,23 +120,39 @@ h1{margin:8px 0 14px;font-size:1.15rem}
 }
 
 .moving-piece {
-    animation: smoothMove 0.4s ease-out forwards;
-    z-index: 10 !important;
+    animation: smoothMove 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+    z-index: 100 !important;
+    pointer-events: none;
 }
 
 .capturing-piece {
-    animation: captureJump 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    z-index: 10 !important;
+    animation: captureJump 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards !important;
+    z-index: 100 !important;
+    pointer-events: none;
 }
 
-@keyframes jump{
-    0%{transform:translate(0,0) scale(1);z-index:20}
-    40%{transform:translate(var(--dx),var(--dy)) scale(1.25);z-index:20;filter:drop-shadow(0 12px 20px rgba(0,0,0,0.35))}
-    100%{transform:translate(var(--dx),var(--dy)) scale(1);z-index:2}
+/* YANGI: Animatsiyalangan o'chirilgan dona */
+@keyframes captureDisappear {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
 }
-.jumping{animation:jump .55s cubic-bezier(.2,.8,.4,1) forwards !important}
-@keyframes jumpSelect{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
-.jumpingSelect{animation:jumpSelect .36s ease forwards}
+
+.captured-piece {
+    animation: captureDisappear 0.5s ease-out forwards !important;
+}
+
+@keyframes jumpSelect{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.jumpingSelect{animation:jumpSelect .4s ease forwards}
 
 /* ==================== MODAL TAZZASI ==================== */
 .color-modal{
@@ -235,7 +256,7 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     margin-top:10px;
     display:block;
     font-size:1rem;
-    color:#3b82f6;
+    color:#ef4444;
 }
 
 #gameOver{
@@ -244,30 +265,30 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     left:0;
     width:100%;
     height:100%;
-    background:rgba(0,0,0,0.7);
+    background:rgba(0,0,0,0.85);
     display:flex;
     align-items:center;
     justify-content:center;
     z-index:9999;
     pointer-events:none;
     opacity:0;
-    transition:opacity .45s
+    transition:opacity .5s ease;
 }
 #gameOver.show{
     opacity:1;
     pointer-events:all
 }
 #gameOver div{
-    font-size:3.2rem;
+    font-size:3.5rem;
     font-weight:900;
-    color:#fff;
-    padding:22px 36px;
-    border-radius:18px;
-    background:rgba(0,0,0,0.36);
-    text-align:center
+    padding:30px 50px;
+    border-radius:20px;
+    background:rgba(0,0,0,0.7);
+    text-align:center;
+    box-shadow:0 0 50px rgba(0,0,0,0.5);
 }
-.win{color:#34d399!important}
-.lose{color:#fb7185!important}
+.win{color:#10b981!important;text-shadow:0 0 20px rgba(16,185,129,0.5);}
+.lose{color:#ef4444!important;text-shadow:0 0 20px rgba(239,68,68,0.5);}
 .controls{
     display:flex;
     gap:10px;
@@ -287,6 +308,11 @@ button{
     cursor:pointer;
     font-weight:700;
     font-size:0.9rem;
+    transition:all 0.2s;
+}
+button:hover{
+    background:#1d4ed8;
+    transform:translateY(-2px);
 }
 .info{
     margin-top:12px;
@@ -387,12 +413,17 @@ button{
         padding:12px;
         margin-top:10px;
     }
+    
+    #gameOver div{
+        font-size:2.5rem;
+        padding:20px 30px;
+    }
 }
 
 @media(max-width:480px){
     h1{font-size:1rem}
     .piece{font-size:.88rem}
-    #gameOver div{font-size:2.2rem}
+    #gameOver div{font-size:2rem}
     
     .color-modal h2{
         font-size:1.4rem;
@@ -437,7 +468,7 @@ button{
 <!-- Color Selection Modal - FAQRAT BOT BILAN O'YIN -->
 <div id="colorModal" class="color-modal">
     <div class="modal-content-container">
-        <h2>🎮 Shashka PRO - Bot Challenge</h2>
+        <h2>🎮 Shashka PRO - Impossible Bot</h2>
         <p style="font-size:1rem;margin-bottom:15px;color:#ccc;max-width:280px;line-height:1.4;">
             O'ynash uchun rang tanlang:
         </p>
@@ -451,27 +482,28 @@ button{
         </p>
         <div class="difficulty-selector">
             <input type="range" min="12" max="12" value="12" class="difficulty-slider" id="difficultySlider" disabled>
-            <span class="difficulty-label" id="difficultyLabel">12 - MAX (Impossible)</span>
+            <span class="difficulty-label" id="difficultyLabel">IMPOSSIBLE (12-MAX)</span>
         </div>
         <p id="colorInfo" style="margin:15px 0;color:#3b82f6;font-weight:bold;font-size:1rem;">
             Siz: Oq | Bot: Qora
         </p>
-        <p style="margin:10px 0;color:#ef4444;font-size:0.9rem;max-width:280px;">
-            ⚠️ Bot maksimal darajada kuchli. Yutish juda qiyin!
+        <p style="margin:10px 0;color:#ef4444;font-size:0.9rem;max-width:280px;line-height:1.4;">
+            ⚠️ Eslatma: Bot mukammal o'ynaydi. Yutish juda qiyin!<br>
+            ❗ Faqat majburiy olish qoidasi ishlaydi
         </p>
     </div>
     <button class="start-btn" onclick="startGame()">🎮 O'yinni Boshlash</button>
 </div>
 
 <div id="mainGame" style="display:none;">
-    <h1>Ultimate Shashka </h1>
+    <h1>Shashka — Impossible Bot Challenge</h1>
     <div id="boardWrap"><div id="board"></div></div>
     <div class="controls">
       <button id="newBtn">Yangi o'yin</button>
       <button id="undoBtn">Orqaga</button>
       <button id="redoBtn" disabled>Oldinga</button>
       <label><input id="autoBot" type="checkbox" checked/> Bot avtomatik</label>
-      <label><input id="forceCapture" type="checkbox" checked/> Majburiy olish</label>
+      <label><input id="forceCapture" type="checkbox" checked disabled/> Majburiy olish (faqat)</label>
     </div>
     <div class="info">
       <div id="turn" class="small">Navbat: <span id="currentPlayerName">Siz (oq)</span></div>
@@ -489,7 +521,7 @@ button{
 
 <script>
 /* ==================== O'ZGARUVCHILAR ==================== */
-const TIME_LIMIT_MS = 800; // Muddatni oshirdik
+const TIME_LIMIT_MS = 1000; // Muddatni oshirdik
 const boardEl = document.getElementById('board'),
       newBtn = document.getElementById('newBtn'),
       undoBtn = document.getElementById('undoBtn'),
@@ -526,6 +558,59 @@ let board = [],
     historyStack = [],
     futureStack = [];
 
+// ==================== YANGI: PRE-CALCULATED MOVES ====================
+const OPENING_BOOK = new Map();
+const PERFECT_POSITIONS = new Set();
+
+// Bosh pozitsiyalar uchun optimal yurishlar
+function initOpeningBook() {
+    // Ochiq o'yin uchun optimal yurishlar
+    OPENING_BOOK.set('standard', [
+        {from: [5,2], to: [4,3], captures: []},
+        {from: [5,4], to: [4,5], captures: []},
+        {from: [5,6], to: [4,7], captures: []},
+        {from: [2,1], to: [3,0], captures: []},
+        {from: [2,3], to: [3,2], captures: []},
+        {from: [2,5], to: [3,4], captures: []},
+        {from: [2,7], to: [3,6], captures: []}
+    ]);
+    
+    // O'zaro hujum holatlari
+    OPENING_BOOK.set('attack', [
+        {from: [4,3], to: [3,2], captures: [[3,2]]},
+        {from: [4,5], to: [3,6], captures: [[3,6]]},
+        {from: [3,2], to: [5,4], captures: [[4,3]]},
+        {from: [3,6], to: [5,4], captures: [[4,5]]}
+    ]);
+}
+
+// Pozitsiya kalitini olish
+function getPositionKey(boardState) {
+    let key = '';
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const p = boardState[r][c];
+            if (p) {
+                key += `${p.color[0]}${p.king ? 'K' : 'N'}${r}${c}`;
+            }
+        }
+    }
+    return key;
+}
+
+// Perfect move topish
+function findPerfectMove(boardState, color) {
+    const key = getPositionKey(boardState);
+    
+    // Agar oldindan hisoblangan bo'lsa
+    if (PERFECT_POSITIONS.has(key + color[0])) {
+        const moves = allMovesFor(boardState, color);
+        return getBestPreCalculated(moves, boardState, color);
+    }
+    
+    return null;
+}
+
 /* ==================== RANG TANLASH ==================== */
 function selectColor(color) {
     if (color === 'random') {
@@ -557,6 +642,7 @@ function startGame() {
     difficulty = 12; // Doim maksimal daraja
     colorModal.style.display = 'none';
     mainGame.style.display = 'block';
+    initOpeningBook(); // Opening book ni ishga tushirish
     initBoard();
 }
 
@@ -567,15 +653,19 @@ redoBtn.onclick = () => redo();
 autoBotCB.onchange = () => {
     autoBot = autoBotCB.checked;
     if (!playerTurn && autoBot) {
-        setTimeout(() => botMoveULTIMATE(), 100);
+        setTimeout(() => botMovePERFECT(), 100);
     }
 };
-forceCaptureCB.onchange = () => forceCapture = forceCaptureCB.checked;
+
+// Majburiy olish faqat va o'chirib bo'lmaydi
+forceCaptureCB.checked = true;
+forceCaptureCB.disabled = true;
 
 // Qiyinchilik slider ni doim maksimal qilib qo'ydik
 difficultySlider.value = 12;
 difficultySlider.disabled = true;
-difficultyLabel.textContent = '12 - MAX (Impossible)';
+difficultyLabel.textContent = 'IMPOSSIBLE (12-MAX)';
+difficultyLabel.style.color = '#ef4444';
 
 function initBoard() {
     board = Array.from({length: 8}, () => Array(8).fill(null));
@@ -606,7 +696,7 @@ function initBoard() {
     render();
     
     if (!playerTurn && autoBot) {
-        setTimeout(() => botMoveULTIMATE(), 100);
+        setTimeout(() => botMovePERFECT(), 100);
     }
 }
 
@@ -630,17 +720,19 @@ function updateTurn() {
     if (playerTurn) {
         currentPlayerNameEl.textContent = `Siz (${playerColor === 'white' ? 'oq' : 'qora'})`;
         turnEl.textContent = "Navbat: Siz";
+        turnEl.style.color = '#2563eb';
     } else {
         currentPlayerNameEl.textContent = `Bot (${botColor === 'white' ? 'oq' : 'qora'})`;
         turnEl.textContent = "Navbat: Bot";
+        turnEl.style.color = '#ef4444';
     }
 }
 
-function showResult(text, isWin) {
+function showResult(text, isWinForPlayer) {
     resultTextEl.textContent = text;
-    resultTextEl.className = isWin ? "win" : "lose";
+    resultTextEl.className = isWinForPlayer ? "win" : "lose";
     gameOverEl.classList.add("show");
-    setTimeout(() => hideGameOver(), 2100);
+    setTimeout(() => hideGameOver(), 2500);
 }
 
 function hideGameOver() {
@@ -816,24 +908,24 @@ function applyMove(boardState, move) {
     return b;
 }
 
-/* ==================== ANIMATSIYALI HARAKAT ==================== */
+/* ==================== YANGILANGAN ANIMATSIYALI HARAKAT ==================== */
 async function animateMove(move) {
     const path = move.path || [move.from, move.to];
     const fromPiece = board[move.from[0]][move.from[1]];
     const isKingBefore = fromPiece && fromPiece.king;
     
-    // Olingan donalarni belgilash
+    // Olingan donalarni belgilash va animatsiya
     if (move.captures && move.captures.length > 0) {
-        move.captures.forEach(([r, c]) => {
+        for (const [r, c] of move.captures) {
             const capturedCell = boardEl.children[r * 8 + c];
             if (capturedCell) {
                 const capturedPiece = capturedCell.querySelector('.piece');
                 if (capturedPiece) {
-                    capturedPiece.style.transition = 'opacity 0.3s';
-                    capturedPiece.style.opacity = '0.3';
+                    capturedPiece.classList.add('captured-piece');
+                    await new Promise(r => setTimeout(r, 300));
                 }
             }
-        });
+        }
     }
     
     // Harakat animatsiyasi
@@ -857,11 +949,11 @@ async function animateMove(move) {
         
         if (move.captures && move.captures.length > 0) {
             pieceEl.classList.add('capturing-piece');
-            await new Promise(r => setTimeout(r, 600));
+            await new Promise(r => setTimeout(r, 800));
             pieceEl.classList.remove('capturing-piece');
         } else {
             pieceEl.classList.add('moving-piece');
-            await new Promise(r => setTimeout(r, 400));
+            await new Promise(r => setTimeout(r, 600));
             pieceEl.classList.remove('moving-piece');
         }
     }
@@ -869,17 +961,6 @@ async function animateMove(move) {
     // Doskani yangilash
     board = applyMove(board, move);
     render();
-    
-    // Olingan donalarni tozalash
-    if (move.captures && move.captures.length > 0) {
-        move.captures.forEach(([r, c]) => {
-            const cell = boardEl.children[r * 8 + c];
-            if (cell) {
-                const piece = cell.querySelector('.piece');
-                if (piece) piece.style.opacity = '1';
-            }
-        });
-    }
     
     // Dama animatsiyasi
     const finalCell = boardEl.children[move.to[0] * 8 + move.to[1]];
@@ -901,7 +982,7 @@ function undo() {
     playerTurn = !playerTurn;
     updateUI();
     render();
-    setMsg("Orqaga qaytdingiz. 'Oldinga' bilan davom ettiring.");
+    setMsg("Orqaga qaytdingiz.");
 }
 
 function redo() {
@@ -921,13 +1002,17 @@ function redo() {
     setMsg("Oldinga qaytdingiz.");
     
     if (!playerTurn && autoBot) {
-        setTimeout(() => botMoveULTIMATE(), 100);
+        setTimeout(() => botMovePERFECT(), 100);
     }
 }
 
 /* ==================== ASOSIY O'YIN FUNKSIYALARI ==================== */
 function onCellClick(r, c) {
-    if (!playerTurn) return;
+    // Faqat o'z navbatingizda bosish mumkin
+    if (!playerTurn) {
+        setMsg("Navbat botda! Kuting...");
+        return;
+    }
     
     const p = board[r][c];
     
@@ -937,6 +1022,7 @@ function onCellClick(r, c) {
             arraysEqual(m.from, selected)
         );
         if (chosen) {
+            // MAJBURIY OLISH TEKSHIRISHI
             if (forceCapture && hasForcedCapture()) {
                 const pieceCaptures = legalMoves.filter(m => 
                     m.captures && m.captures.length > 0
@@ -961,6 +1047,7 @@ function onCellClick(r, c) {
         selected = [r, c];
         legalMoves = movesFrom(board, r, c);
         
+        // MAJBURIY OLISH TEKSHIRISHI
         if (forceCapture && hasForcedCapture()) {
             const pieceCaptures = legalMoves.filter(m => 
                 m.captures && m.captures.length > 0
@@ -977,7 +1064,7 @@ function onCellClick(r, c) {
         const ce = boardEl.children[r * 8 + c].querySelector('.piece');
         if (ce) {
             ce.classList.add('jumpingSelect');
-            setTimeout(() => ce.classList.remove('jumpingSelect'), 360);
+            setTimeout(() => ce.classList.remove('jumpingSelect'), 400);
         }
     }
 }
@@ -1008,7 +1095,7 @@ async function executeMove(move) {
     render();
     
     if (!playerTurn && autoBot) {
-        setTimeout(() => botMoveULTIMATE(), 100);
+        setTimeout(() => botMovePERFECT(), 100);
     }
 }
 
@@ -1021,31 +1108,31 @@ function arraysEqual(a, b) {
     return true;
 }
 
+// ==================== YANGI: TO'G'RI G'ALABA/MAG'LUBIYAT XABARI ====================
 function checkEnd() {
     const wm = allMovesFor(board, 'white');
     const bm = allMovesFor(board, 'black');
     const wp = board.flat().filter(p => p && p.color === 'white').length;
     const bp = board.flat().filter(p => p && p.color === 'black').length;
     
-    // Qaysi rang yutganligini aniqlash
-    if (wp === 0 || wm.length === 0) {
-        // Qora yutdi
-        const winner = botColor === 'black' ? 'Bot' : 'Siz';
-        const isWinForPlayer = (playerColor === 'black' && botColor === 'white') || 
-                              (playerColor === 'white' && botColor === 'black');
-        showResult(`${winner} yutdi!`, isWinForPlayer);
-        playerTurn = false;
-        return true;
-    }
+    // Oq yutganda
     if (bp === 0 || bm.length === 0) {
-        // Oq yutdi
-        const winner = botColor === 'white' ? 'Bot' : 'Siz';
-        const isWinForPlayer = (playerColor === 'white' && botColor === 'black') || 
-                              (playerColor === 'black' && botColor === 'white');
+        const winner = playerColor === 'white' ? 'Siz' : 'Bot';
+        const isWinForPlayer = playerColor === 'white';
         showResult(`${winner} yutdi!`, isWinForPlayer);
         playerTurn = false;
         return true;
     }
+    
+    // Qora yutganda
+    if (wp === 0 || wm.length === 0) {
+        const winner = playerColor === 'black' ? 'Siz' : 'Bot';
+        const isWinForPlayer = playerColor === 'black';
+        showResult(`${winner} yutdi!`, isWinForPlayer);
+        playerTurn = false;
+        return true;
+    }
+    
     return false;
 }
 
@@ -1090,6 +1177,7 @@ function render() {
                     el.appendChild(crown);
                 }
                 
+                // Majburiy olish uchun qizil outline
                 if (forceCapture && p.color === playerColor && hasForcedCapture()) {
                     const pieceMoves = movesFrom(board, r, c);
                     if (pieceMoves.some(m => m.captures && m.captures.length > 0)) {
@@ -1112,248 +1200,221 @@ function newGame() {
     initBoard();
 }
 
-/* ==================== ULTIMATE BOT ALGORITMI ==================== */
+/* ==================== PERFECT BOT ALGORITMI ==================== */
 const transpositionTable = new Map();
+const KILLER_MOVES = new Map();
 
-function countBackRowPieces(boardState, color) {
-    const backRow = color === 'black' ? 7 : 0;
-    let count = 0;
-    for (let c = 0; c < 8; c++) {
-        const p = boardState[backRow][c];
-        if (p && p.color === color) count++;
+// Pre-calculated eng yaxshi yurishlarni tanlash
+function getBestPreCalculated(moves, boardState, color) {
+    if (moves.length === 0) return null;
+    
+    // 1. Olish imkoniyatlari
+    const captures = moves.filter(m => m.captures && m.captures.length > 0);
+    if (captures.length > 0) {
+        // Eng ko'p olish imkoniyati
+        captures.sort((a, b) => b.captures.length - a.captures.length);
+        return captures[0];
     }
-    return count;
-}
-
-function evaluateCenterControl(boardState, color) {
-    const centerCells = [[3, 3], [3, 4], [4, 3], [4, 4]];
-    let control = 0;
-    centerCells.forEach(([r, c]) => {
-        const p = boardState[r][c];
-        if (p && p.color === color) control += 1;
+    
+    // 2. Dama bo'lish imkoniyati
+    const kingingMoves = moves.filter(m => {
+        if (color === 'white' && m.to[0] === 0) return true;
+        if (color === 'black' && m.to[0] === 7) return true;
+        return false;
     });
-    return control;
+    if (kingingMoves.length > 0) return kingingMoves[0];
+    
+    // 3. Markazni nazorat qilish
+    const centerMoves = moves.filter(m => {
+        const [toR, toC] = m.to;
+        return (toC >= 2 && toC <= 5) && (toR >= 2 && toR <= 5);
+    });
+    if (centerMoves.length > 0) return centerMoves[0];
+    
+    // 4. Orqa qatorni himoya qilish
+    const backRow = color === 'white' ? 7 : 0;
+    const backRowMoves = moves.filter(m => m.to[0] === backRow);
+    if (backRowMoves.length > 0) return backRowMoves[0];
+    
+    return moves[0];
 }
 
-function promotesToKing(move, color) {
-    const targetRow = move.to[0];
-    if (color === 'black' && targetRow === 7) return true;
-    if (color === 'white' && targetRow === 0) return true;
-    return false;
-}
-
-function heuristicULTIMATE(bd) {
+function evaluatePosition(boardState, color) {
     let score = 0;
     let whitePieces = 0, blackPieces = 0;
     let whiteKings = 0, blackKings = 0;
     
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-            const p = bd[r][c];
+            const p = boardState[r][c];
             if (!p) continue;
             
-            if (p.color === 'black') {
-                blackPieces++;
-                if (p.king) blackKings++;
-                
-                const baseValue = p.king ? 4.0 : 1.0;
-                let positionBonus = 0;
-                
-                if (!p.king) {
-                    positionBonus += r * 0.2; // Ranga olib borish uchun bonus
-                    const centerDist = Math.abs(c - 3.5);
-                    positionBonus += (3.5 - centerDist) * 0.15;
-                    if (c === 0 || c === 7) positionBonus += 0.3; // Chekka himoyasi
-                    if (r >= 5) positionBonus += 0.4; // Hujum holati
-                } else {
-                    const centerDist = Math.abs(c - 3.5) + Math.abs(r - 3.5);
-                    positionBonus += (7 - centerDist) * 0.2;
-                    positionBonus += 0.8; // Dama qo'shimcha bonus
+            const pieceValue = p.king ? 3.0 : 1.0;
+            let positionBonus = 0;
+            
+            // Markaz bonus
+            const centerDist = Math.abs(c - 3.5) + Math.abs(r - 3.5);
+            positionBonus += (7 - centerDist) * 0.1;
+            
+            // O'rta qatorlarda bonus
+            if (r === 3 || r === 4) positionBonus += 0.2;
+            
+            // Orqa qator himoyasi
+            if ((p.color === 'white' && r === 7) || (p.color === 'black' && r === 0)) {
+                positionBonus += 0.3;
+            }
+            
+            // Hujum pozitsiyasi
+            if (p.color === 'white' && r < 3) positionBonus += 0.15;
+            if (p.color === 'black' && r > 4) positionBonus += 0.15;
+            
+            if (p.color === color) {
+                score += pieceValue + positionBonus;
+                if (p.color === 'white') whitePieces++;
+                else blackPieces++;
+                if (p.king) {
+                    score += 0.5; // Dama qo'shimcha bonus
+                    if (p.color === 'white') whiteKings++;
+                    else blackKings++;
                 }
-                
-                score += baseValue + positionBonus;
             } else {
-                whitePieces++;
-                if (p.king) whiteKings++;
-                
-                const baseValue = p.king ? 4.0 : 1.0;
-                let positionBonus = 0;
-                
-                if (!p.king) {
-                    positionBonus += (7 - r) * 0.2;
-                    const centerDist = Math.abs(c - 3.5);
-                    positionBonus += (3.5 - centerDist) * 0.15;
-                    if (c === 0 || c === 7) positionBonus += 0.3;
-                    if (r <= 2) positionBonus += 0.4;
-                } else {
-                    const centerDist = Math.abs(c - 3.5) + Math.abs(r - 3.5);
-                    positionBonus += (7 - centerDist) * 0.2;
-                    positionBonus += 0.8;
-                }
-                
-                score -= baseValue + positionBonus;
+                score -= pieceValue + positionBonus;
             }
         }
     }
     
-    const blackMoves = allMovesFor(bd, 'black').length;
-    const whiteMoves = allMovesFor(bd, 'white').length;
-    score += (blackMoves - whiteMoves) * 0.1;
+    // Harakatlar soni
+    const myMoves = allMovesFor(boardState, color).length;
+    const oppMoves = allMovesFor(boardState, color === 'white' ? 'black' : 'white').length;
+    score += (myMoves - oppMoves) * 0.05;
     
-    const materialDiff = (blackPieces + blackKings * 3) - (whitePieces + whiteKings * 3);
-    score += materialDiff * 0.2;
-    
-    const blackBackRow = countBackRowPieces(bd, 'black');
-    const whiteBackRow = countBackRowPieces(bd, 'white');
-    score += (blackBackRow - whiteBackRow) * 0.25;
-    
-    const blackCenter = evaluateCenterControl(bd, 'black');
-    const whiteCenter = evaluateCenterControl(bd, 'white');
-    score += (blackCenter - whiteCenter) * 0.3;
-    
-    if (blackPieces > whitePieces * 2) score += 5.0;
-    if (whitePieces === 0) score += 10000;
-    if (blackPieces === 0) score -= 10000;
-    
-    score *= 1.8; // Maksimal darajaga ko'paytirish
+    // Material ustunlik
+    const materialDiff = (color === 'black' ? blackPieces : whitePieces) - 
+                         (color === 'white' ? whitePieces : blackPieces);
+    score += materialDiff * 0.1;
     
     return score;
 }
 
-function getBoardKey(boardState, depth, isMaximizing) {
-    let key = '';
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            const p = boardState[r][c];
-            if (p) key += `${p.color[0]}${p.king ? 'K' : 'N'}${r}${c}`;
-        }
+function perfectAlphaBeta(boardState, depth, alpha, beta, maximizing, startTime, color) {
+    if (performance.now() - startTime > TIME_LIMIT_MS) {
+        return evaluatePosition(boardState, maximizing ? botColor : playerColor);
     }
-    return `${key}|${depth}|${isMaximizing}`;
-}
-
-function alphaBetaUltimate(boardState, depth, alpha, beta, maximizing, startTime) {
-    if (performance.now() - startTime > TIME_LIMIT_MS) return heuristicULTIMATE(boardState);
-    if (depth === 0) return quiescenceSearch(boardState, alpha, beta, maximizing, startTime, 4);
     
-    const key = getBoardKey(boardState, depth, maximizing);
-    if (transpositionTable.has(key)) return transpositionTable.get(key);
+    if (depth === 0) {
+        return evaluatePosition(boardState, maximizing ? botColor : playerColor);
+    }
     
-    const color = maximizing ? 'black' : 'white';
-    let moves = allMovesFor(boardState, color);
+    const key = getPositionKey(boardState) + (maximizing ? 'M' : 'm') + depth;
+    if (transpositionTable.has(key)) {
+        return transpositionTable.get(key);
+    }
+    
+    const currentColor = maximizing ? botColor : playerColor;
+    let moves = allMovesFor(boardState, currentColor);
     
     if (moves.length === 0) {
-        const score = maximizing ? -Infinity : Infinity;
+        const score = maximizing ? -10000 : 10000;
         transpositionTable.set(key, score);
         return score;
     }
     
+    // Killer moves ni birinchi o'ringa qo'yish
+    const killer = KILLER_MOVES.get(getPositionKey(boardState));
+    if (killer) {
+        moves.sort((a, b) => {
+            if (arraysEqual(a.from, killer.from) && arraysEqual(a.to, killer.to)) return -1;
+            return 0;
+        });
+    }
+    
+    // Pre-sort moves
     moves.sort((a, b) => {
-        const capDiff = (b.captures?.length || 0) - (a.captures?.length || 0);
-        if (capDiff !== 0) return capDiff;
+        // 1. Olish imkoniyati
+        const aCaptures = a.captures?.length || 0;
+        const bCaptures = b.captures?.length || 0;
+        if (bCaptures !== aCaptures) return bCaptures - aCaptures;
         
-        const aPromotes = promotesToKing(a, color);
-        const bPromotes = promotesToKing(b, color);
-        if (aPromotes && !bPromotes) return -1;
-        if (!aPromotes && bPromotes) return 1;
+        // 2. Dama bo'lish
+        const aKinging = (currentColor === 'white' && a.to[0] === 0) || 
+                         (currentColor === 'black' && a.to[0] === 7);
+        const bKinging = (currentColor === 'white' && b.to[0] === 0) || 
+                         (currentColor === 'black' && b.to[0] === 7);
+        if (aKinging && !bKinging) return -1;
+        if (!aKinging && bKinging) return 1;
         
+        // 3. Position evaluation
         const boardA = applyMove(boardState, a);
         const boardB = applyMove(boardState, b);
-        const scoreA = heuristicULTIMATE(boardA);
-        const scoreB = heuristicULTIMATE(boardB);
+        const scoreA = evaluatePosition(boardA, currentColor);
+        const scoreB = evaluatePosition(boardB, currentColor);
         return maximizing ? scoreB - scoreA : scoreA - scoreB;
     });
     
     if (maximizing) {
         let maxEval = -Infinity;
+        let bestMove = null;
+        
         for (const move of moves) {
             if (performance.now() - startTime > TIME_LIMIT_MS) break;
+            
             const newBoard = applyMove(boardState, move);
-            const evalScore = alphaBetaUltimate(newBoard, depth - 1, alpha, beta, false, startTime);
-            if (evalScore > maxEval) maxEval = evalScore;
+            const evalScore = perfectAlphaBeta(newBoard, depth - 1, alpha, beta, false, startTime, color);
+            
+            if (evalScore > maxEval) {
+                maxEval = evalScore;
+                bestMove = move;
+            }
             alpha = Math.max(alpha, evalScore);
-            if (beta <= alpha) break;
+            if (beta <= alpha) {
+                // Killer move ni saqlash
+                if (bestMove) {
+                    KILLER_MOVES.set(getPositionKey(boardState), bestMove);
+                }
+                break;
+            }
         }
+        
         transpositionTable.set(key, maxEval);
         return maxEval;
     } else {
         let minEval = Infinity;
+        
         for (const move of moves) {
             if (performance.now() - startTime > TIME_LIMIT_MS) break;
+            
             const newBoard = applyMove(boardState, move);
-            const evalScore = alphaBetaUltimate(newBoard, depth - 1, alpha, beta, true, startTime);
-            if (evalScore < minEval) minEval = evalScore;
+            const evalScore = perfectAlphaBeta(newBoard, depth - 1, alpha, beta, true, startTime, color);
+            
+            if (evalScore < minEval) {
+                minEval = evalScore;
+            }
             beta = Math.min(beta, evalScore);
             if (beta <= alpha) break;
         }
+        
         transpositionTable.set(key, minEval);
         return minEval;
     }
 }
 
-function quiescenceSearch(boardState, alpha, beta, maximizing, startTime, depth) {
-    if (depth === 0 || performance.now() - startTime > TIME_LIMIT_MS) {
-        return heuristicULTIMATE(boardState);
-    }
-    
-    const standPat = heuristicULTIMATE(boardState);
-    if (maximizing) {
-        if (standPat >= beta) return beta;
-        if (alpha < standPat) alpha = standPat;
-    } else {
-        if (standPat <= alpha) return alpha;
-        if (beta > standPat) beta = standPat;
-    }
-    
-    const color = maximizing ? 'black' : 'white';
-    const moves = allMovesFor(boardState, color);
-    const captureMoves = moves.filter(m => m.captures && m.captures.length > 0);
-    
-    for (const move of captureMoves) {
-        if (performance.now() - startTime > TIME_LIMIT_MS) break;
-        const newBoard = applyMove(boardState, move);
-        const score = quiescenceSearch(newBoard, alpha, beta, !maximizing, startTime, depth - 1);
-        if (maximizing) {
-            if (score >= beta) return beta;
-            if (score > alpha) alpha = score;
-        } else {
-            if (score <= alpha) return alpha;
-            if (score < beta) beta = score;
-        }
-    }
-    return maximizing ? alpha : beta;
-}
-
-function getBestMoveULTIMATE(boardState) {
+function getPerfectMove(boardState) {
     const startTime = performance.now();
     transpositionTable.clear();
-    const moves = allMovesFor(boardState, botColor);
     
+    const moves = allMovesFor(boardState, botColor);
     if (moves.length === 0) return null;
     
-    // Hatto kichik holatlarda ham maksimal depth
-    let maxDepth = 10;
+    // Avval pre-calculated move ni tekshirish
+    const perfectMove = findPerfectMove(boardState, botColor);
+    if (perfectMove) return perfectMove;
     
-    // Agar ko'p olish imkoniyati bo'lsa, depth ni yanada oshirish
-    const captureMoves = moves.filter(m => m.captures && m.captures.length > 0);
-    if (captureMoves.length > 0 && captureMoves.some(m => m.captures.length > 1)) {
-        maxDepth = 12;
-    }
+    // Alpha-beta search
+    let maxDepth = 10; // Maksimal depth
     
     let bestMove = moves[0];
     let bestScore = -Infinity;
     let depth = 1;
-    
-    moves.sort((a, b) => {
-        const capDiff = (b.captures?.length || 0) - (a.captures?.length || 0);
-        if (capDiff !== 0) return capDiff;
-        
-        const aPromotes = promotesToKing(a, botColor);
-        const bPromotes = promotesToKing(b, botColor);
-        if (aPromotes && !bPromotes) return -1;
-        if (!aPromotes && bPromotes) return 1;
-        
-        return 0;
-    });
     
     while (depth <= maxDepth && performance.now() - startTime < TIME_LIMIT_MS * 0.9) {
         let currentBestMove = moves[0];
@@ -1363,7 +1424,7 @@ function getBestMoveULTIMATE(boardState) {
             if (performance.now() - startTime > TIME_LIMIT_MS * 0.95) break;
             
             const newBoard = applyMove(boardState, move);
-            const score = alphaBetaUltimate(newBoard, depth - 1, -Infinity, Infinity, false, startTime);
+            const score = perfectAlphaBeta(newBoard, depth - 1, -Infinity, Infinity, false, startTime, botColor);
             
             if (score > currentBestScore) {
                 currentBestScore = score;
@@ -1371,28 +1432,32 @@ function getBestMoveULTIMATE(boardState) {
             }
         }
         
-        if (currentBestScore > bestScore) {
+        if (currentBestScore > bestScore || 
+            (currentBestScore === bestScore && Math.random() > 0.7)) {
             bestScore = currentBestScore;
             bestMove = currentBestMove;
         }
+        
         depth++;
     }
     
     const timeTaken = performance.now() - startTime;
-    setPerf(`Bot (${depth - 1} daraja, ${timeTaken.toFixed(1)}ms, IMPOSSIBLE)`);
+    setPerf(`Bot (${depth-1} daraja, ${timeTaken.toFixed(1)}ms, IMPOSSIBLE)`);
+    
+    // Perfect pozitsiyani saqlash
+    const key = getPositionKey(boardState) + botColor[0];
+    PERFECT_POSITIONS.add(key);
     
     return bestMove;
 }
 
-async function botMoveULTIMATE() {
+async function botMovePERFECT() {
     if (!autoBot) return;
     
-    const start = performance.now();
     const moves = allMovesFor(board, botColor);
     
     if (moves.length === 0) {
-        const isWinForPlayer = (playerColor === 'white' && botColor === 'black') || 
-                              (playerColor === 'black' && botColor === 'white');
+        const isWinForPlayer = playerColor === 'white';
         showResult("Siz yutdingiz!", isWinForPlayer);
         return;
     }
@@ -1401,16 +1466,22 @@ async function botMoveULTIMATE() {
     const captures = moves.filter(m => m.captures && m.captures.length > 0);
     if (captures.length > 0) {
         // Eng ko'p olish imkoniyatini tanlash
-        captures.sort((a, b) => b.captures.length - a.captures.length);
-        const bestCapture = captures[0];
+        captures.sort((a, b) => {
+            // Ko'p olish
+            if (b.captures.length !== a.captures.length) {
+                return b.captures.length - a.captures.length;
+            }
+            // Dama olish
+            const aKingCaptures = a.captures.filter(([r,c]) => board[r][c]?.king).length;
+            const bKingCaptures = b.captures.filter(([r,c]) => board[r][c]?.king).length;
+            return bKingCaptures - aKingCaptures;
+        });
         
-        if (bestCapture.captures.length >= 2) {
-            await executeMove(bestCapture);
-            return;
-        }
+        await executeMove(captures[0]);
+        return;
     }
     
-    const move = getBestMoveULTIMATE(board);
+    const move = getPerfectMove(board);
     if (move) {
         await executeMove(move);
     }
@@ -1420,6 +1491,11 @@ async function botMoveULTIMATE() {
 // Rang tanlashni avtomatik ishga tushirish
 selectColor('white');
 updateColorInfo();
+
+// Modal oynani yangilash
+document.querySelector('.modal-content-container h2').textContent = "🎮 Shashka - Impossible Bot";
+document.querySelector('.modal-content-container p').innerHTML = 
+    "Mukammal botga qarshi o'ynang!<br><small style='color:#ef4444'>Yutish juda qiyin!</small>";
 
 </script>
 </body>
