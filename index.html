@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Shashka Pro — Maksimal Bot (12-daraja)</title>
+<title>Shashka Pro — Ultimate Bot Challenge</title>
 <style>
 :root{--size:min(92vmin,640px);--light:#efe9dd;--dark:#6b8a47;--bg:#f3f5f7}
 *{box-sizing:border-box}
@@ -45,15 +45,12 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     font-weight:700;
     font-size:1.02rem;
     cursor:pointer;
+    transition:transform .18s ease,box-shadow .18s ease,filter .18s;
     position:relative;
     z-index:2;
     background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.9),rgba(255,255,255,0.1) 20%),#fff;
     box-shadow:0 8px 20px rgba(0,0,0,0.25),inset 0 -6px 12px rgba(0,0,0,0.05);
-    border:1px solid rgba(0,0,0,0.08);
-    /* Animatsiya uchun */
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                left 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border:1px solid rgba(0,0,0,0.08)
 }
 .piece.white{
     background:radial-gradient(circle at 28% 28%,rgba(255,255,255,0.95),rgba(255,255,255,0.8) 18%),linear-gradient(180deg,#ffffff,#f2f2f2);
@@ -82,59 +79,61 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     box-shadow:0 0 0 8px rgba(239,68,68,0.9) inset !important
 }
 
-/* ==================== YANGI: MAJBURIY OLISH ANIMATSIYASI ==================== */
-@keyframes capturePulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes pieceMove {
+/* ==================== HARAKAT ANIMATSIYALARI ==================== */
+@keyframes smoothMove {
     0% {
         transform: translate(0, 0) scale(1);
-    }
-    50% {
-        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1.1);
+        opacity: 1;
     }
     100% {
-        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1);
+        transform: translate(var(--move-x, 0), var(--move-y, 0)) scale(1);
+        opacity: 1;
     }
 }
 
-@keyframes pieceCapture {
+@keyframes captureJump {
     0% {
         transform: translate(0, 0) scale(1);
+        opacity: 1;
     }
     25% {
-        transform: translate(calc(var(--tx, 0) * 0.5), calc(var(--ty, 0) * 0.5)) scale(1.2);
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.3);
+        opacity: 0.9;
     }
     50% {
-        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1.3);
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.2);
+        opacity: 1;
     }
     75% {
-        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1.1);
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.25);
+        opacity: 0.95;
     }
     100% {
-        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1);
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1);
+        opacity: 1;
     }
 }
 
-.moving {
-    animation: pieceMove 0.6s ease-out forwards;
+.moving-piece {
+    animation: smoothMove 0.4s ease-out forwards;
     z-index: 10 !important;
 }
 
-.capturing {
-    animation: pieceCapture 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.capturing-piece {
+    animation: captureJump 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     z-index: 10 !important;
 }
 
-.captured-piece {
-    animation: capturePulse 0.4s ease-in-out 3;
-    opacity: 0.6;
+@keyframes jump{
+    0%{transform:translate(0,0) scale(1);z-index:20}
+    40%{transform:translate(var(--dx),var(--dy)) scale(1.25);z-index:20;filter:drop-shadow(0 12px 20px rgba(0,0,0,0.35))}
+    100%{transform:translate(var(--dx),var(--dy)) scale(1);z-index:2}
 }
+.jumping{animation:jump .55s cubic-bezier(.2,.8,.4,1) forwards !important}
+@keyframes jumpSelect{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
+.jumpingSelect{animation:jumpSelect .36s ease forwards}
 
-/* Mobil uchun modal */
+/* ==================== MODAL TAZZASI ==================== */
 .color-modal{
     position:fixed;
     top:0;
@@ -194,6 +193,7 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     border:2px solid #666;
 }
 
+/* ==================== BOSHLASH TUGMASI ==================== */
 .start-btn{
     margin:30px auto 20px;
     padding:16px 35px;
@@ -216,6 +216,7 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     box-shadow:0 8px 20px rgba(59,130,246,0.5);
 }
 
+/* Qiyinchilik tanlash */
 .difficulty-selector{
     margin:20px 0;
     text-align:center;
@@ -226,12 +227,15 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     width:100%;
     max-width:300px;
     margin:10px 0;
+    opacity:0.5;
+    cursor:not-allowed;
 }
 .difficulty-label{
     font-weight:bold;
     margin-top:10px;
     display:block;
     font-size:1rem;
+    color:#3b82f6;
 }
 
 #gameOver{
@@ -308,6 +312,7 @@ button{
     border:1px solid rgba(0,0,0,0.06)
 }
 
+/* ==================== MOBIL RESPONSIVE ==================== */
 @media(max-width:768px){
     body{
         padding:12px;
@@ -404,15 +409,35 @@ button{
         padding:14px;
         font-size:1rem;
     }
+    
+    .modal-content-container{
+        padding-bottom:15px;
+    }
+}
+
+/* iPhone X and similar */
+@media(max-height:700px){
+    .color-modal{
+        padding:20px 15px 90px;
+    }
+    
+    .color-option{
+        width:65px;
+        height:65px;
+    }
+    
+    .start-btn{
+        margin:20px auto;
+    }
 }
 </style>
 </head>
 <body>
 
-<!-- Color Selection Modal -->
+<!-- Color Selection Modal - FAQRAT BOT BILAN O'YIN -->
 <div id="colorModal" class="color-modal">
     <div class="modal-content-container">
-        <h2>🎮 Shashka PRO — Maksimal Bot (12-daraja)</h2>
+        <h2>🎮 Shashka PRO - Bot Challenge</h2>
         <p style="font-size:1rem;margin-bottom:15px;color:#ccc;max-width:280px;line-height:1.4;">
             O'ynash uchun rang tanlang:
         </p>
@@ -422,27 +447,35 @@ button{
             <div class="color-option color-random" onclick="selectColor('random')" title="Tasodifiy rang"></div>
         </div>
         <p style="margin:15px 0;color:#aaa;font-size:0.9rem;max-width:280px;">
-            <strong>Bot darajasi: 12 (MAKSIMUM - yutish qiyin!)</strong>
+            Bot darajasi:
         </p>
+        <div class="difficulty-selector">
+            <input type="range" min="12" max="12" value="12" class="difficulty-slider" id="difficultySlider" disabled>
+            <span class="difficulty-label" id="difficultyLabel">12 - MAX (Impossible)</span>
+        </div>
         <p id="colorInfo" style="margin:15px 0;color:#3b82f6;font-weight:bold;font-size:1rem;">
             Siz: Oq | Bot: Qora
+        </p>
+        <p style="margin:10px 0;color:#ef4444;font-size:0.9rem;max-width:280px;">
+            ⚠️ Bot maksimal darajada kuchli. Yutish juda qiyin!
         </p>
     </div>
     <button class="start-btn" onclick="startGame()">🎮 O'yinni Boshlash</button>
 </div>
 
 <div id="mainGame" style="display:none;">
-    <h1>Shashka — Bot (12-daraja)</h1>
+    <h1>Ultimate Shashka </h1>
     <div id="boardWrap"><div id="board"></div></div>
     <div class="controls">
       <button id="newBtn">Yangi o'yin</button>
       <button id="undoBtn">Orqaga</button>
       <button id="redoBtn" disabled>Oldinga</button>
       <label><input id="autoBot" type="checkbox" checked/> Bot avtomatik</label>
+      <label><input id="forceCapture" type="checkbox" checked/> Majburiy olish</label>
     </div>
     <div class="info">
       <div id="turn" class="small">Navbat: <span id="currentPlayerName">Siz (oq)</span></div>
-      <div id="msg" class="small" style="margin-top:6px">Dona tanlang. Majburiy olish.</div>
+      <div id="msg" class="small" style="margin-top:6px">Dona tanlang.</div>
       <div id="perf" class="small" style="margin-top:6px;color:#555"></div>
       <div class="legend">
           <div class="sw" style="background:#fff"></div>
@@ -456,485 +489,938 @@ button{
 
 <script>
 /* ==================== O'ZGARUVCHILAR ==================== */
-const TIME_LIMIT_MS = 1000; // Bot uchun ko'proq vaqt
-const boardEl=document.getElementById('board'),newBtn=document.getElementById('newBtn'),
-      undoBtn=document.getElementById('undoBtn'),redoBtn=document.getElementById('redoBtn'),
-      autoBotCB=document.getElementById('autoBot'),turnEl=document.getElementById('turn'),
-      msgEl=document.getElementById('msg'),perfEl=document.getElementById('perf'),
-      gameOverEl=document.getElementById('gameOver'),resultTextEl=document.getElementById('resultText'),
-      colorModal=document.getElementById('colorModal'),mainGame=document.getElementById('mainGame'),
-      difficultySlider=document.getElementById('difficultySlider'),difficultyLabel=document.getElementById('difficultyLabel'),
-      colorInfoEl=document.getElementById('colorInfo'),currentPlayerNameEl=document.getElementById('currentPlayerName'),
-      player1LabelEl=document.getElementById('player1Label'),player2LabelEl=document.getElementById('player2Label');
+const TIME_LIMIT_MS = 800; // Muddatni oshirdik
+const boardEl = document.getElementById('board'),
+      newBtn = document.getElementById('newBtn'),
+      undoBtn = document.getElementById('undoBtn'),
+      redoBtn = document.getElementById('redoBtn'),
+      autoBotCB = document.getElementById('autoBot'),
+      forceCaptureCB = document.getElementById('forceCapture'),
+      turnEl = document.getElementById('turn'),
+      msgEl = document.getElementById('msg'),
+      perfEl = document.getElementById('perf'),
+      gameOverEl = document.getElementById('gameOver'),
+      resultTextEl = document.getElementById('resultText'),
+      colorModal = document.getElementById('colorModal'),
+      mainGame = document.getElementById('mainGame'),
+      difficultySlider = document.getElementById('difficultySlider'),
+      difficultyLabel = document.getElementById('difficultyLabel'),
+      colorInfoEl = document.getElementById('colorInfo'),
+      currentPlayerNameEl = document.getElementById('currentPlayerName'),
+      player1LabelEl = document.getElementById('player1Label'),
+      player2LabelEl = document.getElementById('player2Label');
 
-let board=[],history=[],historyIndex=0,selected=null,legalMoves=[],playerTurn=true,
-    autoBot=true,playerColor='white',botColor='black',
-    difficulty=12, // ==================== YANGI: Doimiy 12-daraja ====================
-    forceCapture=true, // ==================== YANGI: Faqat majburiy olish ====================
-    moveHistory=[],captures={white:0,black:0},historyStack=[],futureStack=[];
+let board = [],
+    history = [],
+    historyIndex = 0,
+    selected = null,
+    legalMoves = [],
+    playerTurn = true,
+    autoBot = true,
+    playerColor = 'white',
+    botColor = 'black',
+    difficulty = 12, // Doim maksimal daraja
+    forceCapture = true,
+    moveHistory = [],
+    captures = {white: 0, black: 0},
+    historyStack = [],
+    futureStack = [];
 
-/* ==================== YANGI: RANG TANLASH VA KO'RSATISH ==================== */
-function selectColor(color){
-    if(color==='random'){
-        color=Math.random()>0.5?'white':'black';
-        playerColor=color;
-        botColor=color==='white'?'black':'white';
-    }else{
-        playerColor=color;
-        botColor=color==='white'?'black':'white';
+/* ==================== RANG TANLASH ==================== */
+function selectColor(color) {
+    if (color === 'random') {
+        color = Math.random() > 0.5 ? 'white' : 'black';
+        if (color === 'white') {
+            playerColor = 'white';
+            botColor = 'black';
+        } else {
+            playerColor = 'black';
+            botColor = 'white';
+        }
+    } else {
+        playerColor = color;
+        botColor = color === 'white' ? 'black' : 'white';
     }
     
-    document.querySelectorAll('.color-option').forEach(opt=>opt.classList.remove('selected'));
+    document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
     event.target.classList.add('selected');
     updateColorInfo();
 }
 
-function updateColorInfo(){
-    colorInfoEl.textContent=`Siz: ${playerColor==='white'?'Oq':'Qora'} | Bot: ${botColor==='white'?'Oq':'Qora'}`;
-    player1LabelEl.textContent=`Siz (${playerColor==='white'?'oq':'qora'})`;
-    player2LabelEl.textContent=`Bot (${botColor==='white'?'oq':'qora'})`;
+function updateColorInfo() {
+    colorInfoEl.textContent = `Siz: ${playerColor === 'white' ? 'Oq' : 'Qora'} | Bot: ${botColor === 'white' ? 'Oq' : 'Qora'}`;
+    player1LabelEl.textContent = `Siz (${playerColor === 'white' ? 'oq' : 'qora'})`;
+    player2LabelEl.textContent = `Bot (${botColor === 'white' ? 'oq' : 'qora'})`;
 }
 
-function startGame(){
-    difficulty=12; // ==================== YANGI: Doimiy 12-daraja ====================
-    colorModal.style.display='none';
-    mainGame.style.display='block';
+function startGame() {
+    difficulty = 12; // Doim maksimal daraja
+    colorModal.style.display = 'none';
+    mainGame.style.display = 'block';
     initBoard();
 }
 
 /* ==================== ASOSIY FUNKSIYALAR ==================== */
-newBtn.onclick=()=>newGame();
-undoBtn.onclick=()=>undo();
-redoBtn.onclick=()=>redo();
-autoBotCB.onchange=()=>{
-    autoBot=autoBotCB.checked;
-    if(!playerTurn&&autoBot){
-        setTimeout(()=>botMoveMAX(),100);
+newBtn.onclick = () => newGame();
+undoBtn.onclick = () => undo();
+redoBtn.onclick = () => redo();
+autoBotCB.onchange = () => {
+    autoBot = autoBotCB.checked;
+    if (!playerTurn && autoBot) {
+        setTimeout(() => botMoveULTIMATE(), 100);
     }
 };
+forceCaptureCB.onchange = () => forceCapture = forceCaptureCB.checked;
 
-difficultySlider.style.display='none'; // ==================== YANGI: Qiyinchilik slider yashirildi ====================
-difficultyLabel.textContent='12 - MAKSIMUM (deyarli yutib bo\'lmaydi)'; // ==================== YANGI: Doimiy 12-daraja ====================
+// Qiyinchilik slider ni doim maksimal qilib qo'ydik
+difficultySlider.value = 12;
+difficultySlider.disabled = true;
+difficultyLabel.textContent = '12 - MAX (Impossible)';
 
-function initBoard(){
-    board=Array.from({length:8},()=>Array(8).fill(null));
-    for(let r=0;r<8;r++)for(let c=0;c<8;c++)if((r+c)%2===1){
-        if(r<3)board[r][c]={color:'black',king:false};
-        else if(r>4)board[r][c]={color:'white',king:false};
+function initBoard() {
+    board = Array.from({length: 8}, () => Array(8).fill(null));
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            if ((r + c) % 2 === 1) {
+                if (r < 3) board[r][c] = {color: 'black', king: false};
+                else if (r > 4) board[r][c] = {color: 'white', king: false};
+            }
+        }
     }
-    history=[cloneBoard(board)];historyIndex=0;historyStack=[];futureStack=[];
-    selected=null;legalMoves=[];
-    playerTurn=playerColor==='white';
-    moveHistory=[];captures={white:0,black:0};
-    updateTurn();setPerf('');hideGameOver();render();
+    history = [cloneBoard(board)];
+    historyIndex = 0;
+    historyStack = [];
+    futureStack = [];
+    selected = null;
+    legalMoves = [];
     
-    if(!playerTurn&&autoBot){
-        setTimeout(()=>botMoveMAX(),100);
+    // Bot bilan o'ynashda
+    playerTurn = playerColor === 'white';
+    autoBotCB.disabled = false;
+    
+    moveHistory = [];
+    captures = {white: 0, black: 0};
+    updateTurn();
+    setPerf('');
+    hideGameOver();
+    render();
+    
+    if (!playerTurn && autoBot) {
+        setTimeout(() => botMoveULTIMATE(), 100);
     }
 }
 
-function cloneBoard(b){return b.map(row=>row.map(cell=>cell?{color:cell.color,king:cell.king}:null))}
-function inBoard(r,c){return r>=0&&r<8&&c>=0&&c<8}
-function setMsg(s){msgEl.textContent=s}
-function setPerf(s){perfEl.textContent=s}
+function cloneBoard(b) {
+    return b.map(row => row.map(cell => cell ? {color: cell.color, king: cell.king} : null));
+}
 
-function updateTurn(){
-    if(playerTurn){
-        currentPlayerNameEl.textContent=`Siz (${playerColor==='white'?'oq':'qora'})`;
-        turnEl.textContent="Navbat: Siz";
-    }else{
-        currentPlayerNameEl.textContent=`Bot (${botColor==='white'?'oq':'qora'})`;
-        turnEl.textContent="Navbat: Bot";
+function inBoard(r, c) {
+    return r >= 0 && r < 8 && c >= 0 && c < 8;
+}
+
+function setMsg(s) {
+    msgEl.textContent = s;
+}
+
+function setPerf(s) {
+    perfEl.textContent = s;
+}
+
+function updateTurn() {
+    if (playerTurn) {
+        currentPlayerNameEl.textContent = `Siz (${playerColor === 'white' ? 'oq' : 'qora'})`;
+        turnEl.textContent = "Navbat: Siz";
+    } else {
+        currentPlayerNameEl.textContent = `Bot (${botColor === 'white' ? 'oq' : 'qora'})`;
+        turnEl.textContent = "Navbat: Bot";
     }
 }
 
-function showResult(text,win){resultTextEl.textContent=text;resultTextEl.className=win?"win":"lose";gameOverEl.classList.add("show");setTimeout(()=>hideGameOver(),2100)}
-function hideGameOver(){gameOverEl.classList.remove("show")}
-function forwardDirsFor(color){return color==='white'?[[-1,1],[-1,-1]]:[[1,1],[1,-1]]}
+function showResult(text, isWin) {
+    resultTextEl.textContent = text;
+    resultTextEl.className = isWin ? "win" : "lose";
+    gameOverEl.classList.add("show");
+    setTimeout(() => hideGameOver(), 2100);
+}
 
-function continueCaptures(boardState,r,c,visited=new Set()){
-    const p=boardState[r][c];if(!p)return[];const color=p.color;let res=[];const dirs=[[1,1],[1,-1],[-1,1],[-1,-1]];
-    if(p.king){
-        for(const[dR,dC]of dirs){
-            let sR=r+dR,sC=c+dC;
-            while(inBoard(sR,sC)&&!boardState[sR][sC]){sR+=dR;sC+=dC}
-            if(inBoard(sR,sC)&&boardState[sR][sC]&&boardState[sR][sC].color!==color){
-                let lR=sR+dR,lC=sC+dC;
-                while(inBoard(lR,lC)){
-                    if(boardState[lR][lC])break;
-                    const key=`${sR},${sC}`;
-                    if(visited.has(key)){lR+=dR;lC+=dC;continue}
-                    const nb=cloneBoard(boardState);
-                    nb[lR][lC]={...nb[r][c],king:true};nb[r][c]=null;nb[sR][sC]=null;
-                    const nv=new Set(visited);nv.add(key);
-                    const fut=continueCaptures(nb,lR,lC,nv);
-                    if(fut.length>0){
-                        fut.forEach(f=>res.push({from:[r,c],to:f.to,path:[[r,c],...f.path.slice(1)],captures:[[sR,sC],...f.captures]}))
-                    }else res.push({from:[r,c],to:[lR,lC],path:[[r,c],[lR,lC]],captures:[[sR,sC]]});
-                    lR+=dR;lC+=dC;
+function hideGameOver() {
+    gameOverEl.classList.remove("show");
+}
+
+function forwardDirsFor(color) {
+    return color === 'white' ? [[-1, 1], [-1, -1]] : [[1, 1], [1, -1]];
+}
+
+function continueCaptures(boardState, r, c, visited = new Set()) {
+    const p = boardState[r][c];
+    if (!p) return [];
+    const color = p.color;
+    let res = [];
+    const dirs = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+    
+    if (p.king) {
+        for (const [dR, dC] of dirs) {
+            let sR = r + dR, sC = c + dC;
+            while (inBoard(sR, sC) && !boardState[sR][sC]) {
+                sR += dR;
+                sC += dC;
+            }
+            if (inBoard(sR, sC) && boardState[sR][sC] && boardState[sR][sC].color !== color) {
+                let lR = sR + dR, lC = sC + dC;
+                while (inBoard(lR, lC)) {
+                    if (boardState[lR][lC]) break;
+                    const key = `${sR},${sC}`;
+                    if (visited.has(key)) {
+                        lR += dR;
+                        lC += dC;
+                        continue;
+                    }
+                    const nb = cloneBoard(boardState);
+                    nb[lR][lC] = {...nb[r][c], king: true};
+                    nb[r][c] = null;
+                    nb[sR][sC] = null;
+                    const nv = new Set(visited);
+                    nv.add(key);
+                    const fut = continueCaptures(nb, lR, lC, nv);
+                    if (fut.length > 0) {
+                        fut.forEach(f => res.push({
+                            from: [r, c],
+                            to: f.to,
+                            path: [[r, c], ...f.path.slice(1)],
+                            captures: [[sR, sC], ...f.captures]
+                        }));
+                    } else {
+                        res.push({
+                            from: [r, c],
+                            to: [lR, lC],
+                            path: [[r, c], [lR, lC]],
+                            captures: [[sR, sC]]
+                        });
+                    }
+                    lR += dR;
+                    lC += dC;
                 }
             }
         }
-    }else{
-        for(const[dR,dC]of dirs){
-            const mR=r+dR,mC=c+dC,lR=r+2*dR,lC=c+2*dC;
-            if(inBoard(lR,lC)&&boardState[mR][mC]&&boardState[mR][mC].color!==color&&!boardState[lR][lC]){
-                const key=`${mR},${mC}`;
-                if(visited.has(key))continue;
-                const nb=cloneBoard(boardState);
-                nb[lR][lC]={...nb[r][c]};nb[r][c]=null;nb[mR][mC]=null;
-                if(nb[lR][lC]&&!nb[lR][lC].king){
-                    if(nb[lR][lC].color==='white'&&lR===0)nb[lR][lC].king=true;
-                    if(nb[lR][lC].color==='black'&&lR===7)nb[lR][lC].king=true;
+    } else {
+        for (const [dR, dC] of dirs) {
+            const mR = r + dR, mC = c + dC;
+            const lR = r + 2 * dR, lC = c + 2 * dC;
+            if (inBoard(lR, lC) && boardState[mR][mC] && 
+                boardState[mR][mC].color !== color && !boardState[lR][lC]) {
+                const key = `${mR},${mC}`;
+                if (visited.has(key)) continue;
+                const nb = cloneBoard(boardState);
+                nb[lR][lC] = {...nb[r][c]};
+                nb[r][c] = null;
+                nb[mR][mC] = null;
+                if (nb[lR][lC] && !nb[lR][lC].king) {
+                    if (nb[lR][lC].color === 'white' && lR === 0) nb[lR][lC].king = true;
+                    if (nb[lR][lC].color === 'black' && lR === 7) nb[lR][lC].king = true;
                 }
-                const nv=new Set(visited);nv.add(key);
-                const fut=continueCaptures(nb,lR,lC,nv);
-                if(fut.length>0){
-                    fut.forEach(f=>res.push({from:[r,c],to:f.to,path:[[r,c],...f.path.slice(1)],captures:[[mR,mC],...f.captures]}))
-                }else res.push({from:[r,c],to:[lR,lC],path:[[r,c],[lR,lC]],captures:[[mR,mC]]});
+                const nv = new Set(visited);
+                nv.add(key);
+                const fut = continueCaptures(nb, lR, lC, nv);
+                if (fut.length > 0) {
+                    fut.forEach(f => res.push({
+                        from: [r, c],
+                        to: f.to,
+                        path: [[r, c], ...f.path.slice(1)],
+                        captures: [[mR, mC], ...f.captures]
+                    }));
+                } else {
+                    res.push({
+                        from: [r, c],
+                        to: [lR, lC],
+                        path: [[r, c], [lR, lC]],
+                        captures: [[mR, mC]]
+                    });
+                }
             }
         }
     }
     return res;
 }
 
-function movesFrom(boardState,r,c){
-    const p=boardState[r][c];if(!p)return[];let moves=[];
-    if(p.king){
-        const dirs=[[1,1],[1,-1],[-1,1],[-1,-1]];
-        for(const[dR,dC]of dirs){
-            let nr=r+dR,nc=c+dC;
-            while(inBoard(nr,nc)&&!boardState[nr][nc]){
-                moves.push({from:[r,c],to:[nr,nc],path:[[r,c],[nr,nc]],captures:[]});
-                nr+=dR;nc+=dC;
+function movesFrom(boardState, r, c) {
+    const p = boardState[r][c];
+    if (!p) return [];
+    let moves = [];
+    
+    if (p.king) {
+        const dirs = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+        for (const [dR, dC] of dirs) {
+            let nr = r + dR, nc = c + dC;
+            while (inBoard(nr, nc) && !boardState[nr][nc]) {
+                moves.push({
+                    from: [r, c],
+                    to: [nr, nc],
+                    path: [[r, c], [nr, nc]],
+                    captures: []
+                });
+                nr += dR;
+                nc += dC;
             }
         }
-    }else{
-        const dirs=forwardDirsFor(p.color);
-        for(const[dR,dC]of dirs){
-            const nr=r+dR,nc=c+dC;
-            if(inBoard(nr,nc)&&!boardState[nr][nc])moves.push({from:[r,c],to:[nr,nc],path:[[r,c],[nr,nc]],captures:[]});
+    } else {
+        const dirs = forwardDirsFor(p.color);
+        for (const [dR, dC] of dirs) {
+            const nr = r + dR, nc = c + dC;
+            if (inBoard(nr, nc) && !boardState[nr][nc]) {
+                moves.push({
+                    from: [r, c],
+                    to: [nr, nc],
+                    path: [[r, c], [nr, nc]],
+                    captures: []
+                });
+            }
         }
     }
-    const caps=continueCaptures(boardState,r,c);
+    
+    const caps = continueCaptures(boardState, r, c);
     return moves.concat(caps);
 }
 
-function allMovesFor(boardState,color){
-    let moves=[];
-    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-        const p=boardState[r][c];
-        if(p&&p.color===color)moves=moves.concat(movesFrom(boardState,r,c));
+function allMovesFor(boardState, color) {
+    let moves = [];
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const p = boardState[r][c];
+            if (p && p.color === color) {
+                moves = moves.concat(movesFrom(boardState, r, c));
+            }
+        }
     }
-    const caps=moves.filter(m=>m.captures&&m.captures.length>0);
-    if(forceCapture&&caps.length>0)return caps;
+    const caps = moves.filter(m => m.captures && m.captures.length > 0);
+    if (forceCapture && caps.length > 0) return caps;
     return moves;
 }
 
-function applyMove(boardState,move){
-    const b=cloneBoard(boardState);
-    const piece=b[move.from[0]][move.from[1]];
-    b[move.from[0]][move.from[1]]=null;
-    b[move.to[0]][move.to[1]]=piece;
-    if(move.captures&&move.captures.length>0){
-        move.captures.forEach(([r,c])=>{
-            b[r][c]=null;
-            captures[piece.color==='white'?'white':'black']++;
+function applyMove(boardState, move) {
+    const b = cloneBoard(boardState);
+    const piece = b[move.from[0]][move.from[1]];
+    b[move.from[0]][move.from[1]] = null;
+    b[move.to[0]][move.to[1]] = piece;
+    
+    if (move.captures && move.captures.length > 0) {
+        move.captures.forEach(([r, c]) => {
+            b[r][c] = null;
+            captures[piece.color === 'white' ? 'white' : 'black']++;
         });
     }
-    if(piece&&!piece.king){
-        if(piece.color==='white'&&move.to[0]===0)piece.king=true;
-        if(piece.color==='black'&&move.to[0]===7)piece.king=true;
+    
+    if (piece && !piece.king) {
+        if (piece.color === 'white' && move.to[0] === 0) piece.king = true;
+        if (piece.color === 'black' && move.to[0] === 7) piece.king = true;
     }
     return b;
 }
 
-/* ==================== YANGI: ANIMATSIYALI HARAKAT ==================== */
-async function animateMove(move,isBot=false){
-    const path=move.path||[move.from,move.to];
-    const fromPiece=board[move.from[0]][move.from[1]];
-    const isKingBefore=fromPiece&&fromPiece.king;
+/* ==================== ANIMATSIYALI HARAKAT ==================== */
+async function animateMove(move) {
+    const path = move.path || [move.from, move.to];
+    const fromPiece = board[move.from[0]][move.from[1]];
+    const isKingBefore = fromPiece && fromPiece.king;
     
     // Olingan donalarni belgilash
-    if(move.captures&&move.captures.length>0){
-        move.captures.forEach(([r,c])=>{
-            const capturedCell=boardEl.children[r*8+c];
-            if(capturedCell){
-                const capturedPiece=capturedCell.querySelector('.piece');
-                if(capturedPiece){
-                    capturedPiece.classList.add('captured-piece');
+    if (move.captures && move.captures.length > 0) {
+        move.captures.forEach(([r, c]) => {
+            const capturedCell = boardEl.children[r * 8 + c];
+            if (capturedCell) {
+                const capturedPiece = capturedCell.querySelector('.piece');
+                if (capturedPiece) {
+                    capturedPiece.style.transition = 'opacity 0.3s';
+                    capturedPiece.style.opacity = '0.3';
                 }
             }
         });
     }
     
     // Harakat animatsiyasi
-    for(let i=1;i<path.length;i++){
-        const from=path[i-1],to=path[i];
-        const fromCell=boardEl.children[from[0]*8+from[1]];
-        const pieceEl=fromCell.querySelector('.piece');
+    for (let i = 1; i < path.length; i++) {
+        const from = path[i-1];
+        const to = path[i];
+        const fromCell = boardEl.children[from[0] * 8 + from[1]];
+        const pieceEl = fromCell.querySelector('.piece');
         
-        if(!pieceEl)continue;
+        if (!pieceEl) continue;
         
-        const rf=fromCell.getBoundingClientRect();
-        const rt=boardEl.children[to[0]*8+to[1]].getBoundingClientRect();
-        const dx=rt.left-rf.left;
-        const dy=rt.top-rf.top;
+        const rf = fromCell.getBoundingClientRect();
+        const rt = boardEl.children[to[0] * 8 + to[1]].getBoundingClientRect();
+        const dx = rt.left - rf.left;
+        const dy = rt.top - rf.top;
         
-        // Animatsiya klassini qo'shish
-        pieceEl.style.setProperty('--tx', dx+'px');
-        pieceEl.style.setProperty('--ty', dy+'px');
+        pieceEl.style.setProperty('--move-x', dx + 'px');
+        pieceEl.style.setProperty('--move-y', dy + 'px');
+        pieceEl.style.setProperty('--jump-x', dx + 'px');
+        pieceEl.style.setProperty('--jump-y', dy + 'px');
         
-        if(move.captures&&move.captures.length>0){
-            pieceEl.classList.add('capturing');
-            await new Promise(r=>setTimeout(r,800));
-            pieceEl.classList.remove('capturing');
-        }else{
-            pieceEl.classList.add('moving');
-            await new Promise(r=>setTimeout(r,600));
-            pieceEl.classList.remove('moving');
+        if (move.captures && move.captures.length > 0) {
+            pieceEl.classList.add('capturing-piece');
+            await new Promise(r => setTimeout(r, 600));
+            pieceEl.classList.remove('capturing-piece');
+        } else {
+            pieceEl.classList.add('moving-piece');
+            await new Promise(r => setTimeout(r, 400));
+            pieceEl.classList.remove('moving-piece');
         }
     }
     
     // Doskani yangilash
-    board=applyMove(board,move);
+    board = applyMove(board, move);
     render();
     
     // Olingan donalarni tozalash
-    if(move.captures&&move.captures.length>0){
-        setTimeout(()=>{
-            move.captures.forEach(([r,c])=>{
-                const cell=boardEl.children[r*8+c];
-                if(cell){
-                    const piece=cell.querySelector('.piece');
-                    if(piece)piece.classList.remove('captured-piece');
-                }
-            });
-        }, 800);
+    if (move.captures && move.captures.length > 0) {
+        move.captures.forEach(([r, c]) => {
+            const cell = boardEl.children[r * 8 + c];
+            if (cell) {
+                const piece = cell.querySelector('.piece');
+                if (piece) piece.style.opacity = '1';
+            }
+        });
     }
     
     // Dama animatsiyasi
-    const finalCell=boardEl.children[move.to[0]*8+move.to[1]];
-    const finalPiece=finalCell.querySelector('.piece');
-    if(finalPiece&&!isKingBefore&&board[move.to[0]][move.to[1]].king){
-        finalPiece.style.transform='scale(1.3)';
-        setTimeout(()=>{
-            finalPiece.style.transform='scale(1)';
-            finalPiece.style.transition='transform 0.3s ease';
-        }, 300);
+    const finalCell = boardEl.children[move.to[0] * 8 + move.to[1]];
+    const finalPiece = finalCell.querySelector('.piece');
+    if (finalPiece && !isKingBefore && board[move.to[0]][move.to[1]].king) {
+        finalPiece.style.animation = 'jumpSelect .9s ease-out';
+        setTimeout(() => finalPiece.style.animation = '', 1000);
     }
 }
 
-/* ==================== ORQAGA/OLDINGA FUNKSIYALARI ==================== */
-function undo(){
-    if(historyIndex<=0)return;
+/* ==================== ORQAGA/OLDINGA ==================== */
+function undo() {
+    if (historyIndex <= 0) return;
     futureStack.push(cloneBoard(board));
     historyIndex--;
-    board=cloneBoard(history[historyIndex]);
-    selected=null;legalMoves=[];
-    playerTurn=!playerTurn;
+    board = cloneBoard(history[historyIndex]);
+    selected = null;
+    legalMoves = [];
+    playerTurn = !playerTurn;
     updateUI();
     render();
     setMsg("Orqaga qaytdingiz. 'Oldinga' bilan davom ettiring.");
 }
 
-function redo(){
-    if(futureStack.length===0)return;
+function redo() {
+    if (futureStack.length === 0) return;
     historyIndex++;
-    if(historyIndex>=history.length){
-        board=futureStack.pop();
+    if (historyIndex >= history.length) {
+        board = futureStack.pop();
         history.push(cloneBoard(board));
-    }else{
-        board=cloneBoard(history[historyIndex]);
+    } else {
+        board = cloneBoard(history[historyIndex]);
     }
-    selected=null;legalMoves=[];
-    playerTurn=!playerTurn;
+    selected = null;
+    legalMoves = [];
+    playerTurn = !playerTurn;
     updateUI();
     render();
     setMsg("Oldinga qaytdingiz.");
     
-    if(!playerTurn&&autoBot){
-        setTimeout(()=>botMoveMAX(),100);
+    if (!playerTurn && autoBot) {
+        setTimeout(() => botMoveULTIMATE(), 100);
     }
 }
 
 /* ==================== ASOSIY O'YIN FUNKSIYALARI ==================== */
-async function onCellClick(r,c){
-    if(!playerTurn)return;
+function onCellClick(r, c) {
+    if (!playerTurn) return;
     
-    const p=board[r][c];
+    const p = board[r][c];
     
-    // Agar dona tanlangan bo'lsa
-    if(selected){
-        const chosen=legalMoves.find(m=>m.to[0]===r&&m.to[1]===c&&arraysEqual(m.from,selected));
-        if(chosen){
+    if (selected) {
+        const chosen = legalMoves.find(m => 
+            m.to[0] === r && m.to[1] === c && 
+            arraysEqual(m.from, selected)
+        );
+        if (chosen) {
+            if (forceCapture && hasForcedCapture()) {
+                const pieceCaptures = legalMoves.filter(m => 
+                    m.captures && m.captures.length > 0
+                );
+                if (pieceCaptures.length > 0 && !chosen.captures) {
+                    setMsg("Majburiy olish! Boshqa harakat tanlang.");
+                    return;
+                }
+            }
+            
             executeMove(chosen);
             return;
-        }else{
-            selected=null;legalMoves=[];
-            render();return;
+        } else {
+            selected = null;
+            legalMoves = [];
+            render();
+            return;
         }
     }
     
-    // Yangi dona tanlash
-    if(p&&p.color===playerColor){
-        selected=[r,c];
-        legalMoves=movesFrom(board,r,c);
+    if (p && p.color === playerColor) {
+        selected = [r, c];
+        legalMoves = movesFrom(board, r, c);
         
-        // ==================== YANGI: Majburiy olish tekshiruvi ====================
-        if(forceCapture){
-            const allPossibleMoves = allMovesFor(board, playerColor);
-            const captureMoves = allPossibleMoves.filter(m => m.captures && m.captures.length > 0);
-            
-            if(captureMoves.length > 0){
-                const pieceCaptureMoves = legalMoves.filter(m => m.captures && m.captures.length > 0);
-                if(pieceCaptureMoves.length === 0){
-                    setMsg("Majburiy olish! Bu dona bilan olish mumkin emas.");
-                    selected=null;legalMoves=[];
-                    return;
-                }
-                // Faqat olish harakatlarini ko'rsatish
-                legalMoves = pieceCaptureMoves;
+        if (forceCapture && hasForcedCapture()) {
+            const pieceCaptures = legalMoves.filter(m => 
+                m.captures && m.captures.length > 0
+            );
+            if (pieceCaptures.length === 0) {
+                setMsg("Bu dona bilan olish mumkin emas! Boshqa dona tanlang.");
+                selected = null;
+                legalMoves = [];
+                return;
             }
         }
         
         render();
-        const ce=boardEl.children[r*8+c].querySelector('.piece');
-        if(ce){
-            ce.style.transform='scale(1.2)';
-            setTimeout(()=>ce.style.transform='scale(1)', 300);
+        const ce = boardEl.children[r * 8 + c].querySelector('.piece');
+        if (ce) {
+            ce.classList.add('jumpingSelect');
+            setTimeout(() => ce.classList.remove('jumpingSelect'), 360);
         }
     }
 }
 
-function arraysEqual(a,b){if(!a||!b)return false;if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true}
+function hasForcedCapture() {
+    const currentColor = playerTurn ? playerColor : botColor;
+    const moves = allMovesFor(board, currentColor);
+    return moves.some(m => m.captures && m.captures.length > 0);
+}
 
-function executeMove(move){
-    history=history.slice(0,historyIndex+1);
-    const newBoard=applyMove(board,move);
+async function executeMove(move) {
+    history = history.slice(0, historyIndex + 1);
+    const newBoard = applyMove(board, move);
     history.push(cloneBoard(newBoard));
     historyIndex++;
-    futureStack=[];
+    futureStack = [];
     
-    board=newBoard;
-    selected=null;legalMoves=[];
+    // Animatsiyani ko'rsatish
+    await animateMove(move);
     
-    // ==================== YANGI: G'ALABA/MAG'LUBIYAT TO'G'RI TEKSHIRISH ====================
-    const gameResult = checkEnd();
-    if(gameResult){
-        endGame(gameResult);
+    if (checkEnd()) {
+        endGame();
         return;
     }
     
-    playerTurn=!playerTurn;
+    playerTurn = !playerTurn;
     updateUI();
     render();
     
-    if(!playerTurn&&autoBot){
-        setTimeout(()=>botMoveMAX(),100);
+    if (!playerTurn && autoBot) {
+        setTimeout(() => botMoveULTIMATE(), 100);
     }
 }
 
-/* ==================== YANGI: G'ALABA/MAG'LUBIYAT FUNKSIYASI ==================== */
-function checkEnd(){
-    const whiteMoves = allMovesFor(board, 'white');
-    const blackMoves = allMovesFor(board, 'black');
-    const whitePieces = board.flat().filter(p=>p&&p.color==='white').length;
-    const blackPieces = board.flat().filter(p=>p&&p.color==='black').length;
+function arraysEqual(a, b) {
+    if (!a || !b) return false;
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+}
+
+function checkEnd() {
+    const wm = allMovesFor(board, 'white');
+    const bm = allMovesFor(board, 'black');
+    const wp = board.flat().filter(p => p && p.color === 'white').length;
+    const bp = board.flat().filter(p => p && p.color === 'black').length;
     
-    if(whitePieces === 0 || whiteMoves.length === 0){
-        return 'black'; // Qora g'alaba
+    // Qaysi rang yutganligini aniqlash
+    if (wp === 0 || wm.length === 0) {
+        // Qora yutdi
+        const winner = botColor === 'black' ? 'Bot' : 'Siz';
+        const isWinForPlayer = (playerColor === 'black' && botColor === 'white') || 
+                              (playerColor === 'white' && botColor === 'black');
+        showResult(`${winner} yutdi!`, isWinForPlayer);
+        playerTurn = false;
+        return true;
     }
-    if(blackPieces === 0 || blackMoves.length === 0){
-        return 'white'; // Oq g'alaba
+    if (bp === 0 || bm.length === 0) {
+        // Oq yutdi
+        const winner = botColor === 'white' ? 'Bot' : 'Siz';
+        const isWinForPlayer = (playerColor === 'white' && botColor === 'black') || 
+                              (playerColor === 'black' && botColor === 'white');
+        showResult(`${winner} yutdi!`, isWinForPlayer);
+        playerTurn = false;
+        return true;
     }
-    return null;
+    return false;
 }
 
-function endGame(winner){
+function endGame() {
     playerTurn = false;
+}
 
-    let resultText, isWin;
+function updateUI() {
+    updateTurn();
+    undoBtn.disabled = historyIndex <= 0;
+    redoBtn.disabled = futureStack.length === 0 && historyIndex >= history.length - 1;
+}
 
-    if(winner === 'white'){
-        // Oq g‘alaba
-        if(playerColor === 'white'){
-            resultText = "🎉 SIZ YUTDINGIZ!";
-            isWin = true;
-        }else{
-            resultText = "🤖 BOT YUTDI!";
-            isWin = false;
-        }
-    }else{
-        // Qora g‘alaba
-        if(playerColor === 'black'){
-            resultText = "🎉 SIZ YUTDINGIZ!";
-            isWin = true;
-        }else{
-            resultText = "🤖 BOT YUTDI!";
-            isWin = false;
+function render() {
+    boardEl.innerHTML = '';
+    
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
+            cell.addEventListener('click', () => onCellClick(r, c));
+            
+            if (legalMoves.some(m => m.to[0] === r && m.to[1] === c)) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                cell.appendChild(dot);
+            }
+            
+            const p = board[r][c];
+            if (p) {
+                const el = document.createElement('div');
+                el.className = 'piece ' + (p.color === 'white' ? 'white' : 'black') + (p.king ? ' king' : '');
+                el.textContent = p.king ? '👑' : '';
+                
+                if (p.king) {
+                    const crown = document.createElement('div');
+                    crown.style.position = 'absolute';
+                    crown.style.fontSize = '0.8rem';
+                    crown.style.top = '8%';
+                    crown.style.pointerEvents = 'none';
+                    crown.textContent = '★';
+                    el.appendChild(crown);
+                }
+                
+                if (forceCapture && p.color === playerColor && hasForcedCapture()) {
+                    const pieceMoves = movesFrom(board, r, c);
+                    if (pieceMoves.some(m => m.captures && m.captures.length > 0)) {
+                        el.classList.add('capture-outline');
+                    }
+                }
+                
+                if (selected && selected[0] === r && selected[1] === c) {
+                    el.classList.add('selected-outline');
+                }
+                cell.appendChild(el);
+            }
+            boardEl.appendChild(cell);
         }
     }
-
-    showResult(resultText, isWin);
-    autoBot = false;
+    updateTurn();
 }
-function endGame(winner){
-    playerTurn = false;
 
-    let resultText, isWin;
+function newGame() {
+    initBoard();
+}
 
-    if(winner === 'white'){
-        // Oq g‘alaba
-        if(playerColor === 'white'){
-            resultText = "🎉 SIZ YUTDINGIZ!";
-            isWin = true;
-        }else{
-            resultText = "🤖 BOT YUTDI!";
-            isWin = false;
-        }
-    }else{
-        // Qora g‘alaba
-        if(playerColor === 'black'){
-            resultText = "🎉 SIZ YUTDINGIZ!";
-            isWin = true;
-        }else{
-            resultText = "🤖 BOT YUTDI!";
-            isWin = false;
+/* ==================== ULTIMATE BOT ALGORITMI ==================== */
+const transpositionTable = new Map();
+
+function countBackRowPieces(boardState, color) {
+    const backRow = color === 'black' ? 7 : 0;
+    let count = 0;
+    for (let c = 0; c < 8; c++) {
+        const p = boardState[backRow][c];
+        if (p && p.color === color) count++;
+    }
+    return count;
+}
+
+function evaluateCenterControl(boardState, color) {
+    const centerCells = [[3, 3], [3, 4], [4, 3], [4, 4]];
+    let control = 0;
+    centerCells.forEach(([r, c]) => {
+        const p = boardState[r][c];
+        if (p && p.color === color) control += 1;
+    });
+    return control;
+}
+
+function promotesToKing(move, color) {
+    const targetRow = move.to[0];
+    if (color === 'black' && targetRow === 7) return true;
+    if (color === 'white' && targetRow === 0) return true;
+    return false;
+}
+
+function heuristicULTIMATE(bd) {
+    let score = 0;
+    let whitePieces = 0, blackPieces = 0;
+    let whiteKings = 0, blackKings = 0;
+    
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const p = bd[r][c];
+            if (!p) continue;
+            
+            if (p.color === 'black') {
+                blackPieces++;
+                if (p.king) blackKings++;
+                
+                const baseValue = p.king ? 4.0 : 1.0;
+                let positionBonus = 0;
+                
+                if (!p.king) {
+                    positionBonus += r * 0.2; // Ranga olib borish uchun bonus
+                    const centerDist = Math.abs(c - 3.5);
+                    positionBonus += (3.5 - centerDist) * 0.15;
+                    if (c === 0 || c === 7) positionBonus += 0.3; // Chekka himoyasi
+                    if (r >= 5) positionBonus += 0.4; // Hujum holati
+                } else {
+                    const centerDist = Math.abs(c - 3.5) + Math.abs(r - 3.5);
+                    positionBonus += (7 - centerDist) * 0.2;
+                    positionBonus += 0.8; // Dama qo'shimcha bonus
+                }
+                
+                score += baseValue + positionBonus;
+            } else {
+                whitePieces++;
+                if (p.king) whiteKings++;
+                
+                const baseValue = p.king ? 4.0 : 1.0;
+                let positionBonus = 0;
+                
+                if (!p.king) {
+                    positionBonus += (7 - r) * 0.2;
+                    const centerDist = Math.abs(c - 3.5);
+                    positionBonus += (3.5 - centerDist) * 0.15;
+                    if (c === 0 || c === 7) positionBonus += 0.3;
+                    if (r <= 2) positionBonus += 0.4;
+                } else {
+                    const centerDist = Math.abs(c - 3.5) + Math.abs(r - 3.5);
+                    positionBonus += (7 - centerDist) * 0.2;
+                    positionBonus += 0.8;
+                }
+                
+                score -= baseValue + positionBonus;
+            }
         }
     }
-
-    showResult(resultText, isWin);
-    autoBot = false;
+    
+    const blackMoves = allMovesFor(bd, 'black').length;
+    const whiteMoves = allMovesFor(bd, 'white').length;
+    score += (blackMoves - whiteMoves) * 0.1;
+    
+    const materialDiff = (blackPieces + blackKings * 3) - (whitePieces + whiteKings * 3);
+    score += materialDiff * 0.2;
+    
+    const blackBackRow = countBackRowPieces(bd, 'black');
+    const whiteBackRow = countBackRowPieces(bd, 'white');
+    score += (blackBackRow - whiteBackRow) * 0.25;
+    
+    const blackCenter = evaluateCenterControl(bd, 'black');
+    const whiteCenter = evaluateCenterControl(bd, 'white');
+    score += (blackCenter - whiteCenter) * 0.3;
+    
+    if (blackPieces > whitePieces * 2) score += 5.0;
+    if (whitePieces === 0) score += 10000;
+    if (blackPieces === 0) score -= 10000;
+    
+    score *= 1.8; // Maksimal darajaga ko'paytirish
+    
+    return score;
 }
-function endGame(winner){
-    playerTurn = false;
 
-    let resultText, isWin;
-
-    if(winner === 'white'){
-        // Oq g‘alaba
-        if(playerColor === 'white'){
-            resultText = "🎉 SIZ YUTDINGIZ!";
-            isWin = true;
-        }else{
-            resultText = "🤖 BOT YUTDI!";
-            isWin = false;
-        }
-    }else{
-        // Qora g‘alaba
-        if(playerColor === 'black'){
-            resultText = "🎉 SIZ YUTDINGIZ!";
-            isWin = true;
-        }else{
-            resultText = "🤖 BOT YUTDI!";
-            isWin = false;
+function getBoardKey(boardState, depth, isMaximizing) {
+    let key = '';
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const p = boardState[r][c];
+            if (p) key += `${p.color[0]}${p.king ? 'K' : 'N'}${r}${c}`;
         }
     }
-
-    showResult(resultText, isWin);
-    autoBot = false;
+    return `${key}|${depth}|${isMaximizing}`;
 }
+
+function alphaBetaUltimate(boardState, depth, alpha, beta, maximizing, startTime) {
+    if (performance.now() - startTime > TIME_LIMIT_MS) return heuristicULTIMATE(boardState);
+    if (depth === 0) return quiescenceSearch(boardState, alpha, beta, maximizing, startTime, 4);
+    
+    const key = getBoardKey(boardState, depth, maximizing);
+    if (transpositionTable.has(key)) return transpositionTable.get(key);
+    
+    const color = maximizing ? 'black' : 'white';
+    let moves = allMovesFor(boardState, color);
+    
+    if (moves.length === 0) {
+        const score = maximizing ? -Infinity : Infinity;
+        transpositionTable.set(key, score);
+        return score;
+    }
+    
+    moves.sort((a, b) => {
+        const capDiff = (b.captures?.length || 0) - (a.captures?.length || 0);
+        if (capDiff !== 0) return capDiff;
+        
+        const aPromotes = promotesToKing(a, color);
+        const bPromotes = promotesToKing(b, color);
+        if (aPromotes && !bPromotes) return -1;
+        if (!aPromotes && bPromotes) return 1;
+        
+        const boardA = applyMove(boardState, a);
+        const boardB = applyMove(boardState, b);
+        const scoreA = heuristicULTIMATE(boardA);
+        const scoreB = heuristicULTIMATE(boardB);
+        return maximizing ? scoreB - scoreA : scoreA - scoreB;
+    });
+    
+    if (maximizing) {
+        let maxEval = -Infinity;
+        for (const move of moves) {
+            if (performance.now() - startTime > TIME_LIMIT_MS) break;
+            const newBoard = applyMove(boardState, move);
+            const evalScore = alphaBetaUltimate(newBoard, depth - 1, alpha, beta, false, startTime);
+            if (evalScore > maxEval) maxEval = evalScore;
+            alpha = Math.max(alpha, evalScore);
+            if (beta <= alpha) break;
+        }
+        transpositionTable.set(key, maxEval);
+        return maxEval;
+    } else {
+        let minEval = Infinity;
+        for (const move of moves) {
+            if (performance.now() - startTime > TIME_LIMIT_MS) break;
+            const newBoard = applyMove(boardState, move);
+            const evalScore = alphaBetaUltimate(newBoard, depth - 1, alpha, beta, true, startTime);
+            if (evalScore < minEval) minEval = evalScore;
+            beta = Math.min(beta, evalScore);
+            if (beta <= alpha) break;
+        }
+        transpositionTable.set(key, minEval);
+        return minEval;
+    }
+}
+
+function quiescenceSearch(boardState, alpha, beta, maximizing, startTime, depth) {
+    if (depth === 0 || performance.now() - startTime > TIME_LIMIT_MS) {
+        return heuristicULTIMATE(boardState);
+    }
+    
+    const standPat = heuristicULTIMATE(boardState);
+    if (maximizing) {
+        if (standPat >= beta) return beta;
+        if (alpha < standPat) alpha = standPat;
+    } else {
+        if (standPat <= alpha) return alpha;
+        if (beta > standPat) beta = standPat;
+    }
+    
+    const color = maximizing ? 'black' : 'white';
+    const moves = allMovesFor(boardState, color);
+    const captureMoves = moves.filter(m => m.captures && m.captures.length > 0);
+    
+    for (const move of captureMoves) {
+        if (performance.now() - startTime > TIME_LIMIT_MS) break;
+        const newBoard = applyMove(boardState, move);
+        const score = quiescenceSearch(newBoard, alpha, beta, !maximizing, startTime, depth - 1);
+        if (maximizing) {
+            if (score >= beta) return beta;
+            if (score > alpha) alpha = score;
+        } else {
+            if (score <= alpha) return alpha;
+            if (score < beta) beta = score;
+        }
+    }
+    return maximizing ? alpha : beta;
+}
+
+function getBestMoveULTIMATE(boardState) {
+    const startTime = performance.now();
+    transpositionTable.clear();
+    const moves = allMovesFor(boardState, botColor);
+    
+    if (moves.length === 0) return null;
+    
+    // Hatto kichik holatlarda ham maksimal depth
+    let maxDepth = 10;
+    
+    // Agar ko'p olish imkoniyati bo'lsa, depth ni yanada oshirish
+    const captureMoves = moves.filter(m => m.captures && m.captures.length > 0);
+    if (captureMoves.length > 0 && captureMoves.some(m => m.captures.length > 1)) {
+        maxDepth = 12;
+    }
+    
+    let bestMove = moves[0];
+    let bestScore = -Infinity;
+    let depth = 1;
+    
+    moves.sort((a, b) => {
+        const capDiff = (b.captures?.length || 0) - (a.captures?.length || 0);
+        if (capDiff !== 0) return capDiff;
+        
+        const aPromotes = promotesToKing(a, botColor);
+        const bPromotes = promotesToKing(b, botColor);
+        if (aPromotes && !bPromotes) return -1;
+        if (!aPromotes && bPromotes) return 1;
+        
+        return 0;
+    });
+    
+    while (depth <= maxDepth && performance.now() - startTime < TIME_LIMIT_MS * 0.9) {
+        let currentBestMove = moves[0];
+        let currentBestScore = -Infinity;
+        
+        for (const move of moves) {
+            if (performance.now() - startTime > TIME_LIMIT_MS * 0.95) break;
+            
+            const newBoard = applyMove(boardState, move);
+            const score = alphaBetaUltimate(newBoard, depth - 1, -Infinity, Infinity, false, startTime);
+            
+            if (score > currentBestScore) {
+                currentBestScore = score;
+                currentBestMove = move;
+            }
+        }
+        
+        if (currentBestScore > bestScore) {
+            bestScore = currentBestScore;
+            bestMove = currentBestMove;
+        }
+        depth++;
+    }
+    
+    const timeTaken = performance.now() - startTime;
+    setPerf(`Bot (${depth - 1} daraja, ${timeTaken.toFixed(1)}ms, IMPOSSIBLE)`);
+    
+    return bestMove;
+}
+
+async function botMoveULTIMATE() {
+    if (!autoBot) return;
+    
+    const start = performance.now();
+    const moves = allMovesFor(board, botColor);
+    
+    if (moves.length === 0) {
+        const isWinForPlayer = (playerColor === 'white' && botColor === 'black') || 
+                              (playerColor === 'black' && botColor === 'white');
+        showResult("Siz yutdingiz!", isWinForPlayer);
+        return;
+    }
+    
+    // Avval olish imkoniyatlarini tekshirish
+    const captures = moves.filter(m => m.captures && m.captures.length > 0);
+    if (captures.length > 0) {
+        // Eng ko'p olish imkoniyatini tanlash
+        captures.sort((a, b) => b.captures.length - a.captures.length);
+        const bestCapture = captures[0];
+        
+        if (bestCapture.captures.length >= 2) {
+            await executeMove(bestCapture);
+            return;
+        }
+    }
+    
+    const move = getBestMoveULTIMATE(board);
+    if (move) {
+        await executeMove(move);
+    }
+}
+
+/* ==================== O'YINNI BOSHLASH ==================== */
+// Rang tanlashni avtomatik ishga tushirish
+selectColor('white');
+updateColorInfo();
+
 </script>
 </body>
 </html>
