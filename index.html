@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Shashka Pro — To'liq (Mobil Optimallashtirilgan)</title>
+<title>Shashka Pro — Maksimal Bot (12-daraja)</title>
 <style>
 :root{--size:min(92vmin,640px);--light:#efe9dd;--dark:#6b8a47;--bg:#f3f5f7}
 *{box-sizing:border-box}
@@ -17,8 +17,7 @@ body{
     padding:18px;
     color:#111;
     min-height:100vh;
-    /* Mobil uchun scroll imkoniyati */
-    overflow-y: auto;
+    overflow-y:auto;
 }
 
 h1{margin:8px 0 14px;font-size:1.15rem}
@@ -46,12 +45,15 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     font-weight:700;
     font-size:1.02rem;
     cursor:pointer;
-    transition:transform .18s ease,box-shadow .18s ease,filter .18s;
     position:relative;
     z-index:2;
     background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.9),rgba(255,255,255,0.1) 20%),#fff;
     box-shadow:0 8px 20px rgba(0,0,0,0.25),inset 0 -6px 12px rgba(0,0,0,0.05);
-    border:1px solid rgba(0,0,0,0.08)
+    border:1px solid rgba(0,0,0,0.08);
+    /* Animatsiya uchun */
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                left 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .piece.white{
     background:radial-gradient(circle at 28% 28%,rgba(255,255,255,0.95),rgba(255,255,255,0.8) 18%),linear-gradient(180deg,#ffffff,#f2f2f2);
@@ -80,61 +82,59 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     box-shadow:0 0 0 8px rgba(239,68,68,0.9) inset !important
 }
 
-/* ==================== YANGI: HARAKAT ANIMATSIYALARI ==================== */
-@keyframes smoothMove {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(var(--move-x, 0), var(--move-y, 0)) scale(1);
-        opacity: 1;
-    }
+/* ==================== YANGI: MAJBURIY OLISH ANIMATSIYASI ==================== */
+@keyframes capturePulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-@keyframes captureJump {
+@keyframes pieceMove {
     0% {
         transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    25% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.3);
-        opacity: 0.9;
     }
     50% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.2);
-        opacity: 1;
-    }
-    75% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.25);
-        opacity: 0.95;
+        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1.1);
     }
     100% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1);
-        opacity: 1;
+        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1);
     }
 }
 
-.moving-piece {
-    animation: smoothMove 0.4s ease-out forwards;
+@keyframes pieceCapture {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(calc(var(--tx, 0) * 0.5), calc(var(--ty, 0) * 0.5)) scale(1.2);
+    }
+    50% {
+        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1.3);
+    }
+    75% {
+        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1.1);
+    }
+    100% {
+        transform: translate(var(--tx, 0), var(--ty, 0)) scale(1);
+    }
+}
+
+.moving {
+    animation: pieceMove 0.6s ease-out forwards;
     z-index: 10 !important;
 }
 
-.capturing-piece {
-    animation: captureJump 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.capturing {
+    animation: pieceCapture 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     z-index: 10 !important;
 }
 
-@keyframes jump{
-    0%{transform:translate(0,0) scale(1);z-index:20}
-    40%{transform:translate(var(--dx),var(--dy)) scale(1.25);z-index:20;filter:drop-shadow(0 12px 20px rgba(0,0,0,0.35))}
-    100%{transform:translate(var(--dx),var(--dy)) scale(1);z-index:2}
+.captured-piece {
+    animation: capturePulse 0.4s ease-in-out 3;
+    opacity: 0.6;
 }
-.jumping{animation:jump .55s cubic-bezier(.2,.8,.4,1) forwards !important}
-@keyframes jumpSelect{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
-.jumpingSelect{animation:jumpSelect .36s ease forwards}
 
-/* ==================== MOBIL UCHUN MODAL TAZZASI ==================== */
+/* Mobil uchun modal */
 .color-modal{
     position:fixed;
     top:0;
@@ -143,14 +143,14 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     height:100%;
     background:rgba(0,0,0,0.95);
     display:flex;
-    align-items:flex-start; /* Mobil uchun o'zgartirildi */
+    align-items:flex-start;
     justify-content:center;
     z-index:10000;
     flex-direction:column;
     color:white;
     text-align:center;
-    overflow-y:auto; /* Scroll imkoniyati */
-    padding:20px 15px 80px; /* Pastki padding ko'paytirildi */
+    overflow-y:auto;
+    padding:20px 15px 80px;
 }
 .color-modal h2{
     margin-bottom:25px;
@@ -194,9 +194,8 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     border:2px solid #666;
 }
 
-/* ==================== BOSHLASH TUGMASI MOBIL UCHUN ==================== */
 .start-btn{
-    margin:30px auto 20px; /* Markazga va yuqoriga ko'paytirildi */
+    margin:30px auto 20px;
     padding:16px 35px;
     font-size:1.1rem;
     background:#3b82f6;
@@ -217,7 +216,6 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     box-shadow:0 8px 20px rgba(59,130,246,0.5);
 }
 
-/* Qiyinchilik tanlash */
 .difficulty-selector{
     margin:20px 0;
     text-align:center;
@@ -234,30 +232,6 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     margin-top:10px;
     display:block;
     font-size:1rem;
-}
-
-/* Penalty animation */
-@keyframes penaltyFlash{0%,100%{opacity:1}50%{opacity:0.3}}
-.penalty-flash{animation:penaltyFlash 1s 3;color:#ef4444 !important;font-weight:bold}
-.penalty-animation{
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    background:#ef4444;
-    color:white;
-    padding:20px 40px;
-    border-radius:10px;
-    font-size:2rem;
-    font-weight:bold;
-    z-index:1000;
-    animation:penaltyPop 1s forwards;
-    box-shadow:0 0 50px rgba(239,68,68,0.7)
-}
-@keyframes penaltyPop{
-    0%{transform:translate(-50%,-50%) scale(0);opacity:0}
-    50%{transform:translate(-50%,-50%) scale(1.2);opacity:1}
-    100%{transform:translate(-50%,-50%) scale(1);opacity:0}
 }
 
 #gameOver{
@@ -334,7 +308,6 @@ button{
     border:1px solid rgba(0,0,0,0.06)
 }
 
-/* ==================== MOBIL RESPONSIVE ==================== */
 @media(max-width:768px){
     body{
         padding:12px;
@@ -395,21 +368,6 @@ button{
         box-shadow:0 5px 15px rgba(59,130,246,0.6);
     }
     
-    .mode-buttons{
-        display:flex;
-        gap:10px;
-        margin:20px 0;
-        width:100%;
-        max-width:280px;
-        justify-content:center;
-    }
-    
-    .mode-buttons button{
-        flex:1;
-        padding:12px;
-        font-size:0.9rem;
-    }
-    
     .controls{
         gap:8px;
         padding:0 10px;
@@ -446,35 +404,15 @@ button{
         padding:14px;
         font-size:1rem;
     }
-    
-    .modal-content-container{
-        padding-bottom:15px;
-    }
-}
-
-/* iPhone X and similar */
-@media(max-height:700px){
-    .color-modal{
-        padding:20px 15px 90px;
-    }
-    
-    .color-option{
-        width:65px;
-        height:65px;
-    }
-    
-    .start-btn{
-        margin:20px auto;
-    }
 }
 </style>
 </head>
 <body>
 
-<!-- Color Selection Modal - MOBIL UCHUN OPTIMALLASHTIRILGAN -->
+<!-- Color Selection Modal -->
 <div id="colorModal" class="color-modal">
     <div class="modal-content-container">
-        <h2>🎮 Shashka PRO</h2>
+        <h2>🎮 Shashka PRO — Maksimal Bot (12-daraja)</h2>
         <p style="font-size:1rem;margin-bottom:15px;color:#ccc;max-width:280px;line-height:1.4;">
             O'ynash uchun rang tanlang:
         </p>
@@ -484,18 +422,8 @@ button{
             <div class="color-option color-random" onclick="selectColor('random')" title="Tasodifiy rang"></div>
         </div>
         <p style="margin:15px 0;color:#aaa;font-size:0.9rem;max-width:280px;">
-            Qiyinchilik darajasini tanlang (1-12):
+            <strong>Bot darajasi: 12 (MAKSIMUM - yutish qiyin!)</strong>
         </p>
-        <div class="difficulty-selector">
-            <input type="range" min="1" max="12" value="8" class="difficulty-slider" id="difficultySlider">
-            <span class="difficulty-label" id="difficultyLabel">8 - Professional</span>
-        </div>
-        <p style="margin:15px 0;color:#aaa;font-size:0.9rem;">O'yin rejimi:</p>
-        <div class="mode-buttons">
-            <button onclick="selectMode('single')" id="modeSingle" style="background:#3b82f6;color:white">🤖 Bot bilan</button>
-            <button onclick="selectMode('multi')" id="modeMulti" style="background:#6b7280;color:white">👥 Do'st bilan</button>
-        </div>
-        <!-- ==================== YANGI: RANG MALUMOTI ==================== -->
         <p id="colorInfo" style="margin:15px 0;color:#3b82f6;font-weight:bold;font-size:1rem;">
             Siz: Oq | Bot: Qora
         </p>
@@ -504,20 +432,18 @@ button{
 </div>
 
 <div id="mainGame" style="display:none;">
-    <h1>Shashka — Toʻliq oʻyin (ULTIMATE)</h1>
+    <h1>Shashka — Bot (12-daraja)</h1>
     <div id="boardWrap"><div id="board"></div></div>
     <div class="controls">
       <button id="newBtn">Yangi o'yin</button>
       <button id="undoBtn">Orqaga</button>
       <button id="redoBtn" disabled>Oldinga</button>
       <label><input id="autoBot" type="checkbox" checked/> Bot avtomatik</label>
-      <label><input id="forceCapture" type="checkbox" checked/> Majburiy olish</label>
     </div>
     <div class="info">
       <div id="turn" class="small">Navbat: <span id="currentPlayerName">Siz (oq)</span></div>
-      <div id="msg" class="small" style="margin-top:6px">Dona tanlang.</div>
+      <div id="msg" class="small" style="margin-top:6px">Dona tanlang. Majburiy olish.</div>
       <div id="perf" class="small" style="margin-top:6px;color:#555"></div>
-      <div id="penaltyInfo" class="small" style="margin-top:6px;color:#555">Jarimalar: 0/3</div>
       <div class="legend">
           <div class="sw" style="background:#fff"></div>
           <div class="small" id="player1Label">Siz (oq)</div>
@@ -530,36 +456,29 @@ button{
 
 <script>
 /* ==================== O'ZGARUVCHILAR ==================== */
-const TIME_LIMIT_MS = 600;
+const TIME_LIMIT_MS = 1000; // Bot uchun ko'proq vaqt
 const boardEl=document.getElementById('board'),newBtn=document.getElementById('newBtn'),
       undoBtn=document.getElementById('undoBtn'),redoBtn=document.getElementById('redoBtn'),
-      autoBotCB=document.getElementById('autoBot'),forceCaptureCB=document.getElementById('forceCapture'),
-      turnEl=document.getElementById('turn'),msgEl=document.getElementById('msg'),
-      perfEl=document.getElementById('perf'),penaltyInfoEl=document.getElementById('penaltyInfo'),
+      autoBotCB=document.getElementById('autoBot'),turnEl=document.getElementById('turn'),
+      msgEl=document.getElementById('msg'),perfEl=document.getElementById('perf'),
       gameOverEl=document.getElementById('gameOver'),resultTextEl=document.getElementById('resultText'),
       colorModal=document.getElementById('colorModal'),mainGame=document.getElementById('mainGame'),
       difficultySlider=document.getElementById('difficultySlider'),difficultyLabel=document.getElementById('difficultyLabel'),
-      modeSingle=document.getElementById('modeSingle'),modeMulti=document.getElementById('modeMulti'),
       colorInfoEl=document.getElementById('colorInfo'),currentPlayerNameEl=document.getElementById('currentPlayerName'),
       player1LabelEl=document.getElementById('player1Label'),player2LabelEl=document.getElementById('player2Label');
 
 let board=[],history=[],historyIndex=0,selected=null,legalMoves=[],playerTurn=true,
-    autoBot=true,playerColor='white',botColor='black',gameMode='single',
-    difficulty=8,forceCapture=true,penaltySystem=true,playerPenalty=0,
+    autoBot=true,playerColor='white',botColor='black',
+    difficulty=12, // ==================== YANGI: Doimiy 12-daraja ====================
+    forceCapture=true, // ==================== YANGI: Faqat majburiy olish ====================
     moveHistory=[],captures={white:0,black:0},historyStack=[],futureStack=[];
 
 /* ==================== YANGI: RANG TANLASH VA KO'RSATISH ==================== */
 function selectColor(color){
     if(color==='random'){
         color=Math.random()>0.5?'white':'black';
-        // Random tanlanganda ko'rsatish
-        if(color==='white'){
-            playerColor='white';
-            botColor='black';
-        }else{
-            playerColor='black';
-            botColor='white';
-        }
+        playerColor=color;
+        botColor=color==='white'?'black':'white';
     }else{
         playerColor=color;
         botColor=color==='white'?'black':'white';
@@ -567,37 +486,17 @@ function selectColor(color){
     
     document.querySelectorAll('.color-option').forEach(opt=>opt.classList.remove('selected'));
     event.target.classList.add('selected');
-    updateDifficultyLabel();
-    updateColorInfo(); // Rang ma'lumotini yangilash
+    updateColorInfo();
 }
 
 function updateColorInfo(){
-    if(gameMode==='single'){
-        colorInfoEl.textContent=`Siz: ${playerColor==='white'?'Oq':'Qora'} | Bot: ${botColor==='white'?'Oq':'Qora'}`;
-        player1LabelEl.textContent=`Siz (${playerColor==='white'?'oq':'qora'})`;
-        player2LabelEl.textContent=`Bot (${botColor==='white'?'oq':'qora'})`;
-    }else{
-        colorInfoEl.textContent=`1-o'yinchi: Oq | 2-o'yinchi: Qora`;
-        player1LabelEl.textContent=`1-o'yinchi (oq)`;
-        player2LabelEl.textContent=`2-o'yinchi (qora)`;
-    }
-}
-
-function selectMode(mode){
-    gameMode=mode;
-    modeSingle.style.background=mode==='single'?'#3b82f6':'#6b7280';
-    modeMulti.style.background=mode==='multi'?'#3b82f6':'#6b7280';
-    updateDifficultyLabel();
-    updateColorInfo(); // Rejim o'zgarganda rang ma'lumotini yangilash
-}
-
-function updateDifficultyLabel(){
-    const labels=['1-Oson','2','3','4','5-O\'rta','6','7','8-Professional','9','10','11','12-MAX'];
-    difficultyLabel.textContent=labels[difficultySlider.value-1];
+    colorInfoEl.textContent=`Siz: ${playerColor==='white'?'Oq':'Qora'} | Bot: ${botColor==='white'?'Oq':'Qora'}`;
+    player1LabelEl.textContent=`Siz (${playerColor==='white'?'oq':'qora'})`;
+    player2LabelEl.textContent=`Bot (${botColor==='white'?'oq':'qora'})`;
 }
 
 function startGame(){
-    difficulty=parseInt(difficultySlider.value);
+    difficulty=12; // ==================== YANGI: Doimiy 12-daraja ====================
     colorModal.style.display='none';
     mainGame.style.display='block';
     initBoard();
@@ -609,12 +508,13 @@ undoBtn.onclick=()=>undo();
 redoBtn.onclick=()=>redo();
 autoBotCB.onchange=()=>{
     autoBot=autoBotCB.checked;
-    if(gameMode==='single'&&!playerTurn&&autoBot){
-        setTimeout(()=>botMoveULTIMATE(),100);
+    if(!playerTurn&&autoBot){
+        setTimeout(()=>botMoveMAX(),100);
     }
 };
-forceCaptureCB.onchange=()=>forceCapture=forceCaptureCB.checked;
-difficultySlider.oninput=()=>{difficulty=parseInt(difficultySlider.value);updateDifficultyLabel();};
+
+difficultySlider.style.display='none'; // ==================== YANGI: Qiyinchilik slider yashirildi ====================
+difficultyLabel.textContent='12 - MAKSIMUM (deyarli yutib bo\'lmaydi)'; // ==================== YANGI: Doimiy 12-daraja ====================
 
 function initBoard(){
     board=Array.from({length:8},()=>Array(8).fill(null));
@@ -624,24 +524,12 @@ function initBoard(){
     }
     history=[cloneBoard(board)];historyIndex=0;historyStack=[];futureStack=[];
     selected=null;legalMoves=[];
+    playerTurn=playerColor==='white';
+    moveHistory=[];captures={white:0,black:0};
+    updateTurn();setPerf('');hideGameOver();render();
     
-    // ==================== YANGI: O'YIN REJIMIGA QARAB NAVBAT ====================
-    if(gameMode==='multi'){
-        playerTurn=true; // Do'st bilan o'ynashda har doim 1-o'yinchi (oq) boshlaydi
-        autoBot=false;
-        autoBotCB.checked=false;
-        autoBotCB.disabled=true;
-    }else{
-        // Bot bilan o'ynashda
-        playerTurn=playerColor==='white';
-        autoBotCB.disabled=false;
-    }
-    
-    playerPenalty=0;moveHistory=[];captures={white:0,black:0};
-    updateTurn();updatePenaltyDisplay();setPerf('');hideGameOver();render();
-    
-    if(gameMode==='single'&&!playerTurn&&autoBot){
-        setTimeout(()=>botMoveULTIMATE(),100);
+    if(!playerTurn&&autoBot){
+        setTimeout(()=>botMoveMAX(),100);
     }
 }
 
@@ -651,26 +539,15 @@ function setMsg(s){msgEl.textContent=s}
 function setPerf(s){perfEl.textContent=s}
 
 function updateTurn(){
-    if(gameMode==='multi'){
-        if(playerTurn){
-            currentPlayerNameEl.textContent="1-o'yinchi (oq)";
-            turnEl.textContent="Navbat: 1-o'yinchi";
-        }else{
-            currentPlayerNameEl.textContent="2-o'yinchi (qora)";
-            turnEl.textContent="Navbat: 2-o'yinchi";
-        }
+    if(playerTurn){
+        currentPlayerNameEl.textContent=`Siz (${playerColor==='white'?'oq':'qora'})`;
+        turnEl.textContent="Navbat: Siz";
     }else{
-        if(playerTurn){
-            currentPlayerNameEl.textContent=`Siz (${playerColor==='white'?'oq':'qora'})`;
-            turnEl.textContent="Navbat: Siz";
-        }else{
-            currentPlayerNameEl.textContent=`Bot (${botColor==='white'?'oq':'qora'})`;
-            turnEl.textContent="Navbat: Bot";
-        }
+        currentPlayerNameEl.textContent=`Bot (${botColor==='white'?'oq':'qora'})`;
+        turnEl.textContent="Navbat: Bot";
     }
 }
 
-function updatePenaltyDisplay(){penaltyInfoEl.textContent=`Jarimalar: ${playerPenalty}/3`;penaltyInfoEl.className=playerPenalty>0?'small penalty-flash':'small';}
 function showResult(text,win){resultTextEl.textContent=text;resultTextEl.className=win?"win":"lose";gameOverEl.classList.add("show");setTimeout(()=>hideGameOver(),2100)}
 function hideGameOver(){gameOverEl.classList.remove("show")}
 function forwardDirsFor(color){return color==='white'?[[-1,1],[-1,-1]]:[[1,1],[1,-1]]}
@@ -785,8 +662,7 @@ async function animateMove(move,isBot=false){
             if(capturedCell){
                 const capturedPiece=capturedCell.querySelector('.piece');
                 if(capturedPiece){
-                    capturedPiece.style.transition='opacity 0.3s';
-                    capturedPiece.style.opacity='0.3';
+                    capturedPiece.classList.add('captured-piece');
                 }
             }
         });
@@ -806,19 +682,17 @@ async function animateMove(move,isBot=false){
         const dy=rt.top-rf.top;
         
         // Animatsiya klassini qo'shish
-        pieceEl.style.setProperty('--move-x', dx+'px');
-        pieceEl.style.setProperty('--move-y', dy+'px');
-        pieceEl.style.setProperty('--jump-x', dx+'px');
-        pieceEl.style.setProperty('--jump-y', dy+'px');
+        pieceEl.style.setProperty('--tx', dx+'px');
+        pieceEl.style.setProperty('--ty', dy+'px');
         
         if(move.captures&&move.captures.length>0){
-            pieceEl.classList.add('capturing-piece');
-            await new Promise(r=>setTimeout(r,600));
-            pieceEl.classList.remove('capturing-piece');
+            pieceEl.classList.add('capturing');
+            await new Promise(r=>setTimeout(r,800));
+            pieceEl.classList.remove('capturing');
         }else{
-            pieceEl.classList.add('moving-piece');
-            await new Promise(r=>setTimeout(r,400));
-            pieceEl.classList.remove('moving-piece');
+            pieceEl.classList.add('moving');
+            await new Promise(r=>setTimeout(r,600));
+            pieceEl.classList.remove('moving');
         }
     }
     
@@ -828,21 +702,26 @@ async function animateMove(move,isBot=false){
     
     // Olingan donalarni tozalash
     if(move.captures&&move.captures.length>0){
-        move.captures.forEach(([r,c])=>{
-            const cell=boardEl.children[r*8+c];
-            if(cell){
-                const piece=cell.querySelector('.piece');
-                if(piece)piece.style.opacity='1';
-            }
-        });
+        setTimeout(()=>{
+            move.captures.forEach(([r,c])=>{
+                const cell=boardEl.children[r*8+c];
+                if(cell){
+                    const piece=cell.querySelector('.piece');
+                    if(piece)piece.classList.remove('captured-piece');
+                }
+            });
+        }, 800);
     }
     
     // Dama animatsiyasi
     const finalCell=boardEl.children[move.to[0]*8+move.to[1]];
     const finalPiece=finalCell.querySelector('.piece');
     if(finalPiece&&!isKingBefore&&board[move.to[0]][move.to[1]].king){
-        finalPiece.style.animation='jumpSelect .9s ease-out';
-        setTimeout(()=>finalPiece.style.animation='',1000);
+        finalPiece.style.transform='scale(1.3)';
+        setTimeout(()=>{
+            finalPiece.style.transform='scale(1)';
+            finalPiece.style.transition='transform 0.3s ease';
+        }, 300);
     }
 }
 
@@ -874,23 +753,14 @@ function redo(){
     render();
     setMsg("Oldinga qaytdingiz.");
     
-    if(gameMode==='single'&&!playerTurn&&autoBot){
-        setTimeout(()=>botMoveULTIMATE(),100);
+    if(!playerTurn&&autoBot){
+        setTimeout(()=>botMoveMAX(),100);
     }
 }
 
 /* ==================== ASOSIY O'YIN FUNKSIYALARI ==================== */
 async function onCellClick(r,c){
-    // ==================== YANGI: O'YIN REJIMIGA QARAB TEKSHIRISH ====================
-    if(gameMode==='single'){
-        // Bot bilan o'ynashda faqat o'z navbatingizda bosish mumkin
-        if(!playerTurn)return;
-        if(!isPlayerTurn())return;
-    }else{
-        // Do'st bilan o'ynashda faqat o'z navbatingizda bosish mumkin
-        if(!playerTurn&&!isPlayerTurn())return;
-        if(playerTurn&&!isPlayerTurn())return;
-    }
+    if(!playerTurn)return;
     
     const p=board[r][c];
     
@@ -898,22 +768,6 @@ async function onCellClick(r,c){
     if(selected){
         const chosen=legalMoves.find(m=>m.to[0]===r&&m.to[1]===c&&arraysEqual(m.from,selected));
         if(chosen){
-            if(forceCapture&&hasForcedCapture()){
-                const pieceCaptures=legalMoves.filter(m=>m.captures&&m.captures.length>0);
-                if(pieceCaptures.length>0&&!chosen.captures){
-                    if(penaltySystem){
-                        applyPenalty();
-                        showPenaltyAnimation();
-                        removePiece(selected[0],selected[1]);
-                        switchTurn();
-                        return;
-                    }else{
-                        setMsg("Majburiy olish! Boshqa harakat tanlang.");
-                        return;
-                    }
-                }
-            }
-            
             executeMove(chosen);
             return;
         }else{
@@ -923,57 +777,37 @@ async function onCellClick(r,c){
     }
     
     // Yangi dona tanlash
-    if(p&&isPlayerPiece(p)){
+    if(p&&p.color===playerColor){
         selected=[r,c];
         legalMoves=movesFrom(board,r,c);
         
-        if(forceCapture&&hasForcedCapture()){
-            const pieceCaptures=legalMoves.filter(m=>m.captures&&m.captures.length>0);
-            if(pieceCaptures.length===0){
-                setMsg("Bu dona bilan olish mumkin emas! Boshqa dona tanlang.");
-                selected=null;legalMoves=[];
-                return;
+        // ==================== YANGI: Majburiy olish tekshiruvi ====================
+        if(forceCapture){
+            const allPossibleMoves = allMovesFor(board, playerColor);
+            const captureMoves = allPossibleMoves.filter(m => m.captures && m.captures.length > 0);
+            
+            if(captureMoves.length > 0){
+                const pieceCaptureMoves = legalMoves.filter(m => m.captures && m.captures.length > 0);
+                if(pieceCaptureMoves.length === 0){
+                    setMsg("Majburiy olish! Bu dona bilan olish mumkin emas.");
+                    selected=null;legalMoves=[];
+                    return;
+                }
+                // Faqat olish harakatlarini ko'rsatish
+                legalMoves = pieceCaptureMoves;
             }
         }
         
         render();
         const ce=boardEl.children[r*8+c].querySelector('.piece');
-        if(ce){ce.classList.add('jumpingSelect');setTimeout(()=>ce.classList.remove('jumpingSelect'),360)}
+        if(ce){
+            ce.style.transform='scale(1.2)';
+            setTimeout(()=>ce.style.transform='scale(1)', 300);
+        }
     }
 }
 
-function isPlayerTurn(){
-    if(gameMode==='multi'){
-        // Do'st bilan o'ynashda: oq - 1-o'yinchi, qora - 2-o'yinchi
-        if(playerTurn)return true; // 1-o'yinchi navbatida
-        else return false; // 2-o'yinchi navbatida
-    }else{
-        // Bot bilan o'ynashda
-        return playerTurn;
-    }
-}
-
-function isPlayerPiece(piece){
-    if(gameMode==='multi'){
-        // Do'st bilan o'ynashda: oq - 1-o'yinchi, qora - 2-o'yinchi
-        if(playerTurn)return piece.color==='white';
-        else return piece.color==='black';
-    }else{
-        // Bot bilan o'ynashda
-        return piece.color===playerColor;
-    }
-}
-
-function hasForcedCapture(){
-    let currentColor;
-    if(gameMode==='multi'){
-        currentColor=playerTurn?'white':'black';
-    }else{
-        currentColor=playerTurn?playerColor:botColor;
-    }
-    const moves=allMovesFor(board,currentColor);
-    return moves.some(m=>m.captures&&m.captures.length>0);
-}
+function arraysEqual(a,b){if(!a||!b)return false;if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true}
 
 function executeMove(move){
     history=history.slice(0,historyIndex+1);
@@ -985,8 +819,10 @@ function executeMove(move){
     board=newBoard;
     selected=null;legalMoves=[];
     
-    if(checkEnd()){
-        endGame();
+    // ==================== YANGI: G'ALABA/MAG'LUBIYAT TO'G'RI TEKSHIRISH ====================
+    const gameResult = checkEnd();
+    if(gameResult){
+        endGame(gameResult);
         return;
     }
     
@@ -994,307 +830,111 @@ function executeMove(move){
     updateUI();
     render();
     
-    if(gameMode==='single'&&!playerTurn&&autoBot){
-        setTimeout(()=>botMoveULTIMATE(),100);
+    if(!playerTurn&&autoBot){
+        setTimeout(()=>botMoveMAX(),100);
     }
 }
 
-function applyPenalty(){
-    playerPenalty++;
-    updatePenaltyDisplay();
-    if(playerPenalty>=3){
-        showResult("3 ta jarima! Siz yutqazdingiz!",false);
-        playerTurn=false;
-    }
-}
-
-function showPenaltyAnimation(){
-    const anim=document.createElement('div');
-    anim.className='penalty-animation';
-    anim.textContent='JARIMA!';
-    document.body.appendChild(anim);
-    setTimeout(()=>document.body.removeChild(anim),1000);
-}
-
-function removePiece(r,c){
-    board[r][c]=null;
-    render();
-}
-
-function switchTurn(){
-    playerTurn=!playerTurn;
-    updateUI();
-    render();
-}
-
-function arraysEqual(a,b){if(!a||!b)return false;if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true}
-
+/* ==================== YANGI: G'ALABA/MAG'LUBIYAT FUNKSIYASI ==================== */
 function checkEnd(){
-    const wm=allMovesFor(board,'white'),bm=allMovesFor(board,'black');
-    const wp=board.flat().filter(p=>p&&p.color==='white').length;
-    const bp=board.flat().filter(p=>p&&p.color==='black').length;
-    if(wp===0||wm.length===0){showResult("Ha otam bormi og'riq!",false);playerTurn=false;return true}
-    if(bp===0||bm.length===0){showResult("Siz yutdingiz!!!",true);playerTurn=false;return true}
-    return false;
-}
-
-function endGame(){playerTurn=false;}
-
-function updateUI(){
-    updateTurn();
-    updatePenaltyDisplay();
-    undoBtn.disabled=historyIndex<=0;
-    redoBtn.disabled=futureStack.length===0&&historyIndex>=history.length-1;
-}
-
-function render(){
-    boardEl.innerHTML='';
-    const whiteCaps=allMovesFor(board,'white').filter(m=>m.captures?.length>0);
-    const blackCaps=allMovesFor(board,'black').filter(m=>m.captures?.length>0);
+    const whiteMoves = allMovesFor(board, 'white');
+    const blackMoves = allMovesFor(board, 'black');
+    const whitePieces = board.flat().filter(p=>p&&p.color==='white').length;
+    const blackPieces = board.flat().filter(p=>p&&p.color==='black').length;
     
-    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-        const cell=document.createElement('div');
-        cell.className='cell '+((r+c)%2===0?'light':'dark');
-        cell.addEventListener('click',()=>onCellClick(r,c));
-        
-        if(legalMoves.some(m=>m.to[0]===r&&m.to[1]===c)){
-            const dot=document.createElement('div');dot.className='dot';cell.appendChild(dot);
-        }
-        
-        const p=board[r][c];
-        if(p){
-            const el=document.createElement('div');
-            el.className='piece '+(p.color==='white'?'white':'black')+(p.king?' king':'');
-            el.textContent=p.king?'👑':'';
-            
-            if(p.king){
-                const crown=document.createElement('div');
-                crown.style.position='absolute';crown.style.fontSize='0.8rem';
-                crown.style.top='8%';crown.style.pointerEvents='none';
-                crown.textContent='★';el.appendChild(crown);
-            }
-            
-            if(forceCapture&&p.color===(gameMode==='multi'?(playerTurn?'white':'black'):playerColor)&&hasForcedCapture()){
-                const pieceMoves=movesFrom(board,r,c);
-                if(pieceMoves.some(m=>m.captures&&m.captures.length>0)){
-                    el.classList.add('capture-outline');
-                }
-            }
-            
-            if(selected&&selected[0]===r&&selected[1]===c)el.classList.add('selected-outline');
-            cell.appendChild(el);
-        }
-        boardEl.appendChild(cell);
+    if(whitePieces === 0 || whiteMoves.length === 0){
+        return 'black'; // Qora g'alaba
     }
-    updateTurn();
+    if(blackPieces === 0 || blackMoves.length === 0){
+        return 'white'; // Oq g'alaba
+    }
+    return null;
 }
 
-function newGame(){initBoard()}
+function endGame(winner){
+    playerTurn = false;
 
-/* ==================== ULTIMATE BOT ALGORITMI ==================== */
-const transpositionTable=new Map();
+    let resultText, isWin;
 
-function heuristicULTIMATE(bd){
-    let score=0,whitePieces=0,blackPieces=0,whiteKings=0,blackKings=0;
-    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-        const p=bd[r][c];if(!p)continue;
-        if(p.color==='black'){
-            blackPieces++;if(p.king)blackKings++;
-            const baseValue=p.king?3.5:1.0;
-            let positionBonus=0;
-            if(!p.king){
-                positionBonus+=r*0.15;
-                const centerDist=Math.abs(c-3.5);
-                positionBonus+=(3.5-centerDist)*0.1;
-                if(c===0||c===7)positionBonus+=0.2;
-                if(r>=5)positionBonus+=0.3;
-            }else{
-                const centerDist=Math.abs(c-3.5)+Math.abs(r-3.5);
-                positionBonus+=(7-centerDist)*0.1;
-                positionBonus+=0.5;
-            }
-            score+=baseValue+positionBonus;
+    if(winner === 'white'){
+        // Oq g‘alaba
+        if(playerColor === 'white'){
+            resultText = "🎉 SIZ YUTDINGIZ!";
+            isWin = true;
         }else{
-            whitePieces++;if(p.king)whiteKings++;
-            const baseValue=p.king?3.5:1.0;
-            let positionBonus=0;
-            if(!p.king){
-                positionBonus+=(7-r)*0.15;
-                const centerDist=Math.abs(c-3.5);
-                positionBonus+=(3.5-centerDist)*0.1;
-                if(c===0||c===7)positionBonus+=0.2;
-                if(r<=2)positionBonus+=0.3;
-            }else{
-                const centerDist=Math.abs(c-3.5)+Math.abs(r-3.5);
-                positionBonus+=(7-centerDist)*0.1;
-                positionBonus+=0.5;
-            }
-            score-=baseValue+positionBonus;
+            resultText = "🤖 BOT YUTDI!";
+            isWin = false;
         }
-    }
-    
-    const blackMoves=allMovesFor(bd,'black').length;
-    const whiteMoves=allMovesFor(bd,'white').length;
-    score+=(blackMoves-whiteMoves)*0.05;
-    
-    const materialDiff=(blackPieces+blackKings*2)-(whitePieces+whiteKings*2);
-    score+=materialDiff*0.1;
-    
-    if(blackPieces>whitePieces*2)score+=2.0;
-    if(whitePieces===0)score+=1000;
-    
-    score*=(difficulty/8);
-    
-    return score;
-}
-
-function getBoardKey(boardState,depth,isMaximizing){
-    let key='';
-    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-        const p=boardState[r][c];
-        if(p)key+=`${p.color[0]}${p.king?'K':'N'}${r}${c}`;
-    }
-    return `${key}|${depth}|${isMaximizing}`;
-}
-
-function alphaBetaUltimate(boardState,depth,alpha,beta,maximizing,startTime){
-    if(performance.now()-startTime>TIME_LIMIT_MS)return heuristicULTIMATE(boardState);
-    if(depth===0)return quiescenceSearch(boardState,alpha,beta,maximizing,startTime,3);
-    
-    const key=getBoardKey(boardState,depth,maximizing);
-    if(transpositionTable.has(key))return transpositionTable.get(key);
-    
-    const color=maximizing?'black':'white';
-    let moves=allMovesFor(boardState,color);
-    if(moves.length===0){
-        const score=maximizing?-Infinity:Infinity;
-        transpositionTable.set(key,score);
-        return score;
-    }
-    
-    moves.sort((a,b)=>{
-        const capDiff=(b.captures?.length||0)-(a.captures?.length||0);
-        if(capDiff!==0)return capDiff;
-        const boardA=applyMove(boardState,a),boardB=applyMove(boardState,b);
-        const scoreA=heuristicULTIMATE(boardA),scoreB=heuristicULTIMATE(boardB);
-        return maximizing?scoreB-scoreA:scoreA-scoreB;
-    });
-    
-    if(maximizing){
-        let maxEval=-Infinity;
-        for(const move of moves){
-            if(performance.now()-startTime>TIME_LIMIT_MS)break;
-            const newBoard=applyMove(boardState,move);
-            const evalScore=alphaBetaUltimate(newBoard,depth-1,alpha,beta,false,startTime);
-            if(evalScore>maxEval)maxEval=evalScore;
-            alpha=Math.max(alpha,evalScore);
-            if(beta<=alpha)break;
-        }
-        transpositionTable.set(key,maxEval);
-        return maxEval;
     }else{
-        let minEval=Infinity;
-        for(const move of moves){
-            if(performance.now()-startTime>TIME_LIMIT_MS)break;
-            const newBoard=applyMove(boardState,move);
-            const evalScore=alphaBetaUltimate(newBoard,depth-1,alpha,beta,true,startTime);
-            if(evalScore<minEval)minEval=evalScore;
-            beta=Math.min(beta,evalScore);
-            if(beta<=alpha)break;
-        }
-        transpositionTable.set(key,minEval);
-        return minEval;
-    }
-}
-
-function quiescenceSearch(boardState,alpha,beta,maximizing,startTime,depth){
-    if(depth===0||performance.now()-startTime>TIME_LIMIT_MS)return heuristicULTIMATE(boardState);
-    const standPat=heuristicULTIMATE(boardState);
-    if(maximizing){
-        if(standPat>=beta)return beta;
-        if(alpha<standPat)alpha=standPat;
-    }else{
-        if(standPat<=alpha)return alpha;
-        if(beta>standPat)beta=standPat;
-    }
-    
-    const color=maximizing?'black':'white';
-    const moves=allMovesFor(boardState,color);
-    const captureMoves=moves.filter(m=>m.captures&&m.captures.length>0);
-    
-    for(const move of captureMoves){
-        if(performance.now()-startTime>TIME_LIMIT_MS)break;
-        const newBoard=applyMove(boardState,move);
-        const score=quiescenceSearch(newBoard,alpha,beta,!maximizing,startTime,depth-1);
-        if(maximizing){
-            if(score>=beta)return beta;
-            if(score>alpha)alpha=score;
+        // Qora g‘alaba
+        if(playerColor === 'black'){
+            resultText = "🎉 SIZ YUTDINGIZ!";
+            isWin = true;
         }else{
-            if(score<=alpha)return alpha;
-            if(score<beta)beta=score;
+            resultText = "🤖 BOT YUTDI!";
+            isWin = false;
         }
     }
-    return maximizing?alpha:beta;
-}
 
-function getBestMoveULTIMATE(boardState){
-    const startTime=performance.now();
-    transpositionTable.clear();
-    const moves=allMovesFor(boardState,botColor); // ==================== YANGI: botColor ishlatildi ====================
-    if(moves.length===0)return null;
-    
-    let maxDepth;
-    if(difficulty<=3)maxDepth=2;
-    else if(difficulty<=6)maxDepth=4;
-    else if(difficulty<=9)maxDepth=6;
-    else maxDepth=8;
-    
-    let bestMove=moves[0],bestScore=-Infinity,depth=1;
-    
-    while(depth<=maxDepth&&performance.now()-startTime<TIME_LIMIT_MS*0.8){
-        let currentBestMove=moves[0],currentBestScore=-Infinity;
-        for(const move of moves){
-            if(performance.now()-startTime>TIME_LIMIT_MS*0.9)break;
-            const newBoard=applyMove(boardState,move);
-            const score=alphaBetaUltimate(newBoard,depth-1,-Infinity,Infinity,false,startTime);
-            if(score>currentBestScore){
-                currentBestScore=score;currentBestMove=move;
-            }
-        }
-        if(currentBestScore>bestScore){
-            bestScore=currentBestScore;bestMove=currentBestMove;
-        }
-        depth++;
-    }
-    
-    const timeTaken=performance.now()-startTime;
-    setPerf(`Bot (${depth-1} daraja, ${timeTaken.toFixed(1)}ms, ${difficulty===12?'MAX':difficulty>=9?'Professional':'Oʻrta'})`);
-    return bestMove;
+    showResult(resultText, isWin);
+    autoBot = false;
 }
+function endGame(winner){
+    playerTurn = false;
 
-async function botMoveULTIMATE(){
-    if(!autoBot||gameMode==='multi')return;
-    const start=performance.now();
-    const moves=allMovesFor(board,botColor); // ==================== YANGI: botColor ishlatildi ====================
-    if(moves.length===0){showResult("Siz yutdingiz!",true);return;}
-    
-    const captures=moves.filter(m=>m.captures&&m.captures.length>0);
-    if(captures.length>0){
-        captures.sort((a,b)=>b.captures.length-a.captures.length);
-        const bestCapture=captures[0];
-        if(bestCapture.captures.length>=2){
-            executeMove(bestCapture);
-            return;
+    let resultText, isWin;
+
+    if(winner === 'white'){
+        // Oq g‘alaba
+        if(playerColor === 'white'){
+            resultText = "🎉 SIZ YUTDINGIZ!";
+            isWin = true;
+        }else{
+            resultText = "🤖 BOT YUTDI!";
+            isWin = false;
+        }
+    }else{
+        // Qora g‘alaba
+        if(playerColor === 'black'){
+            resultText = "🎉 SIZ YUTDINGIZ!";
+            isWin = true;
+        }else{
+            resultText = "🤖 BOT YUTDI!";
+            isWin = false;
         }
     }
-    
-    const move=getBestMoveULTIMATE(board);
-    if(move)executeMove(move);
+
+    showResult(resultText, isWin);
+    autoBot = false;
 }
+function endGame(winner){
+    playerTurn = false;
 
-/* ==================== O'YINNI BOSHLASH ==================== */
-initBoard();
+    let resultText, isWin;
 
+    if(winner === 'white'){
+        // Oq g‘alaba
+        if(playerColor === 'white'){
+            resultText = "🎉 SIZ YUTDINGIZ!";
+            isWin = true;
+        }else{
+            resultText = "🤖 BOT YUTDI!";
+            isWin = false;
+        }
+    }else{
+        // Qora g‘alaba
+        if(playerColor === 'black'){
+            resultText = "🎉 SIZ YUTDINGIZ!";
+            isWin = true;
+        }else{
+            resultText = "🤖 BOT YUTDI!";
+            isWin = false;
+        }
+    }
+
+    showResult(resultText, isWin);
+    autoBot = false;
+}
 </script>
 </body>
 </html>
