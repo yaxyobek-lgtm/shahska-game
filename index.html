@@ -3,51 +3,160 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Shashka Pro — To'liq (ULTIMATE BOT + MULTIPLAYER)</title>
+<title>Shashka Pro — To'liq (Mobil Optimallashtirilgan)</title>
 <style>
 :root{--size:min(92vmin,640px);--light:#efe9dd;--dark:#6b8a47;--bg:#f3f5f7}
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#eef3f7);display:flex;flex-direction:column;align-items:center;padding:18px;color:#111;min-height:100vh}
+body{
+    margin:0;
+    font-family:Inter,Arial,sans-serif;
+    background:linear-gradient(180deg,var(--bg),#eef3f7);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:18px;
+    color:#111;
+    min-height:100vh;
+    /* Mobil uchun scroll imkoniyati */
+    overflow-y: auto;
+}
+
 h1{margin:8px 0 14px;font-size:1.15rem}
 #boardWrap{padding:18px;border-radius:18px;box-shadow:0 20px 50px rgba(17,24,39,0.18)}
-#board{width:var(--size);height:var(--size);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:10px;overflow:hidden;position:relative}
+#board{
+    width:var(--size);
+    height:var(--size);
+    display:grid;
+    grid-template-columns:repeat(8,1fr);
+    grid-template-rows:repeat(8,1fr);
+    border-radius:10px;
+    overflow:hidden;
+    position:relative;
+}
 .cell{display:flex;align-items:center;justify-content:center;position:relative}
 .light{background:linear-gradient(180deg,#f9f7ee,#efe9dd)}
 .dark{background:linear-gradient(180deg,#6b8a47,#4b6a34)}
-.piece{width:78%;height:78%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.02rem;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,filter .18s;position:relative;z-index:2;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.9),rgba(255,255,255,0.1) 20%),#fff;box-shadow:0 8px 20px rgba(0,0,0,0.25),inset 0 -6px 12px rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.08)}
-.piece.white{background:radial-gradient(circle at 28% 28%,rgba(255,255,255,0.95),rgba(255,255,255,0.8) 18%),linear-gradient(180deg,#ffffff,#f2f2f2);color:#111}
-.piece.black{background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.12),rgba(255,255,255,0.02) 18%),linear-gradient(180deg,#1b1b1b,#0f0f0f);color:#fff}
-.piece.king{border:3px solid rgba(245,210,72,0.95);box-shadow:0 12px 30px rgba(0,0,0,0.35),0 0 14px rgba(245,210,72,0.08) inset}
-.dot{position:absolute;width:20%;height:20%;border-radius:50%;background:rgba(255,236,0,0.92);z-index:1}
-.selected-outline{box-shadow:0 0 0 6px rgba(59,130,246,0.85) inset !important}
-.capture-outline{box-shadow:0 0 0 8px rgba(239,68,68,0.9) inset !important}
-@keyframes jump{0%{transform:translate(0,0) scale(1);z-index:20}40%{transform:translate(var(--dx),var(--dy)) scale(1.25);z-index:20;filter:drop-shadow(0 12px 20px rgba(0,0,0,0.35))}100%{transform:translate(var(--dx),var(--dy)) scale(1);z-index:2}}
+.piece{
+    width:78%;
+    height:78%;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size:1.02rem;
+    cursor:pointer;
+    transition:transform .18s ease,box-shadow .18s ease,filter .18s;
+    position:relative;
+    z-index:2;
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.9),rgba(255,255,255,0.1) 20%),#fff;
+    box-shadow:0 8px 20px rgba(0,0,0,0.25),inset 0 -6px 12px rgba(0,0,0,0.05);
+    border:1px solid rgba(0,0,0,0.08)
+}
+.piece.white{
+    background:radial-gradient(circle at 28% 28%,rgba(255,255,255,0.95),rgba(255,255,255,0.8) 18%),linear-gradient(180deg,#ffffff,#f2f2f2);
+    color:#111
+}
+.piece.black{
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.12),rgba(255,255,255,0.02) 18%),linear-gradient(180deg,#1b1b1b,#0f0f0f);
+    color:#fff
+}
+.piece.king{
+    border:3px solid rgba(245,210,72,0.95);
+    box-shadow:0 12px 30px rgba(0,0,0,0.35),0 0 14px rgba(245,210,72,0.08) inset
+}
+.dot{
+    position:absolute;
+    width:20%;
+    height:20%;
+    border-radius:50%;
+    background:rgba(255,236,0,0.92);
+    z-index:1
+}
+.selected-outline{
+    box-shadow:0 0 0 6px rgba(59,130,246,0.85) inset !important
+}
+.capture-outline{
+    box-shadow:0 0 0 8px rgba(239,68,68,0.9) inset !important
+}
+
+/* ==================== YANGI: HARAKAT ANIMATSIYALARI ==================== */
+@keyframes smoothMove {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--move-x, 0), var(--move-y, 0)) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes captureJump {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    25% {
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.3);
+        opacity: 0.9;
+    }
+    50% {
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.2);
+        opacity: 1;
+    }
+    75% {
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.25);
+        opacity: 0.95;
+    }
+    100% {
+        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1);
+        opacity: 1;
+    }
+}
+
+.moving-piece {
+    animation: smoothMove 0.4s ease-out forwards;
+    z-index: 10 !important;
+}
+
+.capturing-piece {
+    animation: captureJump 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    z-index: 10 !important;
+}
+
+@keyframes jump{
+    0%{transform:translate(0,0) scale(1);z-index:20}
+    40%{transform:translate(var(--dx),var(--dy)) scale(1.25);z-index:20;filter:drop-shadow(0 12px 20px rgba(0,0,0,0.35))}
+    100%{transform:translate(var(--dx),var(--dy)) scale(1);z-index:2}
+}
 .jumping{animation:jump .55s cubic-bezier(.2,.8,.4,1) forwards !important}
 @keyframes jumpSelect{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
 .jumpingSelect{animation:jumpSelect .36s ease forwards}
 
-/* Modal for color selection - MOBILE FIX */
+/* ==================== MOBIL UCHUN MODAL TAZZASI ==================== */
 .color-modal{
     position:fixed;
     top:0;
     left:0;
     width:100%;
     height:100%;
-    background:rgba(0,0,0,0.9);
+    background:rgba(0,0,0,0.95);
     display:flex;
-    align-items:center;
+    align-items:flex-start; /* Mobil uchun o'zgartirildi */
     justify-content:center;
     z-index:10000;
     flex-direction:column;
     color:white;
     text-align:center;
-    overflow-y:auto;
-    padding:20px;
+    overflow-y:auto; /* Scroll imkoniyati */
+    padding:20px 15px 80px; /* Pastki padding ko'paytirildi */
 }
 .color-modal h2{
-    margin-bottom:20px;
+    margin-bottom:25px;
     font-size:1.8rem;
     line-height:1.2;
+    margin-top:20px;
 }
 .color-options{
     display:flex;
@@ -84,8 +193,10 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     background:linear-gradient(135deg,#fff 50%,#000 50%);
     border:2px solid #666;
 }
+
+/* ==================== BOSHLASH TUGMASI MOBIL UCHUN ==================== */
 .start-btn{
-    margin-top:25px;
+    margin:30px auto 20px; /* Markazga va yuqoriga ko'paytirildi */
     padding:16px 35px;
     font-size:1.1rem;
     background:#3b82f6;
@@ -97,6 +208,8 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     box-shadow:0 5px 15px rgba(59,130,246,0.4);
     transition:all 0.3s;
     min-width:200px;
+    max-width:280px;
+    display:block;
 }
 .start-btn:hover{
     background:#2563eb;
@@ -126,32 +239,127 @@ h1{margin:8px 0 14px;font-size:1.15rem}
 /* Penalty animation */
 @keyframes penaltyFlash{0%,100%{opacity:1}50%{opacity:0.3}}
 .penalty-flash{animation:penaltyFlash 1s 3;color:#ef4444 !important;font-weight:bold}
-.penalty-animation{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#ef4444;color:white;padding:20px 40px;border-radius:10px;font-size:2rem;font-weight:bold;z-index:1000;animation:penaltyPop 1s forwards;box-shadow:0 0 50px rgba(239,68,68,0.7)}
-@keyframes penaltyPop{0%{transform:translate(-50%,-50%) scale(0);opacity:0}50%{transform:translate(-50%,-50%) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.penalty-animation{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:#ef4444;
+    color:white;
+    padding:20px 40px;
+    border-radius:10px;
+    font-size:2rem;
+    font-weight:bold;
+    z-index:1000;
+    animation:penaltyPop 1s forwards;
+    box-shadow:0 0 50px rgba(239,68,68,0.7)
+}
+@keyframes penaltyPop{
+    0%{transform:translate(-50%,-50%) scale(0);opacity:0}
+    50%{transform:translate(-50%,-50%) scale(1.2);opacity:1}
+    100%{transform:translate(-50%,-50%) scale(1);opacity:0}
+}
 
-#gameOver{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;pointer-events:none;opacity:0;transition:opacity .45s}
-#gameOver.show{opacity:1;pointer-events:all}
-#gameOver div{font-size:3.2rem;font-weight:900;color:#fff;padding:22px 36px;border-radius:18px;background:rgba(0,0,0,0.36);text-align:center}
-.win{color:#34d399!important}.lose{color:#fb7185!important}
-.controls{display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap}
-button{padding:8px 16px;border-radius:10px;border:0;background:#2563eb;color:#fff;cursor:pointer;font-weight:700}
-.info{margin-top:12px;padding:14px;border-radius:12px;background:#fff;box-shadow:0 6px 18px rgba(2,6,23,0.06);width:90vmin;max-width:720px}
+#gameOver{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.7);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .45s
+}
+#gameOver.show{
+    opacity:1;
+    pointer-events:all
+}
+#gameOver div{
+    font-size:3.2rem;
+    font-weight:900;
+    color:#fff;
+    padding:22px 36px;
+    border-radius:18px;
+    background:rgba(0,0,0,0.36);
+    text-align:center
+}
+.win{color:#34d399!important}
+.lose{color:#fb7185!important}
+.controls{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+    align-items:center;
+    flex-wrap:wrap;
+    width:100%;
+    max-width:var(--size);
+    justify-content:center;
+}
+button{
+    padding:10px 18px;
+    border-radius:10px;
+    border:0;
+    background:#2563eb;
+    color:#fff;
+    cursor:pointer;
+    font-weight:700;
+    font-size:0.9rem;
+}
+.info{
+    margin-top:12px;
+    padding:14px;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 6px 18px rgba(2,6,23,0.06);
+    width:90vmin;
+    max-width:720px
+}
 .small{font-size:.95rem;color:#333}
-.legend{display:flex;gap:8px;align-items:center;margin-top:10px}
-.legend .sw{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,0.06)}
+.legend{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-top:10px;
+    flex-wrap:wrap;
+}
+.legend .sw{
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    border:1px solid rgba(0,0,0,0.06)
+}
 
-/* MOBILE RESPONSIVE FIXES - CRITICAL */
+/* ==================== MOBIL RESPONSIVE ==================== */
 @media(max-width:768px){
+    body{
+        padding:12px;
+        min-height:auto;
+    }
+    
     .color-modal{
-        padding:15px;
+        align-items:center;
         justify-content:flex-start;
-        overflow-y:auto;
+        padding:30px 15px 100px;
     }
     
     .color-modal h2{
         font-size:1.6rem;
         margin-top:30px;
         margin-bottom:15px;
+    }
+    
+    .modal-content-container{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        width:100%;
+        max-width:100%;
+        padding-bottom:20px;
     }
     
     .color-options{
@@ -174,28 +382,17 @@ button{padding:8px 16px;border-radius:10px;border:0;background:#2563eb;color:#ff
     }
     
     .start-btn{
-        position:fixed !important;
-        bottom:25px;
-        left:50%;
-        transform:translateX(-50%);
-        width:calc(100% - 40px);
-        max-width:280px;
-        margin-top:0;
-        padding:18px;
-        font-size:1.2rem;
-        z-index:10001;
-        box-shadow:0 10px 30px rgba(59,130,246,0.6);
-    }
-    
-    .modal-content-container{
-        display:flex;
-        flex-direction:column;
-        align-items:center;
+        position:relative;
+        bottom:auto;
+        left:auto;
+        transform:none;
         width:100%;
-        max-height:85vh;
-        overflow-y:auto;
-        padding-bottom:100px; /* Tugma uchun joy */
-        margin-top:10vh;
+        max-width:280px;
+        margin:25px auto;
+        padding:16px;
+        font-size:1.1rem;
+        z-index:10001;
+        box-shadow:0 5px 15px rgba(59,130,246,0.6);
     }
     
     .mode-buttons{
@@ -211,6 +408,21 @@ button{padding:8px 16px;border-radius:10px;border:0;background:#2563eb;color:#ff
         flex:1;
         padding:12px;
         font-size:0.9rem;
+    }
+    
+    .controls{
+        gap:8px;
+        padding:0 10px;
+    }
+    
+    button{
+        padding:8px 12px;
+        font-size:0.85rem;
+    }
+    
+    .info{
+        padding:12px;
+        margin-top:10px;
     }
 }
 
@@ -230,23 +442,20 @@ button{padding:8px 16px;border-radius:10px;border:0;background:#2563eb;color:#ff
     }
     
     .start-btn{
-        bottom:20px;
-        padding:16px;
-        font-size:1.1rem;
         max-width:250px;
+        padding:14px;
+        font-size:1rem;
     }
     
     .modal-content-container{
-        margin-top:5vh;
-        padding-bottom:90px;
+        padding-bottom:15px;
     }
 }
 
 /* iPhone X and similar */
 @media(max-height:700px){
-    .modal-content-container{
-        margin-top:2vh;
-        padding-bottom:80px;
+    .color-modal{
+        padding:20px 15px 90px;
     }
     
     .color-option{
@@ -255,15 +464,14 @@ button{padding:8px 16px;border-radius:10px;border:0;background:#2563eb;color:#ff
     }
     
     .start-btn{
-        bottom:15px;
-        padding:14px;
+        margin:20px auto;
     }
 }
 </style>
 </head>
 <body>
 
-<!-- Color Selection Modal - MOBILE FIXED -->
+<!-- Color Selection Modal - MOBIL UCHUN OPTIMALLASHTIRILGAN -->
 <div id="colorModal" class="color-modal">
     <div class="modal-content-container">
         <h2>🎮 Shashka PRO</h2>
@@ -287,6 +495,10 @@ button{padding:8px 16px;border-radius:10px;border:0;background:#2563eb;color:#ff
             <button onclick="selectMode('single')" id="modeSingle" style="background:#3b82f6;color:white">🤖 Bot bilan</button>
             <button onclick="selectMode('multi')" id="modeMulti" style="background:#6b7280;color:white">👥 Do'st bilan</button>
         </div>
+        <!-- ==================== YANGI: RANG MALUMOTI ==================== -->
+        <p id="colorInfo" style="margin:15px 0;color:#3b82f6;font-weight:bold;font-size:1rem;">
+            Siz: Oq | Bot: Qora
+        </p>
     </div>
     <button class="start-btn" onclick="startGame()">🎮 O'yinni Boshlash</button>
 </div>
@@ -302,18 +514,23 @@ button{padding:8px 16px;border-radius:10px;border:0;background:#2563eb;color:#ff
       <label><input id="forceCapture" type="checkbox" checked/> Majburiy olish</label>
     </div>
     <div class="info">
-      <div id="turn" class="small">Navbat: Foydalanuvchi</div>
+      <div id="turn" class="small">Navbat: <span id="currentPlayerName">Siz (oq)</span></div>
       <div id="msg" class="small" style="margin-top:6px">Dona tanlang.</div>
       <div id="perf" class="small" style="margin-top:6px;color:#555"></div>
       <div id="penaltyInfo" class="small" style="margin-top:6px;color:#555">Jarimalar: 0/3</div>
-      <div class="legend"><div class="sw" style="background:#fff"></div><div class="small">Siz (oq)</div><div class="sw" style="background:#111"></div><div class="small" id="opponentLabel">Bot (qora)</div></div>
+      <div class="legend">
+          <div class="sw" style="background:#fff"></div>
+          <div class="small" id="player1Label">Siz (oq)</div>
+          <div class="sw" style="background:#111"></div>
+          <div class="small" id="player2Label">Bot (qora)</div>
+      </div>
     </div>
     <div id="gameOver"><div id="resultText"></div></div>
 </div>
 
 <script>
 /* ==================== O'ZGARUVCHILAR ==================== */
-const TIME_LIMIT_MS = 600; // 600ms maksimal bot vaqti
+const TIME_LIMIT_MS = 600;
 const boardEl=document.getElementById('board'),newBtn=document.getElementById('newBtn'),
       undoBtn=document.getElementById('undoBtn'),redoBtn=document.getElementById('redoBtn'),
       autoBotCB=document.getElementById('autoBot'),forceCaptureCB=document.getElementById('forceCapture'),
@@ -322,20 +539,48 @@ const boardEl=document.getElementById('board'),newBtn=document.getElementById('n
       gameOverEl=document.getElementById('gameOver'),resultTextEl=document.getElementById('resultText'),
       colorModal=document.getElementById('colorModal'),mainGame=document.getElementById('mainGame'),
       difficultySlider=document.getElementById('difficultySlider'),difficultyLabel=document.getElementById('difficultyLabel'),
-      modeSingle=document.getElementById('modeSingle'),modeMulti=document.getElementById('modeMulti');
+      modeSingle=document.getElementById('modeSingle'),modeMulti=document.getElementById('modeMulti'),
+      colorInfoEl=document.getElementById('colorInfo'),currentPlayerNameEl=document.getElementById('currentPlayerName'),
+      player1LabelEl=document.getElementById('player1Label'),player2LabelEl=document.getElementById('player2Label');
 
 let board=[],history=[],historyIndex=0,selected=null,legalMoves=[],playerTurn=true,
     autoBot=true,playerColor='white',botColor='black',gameMode='single',
     difficulty=8,forceCapture=true,penaltySystem=true,playerPenalty=0,
     moveHistory=[],captures={white:0,black:0},historyStack=[],futureStack=[];
 
-/* ==================== RANG VA REJIM TANLASH ==================== */
+/* ==================== YANGI: RANG TANLASH VA KO'RSATISH ==================== */
 function selectColor(color){
-    if(color==='random') color=Math.random()>0.5?'white':'black';
-    playerColor=color;botColor=color==='white'?'black':'white';
+    if(color==='random'){
+        color=Math.random()>0.5?'white':'black';
+        // Random tanlanganda ko'rsatish
+        if(color==='white'){
+            playerColor='white';
+            botColor='black';
+        }else{
+            playerColor='black';
+            botColor='white';
+        }
+    }else{
+        playerColor=color;
+        botColor=color==='white'?'black':'white';
+    }
+    
     document.querySelectorAll('.color-option').forEach(opt=>opt.classList.remove('selected'));
     event.target.classList.add('selected');
     updateDifficultyLabel();
+    updateColorInfo(); // Rang ma'lumotini yangilash
+}
+
+function updateColorInfo(){
+    if(gameMode==='single'){
+        colorInfoEl.textContent=`Siz: ${playerColor==='white'?'Oq':'Qora'} | Bot: ${botColor==='white'?'Oq':'Qora'}`;
+        player1LabelEl.textContent=`Siz (${playerColor==='white'?'oq':'qora'})`;
+        player2LabelEl.textContent=`Bot (${botColor==='white'?'oq':'qora'})`;
+    }else{
+        colorInfoEl.textContent=`1-o'yinchi: Oq | 2-o'yinchi: Qora`;
+        player1LabelEl.textContent=`1-o'yinchi (oq)`;
+        player2LabelEl.textContent=`2-o'yinchi (qora)`;
+    }
 }
 
 function selectMode(mode){
@@ -343,6 +588,7 @@ function selectMode(mode){
     modeSingle.style.background=mode==='single'?'#3b82f6':'#6b7280';
     modeMulti.style.background=mode==='multi'?'#3b82f6':'#6b7280';
     updateDifficultyLabel();
+    updateColorInfo(); // Rejim o'zgarganda rang ma'lumotini yangilash
 }
 
 function updateDifficultyLabel(){
@@ -357,11 +603,16 @@ function startGame(){
     initBoard();
 }
 
-/* ==================== ASOSIY FUNKSIYALAR (asl kod) ==================== */
+/* ==================== ASOSIY FUNKSIYALAR ==================== */
 newBtn.onclick=()=>newGame();
 undoBtn.onclick=()=>undo();
 redoBtn.onclick=()=>redo();
-autoBotCB.onchange=()=>autoBot=autoBotCB.checked;
+autoBotCB.onchange=()=>{
+    autoBot=autoBotCB.checked;
+    if(gameMode==='single'&&!playerTurn&&autoBot){
+        setTimeout(()=>botMoveULTIMATE(),100);
+    }
+};
 forceCaptureCB.onchange=()=>forceCapture=forceCaptureCB.checked;
 difficultySlider.oninput=()=>{difficulty=parseInt(difficultySlider.value);updateDifficultyLabel();};
 
@@ -372,20 +623,53 @@ function initBoard(){
         else if(r>4)board[r][c]={color:'white',king:false};
     }
     history=[cloneBoard(board)];historyIndex=0;historyStack=[];futureStack=[];
-    selected=null;legalMoves=[];playerTurn=playerColor==='white';
+    selected=null;legalMoves=[];
+    
+    // ==================== YANGI: O'YIN REJIMIGA QARAB NAVBAT ====================
+    if(gameMode==='multi'){
+        playerTurn=true; // Do'st bilan o'ynashda har doim 1-o'yinchi (oq) boshlaydi
+        autoBot=false;
+        autoBotCB.checked=false;
+        autoBotCB.disabled=true;
+    }else{
+        // Bot bilan o'ynashda
+        playerTurn=playerColor==='white';
+        autoBotCB.disabled=false;
+    }
+    
     playerPenalty=0;moveHistory=[];captures={white:0,black:0};
     updateTurn();updatePenaltyDisplay();setPerf('');hideGameOver();render();
-    if(gameMode==='single'&&!playerTurn&&autoBot)setTimeout(()=>botMoveULTIMATE(),100);
+    
+    if(gameMode==='single'&&!playerTurn&&autoBot){
+        setTimeout(()=>botMoveULTIMATE(),100);
+    }
 }
 
 function cloneBoard(b){return b.map(row=>row.map(cell=>cell?{color:cell.color,king:cell.king}:null))}
 function inBoard(r,c){return r>=0&&r<8&&c>=0&&c<8}
 function setMsg(s){msgEl.textContent=s}
 function setPerf(s){perfEl.textContent=s}
+
 function updateTurn(){
-    if(gameMode==='multi') turnEl.textContent=playerTurn?"Navbat: 1-oyinchi":"Navbat: 2-oyinchi";
-    else turnEl.textContent=playerTurn?"Navbat: Siz":"Navbat: Bot";
+    if(gameMode==='multi'){
+        if(playerTurn){
+            currentPlayerNameEl.textContent="1-o'yinchi (oq)";
+            turnEl.textContent="Navbat: 1-o'yinchi";
+        }else{
+            currentPlayerNameEl.textContent="2-o'yinchi (qora)";
+            turnEl.textContent="Navbat: 2-o'yinchi";
+        }
+    }else{
+        if(playerTurn){
+            currentPlayerNameEl.textContent=`Siz (${playerColor==='white'?'oq':'qora'})`;
+            turnEl.textContent="Navbat: Siz";
+        }else{
+            currentPlayerNameEl.textContent=`Bot (${botColor==='white'?'oq':'qora'})`;
+            turnEl.textContent="Navbat: Bot";
+        }
+    }
 }
+
 function updatePenaltyDisplay(){penaltyInfoEl.textContent=`Jarimalar: ${playerPenalty}/3`;penaltyInfoEl.className=playerPenalty>0?'small penalty-flash':'small';}
 function showResult(text,win){resultTextEl.textContent=text;resultTextEl.className=win?"win":"lose";gameOverEl.classList.add("show");setTimeout(()=>hideGameOver(),2100)}
 function hideGameOver(){gameOverEl.classList.remove("show")}
@@ -488,25 +772,72 @@ function applyMove(boardState,move){
     return b;
 }
 
+/* ==================== YANGI: ANIMATSIYALI HARAKAT ==================== */
 async function animateMove(move,isBot=false){
     const path=move.path||[move.from,move.to];
     const fromPiece=board[move.from[0]][move.from[1]];
     const isKingBefore=fromPiece&&fromPiece.king;
+    
+    // Olingan donalarni belgilash
+    if(move.captures&&move.captures.length>0){
+        move.captures.forEach(([r,c])=>{
+            const capturedCell=boardEl.children[r*8+c];
+            if(capturedCell){
+                const capturedPiece=capturedCell.querySelector('.piece');
+                if(capturedPiece){
+                    capturedPiece.style.transition='opacity 0.3s';
+                    capturedPiece.style.opacity='0.3';
+                }
+            }
+        });
+    }
+    
+    // Harakat animatsiyasi
     for(let i=1;i<path.length;i++){
         const from=path[i-1],to=path[i];
         const fromCell=boardEl.children[from[0]*8+from[1]];
         const pieceEl=fromCell.querySelector('.piece');
+        
         if(!pieceEl)continue;
+        
         const rf=fromCell.getBoundingClientRect();
         const rt=boardEl.children[to[0]*8+to[1]].getBoundingClientRect();
-        pieceEl.style.setProperty('--dx',(rt.left-rf.left)+'px');
-        pieceEl.style.setProperty('--dy',(rt.top-rf.top)+'px');
-        pieceEl.classList.add('jumping');
-        await new Promise(r=>setTimeout(r,520));
-        pieceEl.classList.remove('jumping');
+        const dx=rt.left-rf.left;
+        const dy=rt.top-rf.top;
+        
+        // Animatsiya klassini qo'shish
+        pieceEl.style.setProperty('--move-x', dx+'px');
+        pieceEl.style.setProperty('--move-y', dy+'px');
+        pieceEl.style.setProperty('--jump-x', dx+'px');
+        pieceEl.style.setProperty('--jump-y', dy+'px');
+        
+        if(move.captures&&move.captures.length>0){
+            pieceEl.classList.add('capturing-piece');
+            await new Promise(r=>setTimeout(r,600));
+            pieceEl.classList.remove('capturing-piece');
+        }else{
+            pieceEl.classList.add('moving-piece');
+            await new Promise(r=>setTimeout(r,400));
+            pieceEl.classList.remove('moving-piece');
+        }
     }
+    
+    // Doskani yangilash
     board=applyMove(board,move);
     render();
+    
+    // Olingan donalarni tozalash
+    if(move.captures&&move.captures.length>0){
+        move.captures.forEach(([r,c])=>{
+            const cell=boardEl.children[r*8+c];
+            if(cell){
+                const piece=cell.querySelector('.piece');
+                if(piece)piece.style.opacity='1';
+            }
+        });
+    }
+    
+    // Dama animatsiyasi
     const finalCell=boardEl.children[move.to[0]*8+move.to[1]];
     const finalPiece=finalCell.querySelector('.piece');
     if(finalPiece&&!isKingBefore&&board[move.to[0]][move.to[1]].king){
@@ -543,7 +874,6 @@ function redo(){
     render();
     setMsg("Oldinga qaytdingiz.");
     
-    // Agar botning navbati bo'lsa, bot harakat qilishini davom ettirish
     if(gameMode==='single'&&!playerTurn&&autoBot){
         setTimeout(()=>botMoveULTIMATE(),100);
     }
@@ -551,18 +881,26 @@ function redo(){
 
 /* ==================== ASOSIY O'YIN FUNKSIYALARI ==================== */
 async function onCellClick(r,c){
-    if(!playerTurn||(gameMode==='single'&&!isPlayerTurn()))return;
+    // ==================== YANGI: O'YIN REJIMIGA QARAB TEKSHIRISH ====================
+    if(gameMode==='single'){
+        // Bot bilan o'ynashda faqat o'z navbatingizda bosish mumkin
+        if(!playerTurn)return;
+        if(!isPlayerTurn())return;
+    }else{
+        // Do'st bilan o'ynashda faqat o'z navbatingizda bosish mumkin
+        if(!playerTurn&&!isPlayerTurn())return;
+        if(playerTurn&&!isPlayerTurn())return;
+    }
+    
     const p=board[r][c];
     
     // Agar dona tanlangan bo'lsa
     if(selected){
         const chosen=legalMoves.find(m=>m.to[0]===r&&m.to[1]===c&&arraysEqual(m.from,selected));
         if(chosen){
-            // Majburiy olishni tekshirish
             if(forceCapture&&hasForcedCapture()){
                 const pieceCaptures=legalMoves.filter(m=>m.captures&&m.captures.length>0);
                 if(pieceCaptures.length>0&&!chosen.captures){
-                    // Jarima berish
                     if(penaltySystem){
                         applyPenalty();
                         showPenaltyAnimation();
@@ -576,7 +914,6 @@ async function onCellClick(r,c){
                 }
             }
             
-            // Harakatni amalga oshirish
             executeMove(chosen);
             return;
         }else{
@@ -590,7 +927,6 @@ async function onCellClick(r,c){
         selected=[r,c];
         legalMoves=movesFrom(board,r,c);
         
-        // Majburiy olishni tekshirish
         if(forceCapture&&hasForcedCapture()){
             const pieceCaptures=legalMoves.filter(m=>m.captures&&m.captures.length>0);
             if(pieceCaptures.length===0){
@@ -607,45 +943,57 @@ async function onCellClick(r,c){
 }
 
 function isPlayerTurn(){
-    if(gameMode==='multi')return true;
-    return playerTurn;
+    if(gameMode==='multi'){
+        // Do'st bilan o'ynashda: oq - 1-o'yinchi, qora - 2-o'yinchi
+        if(playerTurn)return true; // 1-o'yinchi navbatida
+        else return false; // 2-o'yinchi navbatida
+    }else{
+        // Bot bilan o'ynashda
+        return playerTurn;
+    }
 }
 
 function isPlayerPiece(piece){
-    if(gameMode==='multi')return piece.color===(playerTurn?'white':'black');
-    return piece.color===playerColor;
+    if(gameMode==='multi'){
+        // Do'st bilan o'ynashda: oq - 1-o'yinchi, qora - 2-o'yinchi
+        if(playerTurn)return piece.color==='white';
+        else return piece.color==='black';
+    }else{
+        // Bot bilan o'ynashda
+        return piece.color===playerColor;
+    }
 }
 
 function hasForcedCapture(){
-    const currentColor=playerTurn?playerColor:(gameMode==='multi'?'black':botColor);
+    let currentColor;
+    if(gameMode==='multi'){
+        currentColor=playerTurn?'white':'black';
+    }else{
+        currentColor=playerTurn?playerColor:botColor;
+    }
     const moves=allMovesFor(board,currentColor);
     return moves.some(m=>m.captures&&m.captures.length>0);
 }
 
 function executeMove(move){
-    // Tarixga qo'shish
     history=history.slice(0,historyIndex+1);
     const newBoard=applyMove(board,move);
     history.push(cloneBoard(newBoard));
     historyIndex++;
     futureStack=[];
     
-    // Harakatni amalga oshirish
     board=newBoard;
     selected=null;legalMoves=[];
     
-    // O'yin tugashini tekshirish
     if(checkEnd()){
         endGame();
         return;
     }
     
-    // Navbatni o'zgartirish
     playerTurn=!playerTurn;
     updateUI();
     render();
     
-    // Agar botning navbati bo'lsa
     if(gameMode==='single'&&!playerTurn&&autoBot){
         setTimeout(()=>botMoveULTIMATE(),100);
     }
@@ -726,8 +1074,7 @@ function render(){
                 crown.textContent='★';el.appendChild(crown);
             }
             
-            // Majburiy olishni ko'rsatish
-            if(forceCapture&&p.color===playerColor&&hasForcedCapture()){
+            if(forceCapture&&p.color===(gameMode==='multi'?(playerTurn?'white':'black'):playerColor)&&hasForcedCapture()){
                 const pieceMoves=movesFrom(board,r,c);
                 if(pieceMoves.some(m=>m.captures&&m.captures.length>0)){
                     el.classList.add('capture-outline');
@@ -796,7 +1143,6 @@ function heuristicULTIMATE(bd){
     if(blackPieces>whitePieces*2)score+=2.0;
     if(whitePieces===0)score+=1000;
     
-    // Qiyinchilik darajasiga qarab ko'paytirish
     score*=(difficulty/8);
     
     return score;
@@ -894,15 +1240,14 @@ function quiescenceSearch(boardState,alpha,beta,maximizing,startTime,depth){
 function getBestMoveULTIMATE(boardState){
     const startTime=performance.now();
     transpositionTable.clear();
-    const moves=allMovesFor(boardState,'black');
+    const moves=allMovesFor(boardState,botColor); // ==================== YANGI: botColor ishlatildi ====================
     if(moves.length===0)return null;
     
-    // Qiyinchilik darajasi bo'yicha chuqurlik
     let maxDepth;
     if(difficulty<=3)maxDepth=2;
     else if(difficulty<=6)maxDepth=4;
     else if(difficulty<=9)maxDepth=6;
-    else maxDepth=8; // 10-12 daraja uchun 8 darajali qidiruv
+    else maxDepth=8;
     
     let bestMove=moves[0],bestScore=-Infinity,depth=1;
     
@@ -930,10 +1275,9 @@ function getBestMoveULTIMATE(boardState){
 async function botMoveULTIMATE(){
     if(!autoBot||gameMode==='multi')return;
     const start=performance.now();
-    const moves=allMovesFor(board,'black');
+    const moves=allMovesFor(board,botColor); // ==================== YANGI: botColor ishlatildi ====================
     if(moves.length===0){showResult("Siz yutdingiz!",true);return;}
     
-    // Tezkor olish harakatlari
     const captures=moves.filter(m=>m.captures&&m.captures.length>0);
     if(captures.length>0){
         captures.sort((a,b)=>b.captures.length-a.captures.length);
@@ -944,7 +1288,6 @@ async function botMoveULTIMATE(){
         }
     }
     
-    // Asosiy hisoblash
     const move=getBestMoveULTIMATE(board);
     if(move)executeMove(move);
 }
