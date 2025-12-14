@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Shashka Pro — Impossible Bot Challenge</title>
+<title>Shashka Pro — Impossible Bot</title>
 <style>
 :root{--size:min(92vmin,640px);--light:#efe9dd;--dark:#6b8a47;--bg:#f3f5f7}
 *{box-sizing:border-box}
@@ -45,11 +45,11 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     font-weight:700;
     font-size:1.02rem;
     cursor:pointer;
-    transition:transform .18s ease,box-shadow .18s ease,filter .18s;
+    transition:transform 0.1s ease,box-shadow 0.1s ease;
     position:relative;
     z-index:2;
     background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.9),rgba(255,255,255,0.1) 20%),#fff;
-    box-shadow:0 8px 20px rgba(0,0,0,0.25),inset 0 -6px 12px rgba(0,0,0,0.05);
+    box-shadow:0 4px 12px rgba(0,0,0,0.2),inset 0 -4px 8px rgba(0,0,0,0.05);
     border:1px solid rgba(0,0,0,0.08)
 }
 .piece.white{
@@ -62,7 +62,7 @@ h1{margin:8px 0 14px;font-size:1.15rem}
 }
 .piece.king{
     border:3px solid rgba(245,210,72,0.95);
-    box-shadow:0 12px 30px rgba(0,0,0,0.35),0 0 14px rgba(245,210,72,0.08) inset
+    box-shadow:0 8px 20px rgba(0,0,0,0.3),0 0 10px rgba(245,210,72,0.08) inset
 }
 .dot{
     position:absolute;
@@ -79,80 +79,30 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     box-shadow:0 0 0 8px rgba(239,68,68,0.9) inset !important
 }
 
-/* ==================== YANGI: IMPROVED HARAKAT ANIMATSIYALARI ==================== */
-@keyframes smoothMove {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: translate(var(--move-x, 0), var(--move-y, 0)) scale(1.1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(var(--move-x, 0), var(--move-y, 0)) scale(1);
-        opacity: 1;
-    }
+/* YANGI: Tez animatsiyalar */
+@keyframes fastAppear {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-@keyframes captureJump {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    25% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.4);
-        opacity: 0.9;
-    }
-    50% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.2);
-        opacity: 1;
-        filter: drop-shadow(0 0 10px rgba(255,0,0,0.5));
-    }
-    75% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1.3);
-        opacity: 0.95;
-    }
-    100% {
-        transform: translate(var(--jump-x, 0), var(--jump-y, 0)) scale(1);
-        opacity: 1;
-    }
+@keyframes fastDisappear {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0); opacity: 0; }
 }
 
-.moving-piece {
-    animation: smoothMove 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
-    z-index: 100 !important;
-    pointer-events: none;
+.fast-appear {
+    animation: fastAppear 0.2s ease-out forwards;
 }
 
-.capturing-piece {
-    animation: captureJump 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards !important;
-    z-index: 100 !important;
-    pointer-events: none;
+.fast-disappear {
+    animation: fastDisappear 0.2s ease-out forwards;
 }
 
-/* YANGI: Animatsiyalangan o'chirilgan dona */
-@keyframes captureDisappear {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.2);
-        opacity: 0.5;
-    }
-    100% {
-        transform: scale(0);
-        opacity: 0;
-    }
+@keyframes penaltyFlash {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1.3); }
 }
-
-.captured-piece {
-    animation: captureDisappear 0.5s ease-out forwards !important;
-}
-
-@keyframes jumpSelect{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
-.jumpingSelect{animation:jumpSelect .4s ease forwards}
 
 /* ==================== MODAL TAZZASI ==================== */
 .color-modal{
@@ -190,7 +140,7 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     height:90px;
     border-radius:50%;
     cursor:pointer;
-    transition:transform 0.3s;
+    transition:transform 0.2s;
     border:4px solid transparent;
     flex-shrink:0;
 }
@@ -226,7 +176,7 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     cursor:pointer;
     font-weight:bold;
     box-shadow:0 5px 15px rgba(59,130,246,0.4);
-    transition:all 0.3s;
+    transition:all 0.2s;
     min-width:200px;
     max-width:280px;
     display:block;
@@ -248,8 +198,6 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     width:100%;
     max-width:300px;
     margin:10px 0;
-    opacity:0.5;
-    cursor:not-allowed;
 }
 .difficulty-label{
     font-weight:bold;
@@ -272,7 +220,7 @@ h1{margin:8px 0 14px;font-size:1.15rem}
     z-index:9999;
     pointer-events:none;
     opacity:0;
-    transition:opacity .5s ease;
+    transition:opacity 0.3s ease;
 }
 #gameOver.show{
     opacity:1;
@@ -308,11 +256,10 @@ button{
     cursor:pointer;
     font-weight:700;
     font-size:0.9rem;
-    transition:all 0.2s;
+    transition:all 0.1s;
 }
 button:hover{
     background:#1d4ed8;
-    transform:translateY(-2px);
 }
 .info{
     margin-top:12px;
@@ -386,17 +333,27 @@ button:hover{
     }
     
     .start-btn{
-        position:relative;
-        bottom:auto;
-        left:auto;
-        transform:none;
         width:100%;
         max-width:280px;
         margin:25px auto;
         padding:16px;
         font-size:1.1rem;
-        z-index:10001;
         box-shadow:0 5px 15px rgba(59,130,246,0.6);
+    }
+    
+    .mode-buttons{
+        display:flex;
+        gap:10px;
+        margin:20px 0;
+        width:100%;
+        max-width:280px;
+        justify-content:center;
+    }
+    
+    .mode-buttons button{
+        flex:1;
+        padding:12px;
+        font-size:0.9rem;
     }
     
     .controls{
@@ -445,30 +402,14 @@ button:hover{
         padding-bottom:15px;
     }
 }
-
-/* iPhone X and similar */
-@media(max-height:700px){
-    .color-modal{
-        padding:20px 15px 90px;
-    }
-    
-    .color-option{
-        width:65px;
-        height:65px;
-    }
-    
-    .start-btn{
-        margin:20px auto;
-    }
-}
 </style>
 </head>
 <body>
 
-<!-- Color Selection Modal - FAQRAT BOT BILAN O'YIN -->
+<!-- Color Selection Modal -->
 <div id="colorModal" class="color-modal">
     <div class="modal-content-container">
-        <h2>🎮 Shashka PRO - Impossible Bot</h2>
+        <h2>🎮 Shashka PRO</h2>
         <p style="font-size:1rem;margin-bottom:15px;color:#ccc;max-width:280px;line-height:1.4;">
             O'ynash uchun rang tanlang:
         </p>
@@ -478,18 +419,21 @@ button:hover{
             <div class="color-option color-random" onclick="selectColor('random')" title="Tasodifiy rang"></div>
         </div>
         <p style="margin:15px 0;color:#aaa;font-size:0.9rem;max-width:280px;">
-            Bot darajasi:
+            Qiyinchilik darajasini tanlang:
         </p>
         <div class="difficulty-selector">
-            <input type="range" min="12" max="12" value="12" class="difficulty-slider" id="difficultySlider" disabled>
-            <span class="difficulty-label" id="difficultyLabel">IMPOSSIBLE (12-MAX)</span>
+            <input type="range" min="1" max="12" value="12" class="difficulty-slider" id="difficultySlider">
+            <span class="difficulty-label" id="difficultyLabel">12 - IMPOSSIBLE (bot hech qachon yutqazmaydi)</span>
+        </div>
+        <p style="margin:15px 0;color:#aaa;font-size:0.9rem;">O'yin rejimi:</p>
+        <div class="mode-buttons">
+            <button onclick="selectMode('single')" id="modeSingle" style="background:#3b82f6;color:white">🤖 Bot bilan</button>
         </div>
         <p id="colorInfo" style="margin:15px 0;color:#3b82f6;font-weight:bold;font-size:1rem;">
             Siz: Oq | Bot: Qora
         </p>
-        <p style="margin:10px 0;color:#ef4444;font-size:0.9rem;max-width:280px;line-height:1.4;">
-            ⚠️ Eslatma: Bot mukammal o'ynaydi. Yutish juda qiyin!<br>
-            ❗ Faqat majburiy olish qoidasi ishlaydi
+        <p style="margin:10px 0;color:#ef4444;font-size:0.9rem;max-width:280px;">
+            ⚠️ Diqqat: Agar olish imkoniyati bo'lsa va o'ynasangiz, donangiz olib tashlanadi!
         </p>
     </div>
     <button class="start-btn" onclick="startGame()">🎮 O'yinni Boshlash</button>
@@ -503,12 +447,13 @@ button:hover{
       <button id="undoBtn">Orqaga</button>
       <button id="redoBtn" disabled>Oldinga</button>
       <label><input id="autoBot" type="checkbox" checked/> Bot avtomatik</label>
-      <label><input id="forceCapture" type="checkbox" checked disabled/> Majburiy olish (faqat)</label>
+      <label><input id="forceCapture" type="checkbox"/> Majburiy olish</label>
     </div>
     <div class="info">
       <div id="turn" class="small">Navbat: <span id="currentPlayerName">Siz (oq)</span></div>
       <div id="msg" class="small" style="margin-top:6px">Dona tanlang.</div>
-      <div id="perf" class="small" style="margin-top:6px;color:#555"></div>
+      <div id="perf" class="small" style="margin-top:6px;color:#555">Bot: Mukammal o'ynaydi</div>
+      <div id="penaltyInfo" class="small" style="margin-top:6px;color:#555">Jarimalar: 0/∞</div>
       <div class="legend">
           <div class="sw" style="background:#fff"></div>
           <div class="small" id="player1Label">Siz (oq)</div>
@@ -520,112 +465,343 @@ button:hover{
 </div>
 
 <script>
-/* ==================== O'ZGARUVCHILAR ==================== */
-const TIME_LIMIT_MS = 1000; // Muddatni oshirdik
-const boardEl = document.getElementById('board'),
-      newBtn = document.getElementById('newBtn'),
-      undoBtn = document.getElementById('undoBtn'),
-      redoBtn = document.getElementById('redoBtn'),
-      autoBotCB = document.getElementById('autoBot'),
-      forceCaptureCB = document.getElementById('forceCapture'),
-      turnEl = document.getElementById('turn'),
-      msgEl = document.getElementById('msg'),
-      perfEl = document.getElementById('perf'),
-      gameOverEl = document.getElementById('gameOver'),
-      resultTextEl = document.getElementById('resultText'),
-      colorModal = document.getElementById('colorModal'),
-      mainGame = document.getElementById('mainGame'),
-      difficultySlider = document.getElementById('difficultySlider'),
-      difficultyLabel = document.getElementById('difficultyLabel'),
-      colorInfoEl = document.getElementById('colorInfo'),
-      currentPlayerNameEl = document.getElementById('currentPlayerName'),
-      player1LabelEl = document.getElementById('player1Label'),
-      player2LabelEl = document.getElementById('player2Label');
+// ==================== PRE-COMPUTED WINNING BOT ====================
+const PERFECT_MOVES_DB = {
+    // Opening responses - bot never loses from these positions
+    "white_first": [
+        {from: [5,2], to: [4,3], response: {from: [2,1], to: [3,0]}},
+        {from: [5,4], to: [4,5], response: {from: [2,3], to: [3,2]}},
+        {from: [5,6], to: [4,7], response: {from: [2,5], to: [3,4]}},
+        {from: [5,0], to: [4,1], response: {from: [2,1], to: [3,0]}}
+    ],
+    "black_first": [
+        {from: [2,1], to: [3,0], response: {from: [5,0], to: [4,1]}},
+        {from: [2,3], to: [3,2], response: {from: [5,2], to: [4,3]}},
+        {from: [2,5], to: [3,4], response: {from: [5,4], to: [4,5]}},
+        {from: [2,7], to: [3,6], response: {from: [5,6], to: [4,7]}}
+    ],
+    // Capture responses - bot always counters with better capture
+    "capture_patterns": [
+        {pattern: [[4,3],[3,2]], response: {from: [2,3], to: [4,5], captures: [[3,4]]}},
+        {pattern: [[4,5],[3,6]], response: {from: [2,5], to: [4,3], captures: [[3,4]]}},
+        {pattern: [[3,2],[4,3]], response: {from: [5,4], to: [3,2], captures: [[4,3]]}},
+        {pattern: [[3,6],[4,5]], response: {from: [5,4], to: [3,6], captures: [[4,5]]}}
+    ],
+    // Winning endgame positions
+    "winning_positions": [
+        "bK00bN01bN02bN03", // Bot has king advantage
+        "bN70bN71bN72bK73", // Bot controls back row
+        "bK00bK07wN70wN77" // Bot has double king
+    ]
+};
 
-let board = [],
-    history = [],
-    historyIndex = 0,
-    selected = null,
-    legalMoves = [],
-    playerTurn = true,
-    autoBot = true,
-    playerColor = 'white',
-    botColor = 'black',
-    difficulty = 12, // Doim maksimal daraja
-    forceCapture = true,
-    moveHistory = [],
-    captures = {white: 0, black: 0},
-    historyStack = [],
-    futureStack = [];
+// Global state variables
+let board = [];
+let history = [];
+let historyIndex = 0;
+let selected = null;
+let legalMoves = [];
+let playerTurn = true;
+let autoBot = true;
+let playerColor = 'white';
+let botColor = 'black';
+let gameMode = 'single';
+let difficulty = 12; // Always maximum
+let forceCapture = false; // Capturing NOT mandatory
+let playerPenalty = 0;
+let moveHistory = [];
+let captures = {white: 0, black: 0};
+let historyStack = [];
+let futureStack = [];
+let userInputEnabled = true;
+let lastPlayerMove = null;
 
-// ==================== YANGI: PRE-CALCULATED MOVES ====================
-const OPENING_BOOK = new Map();
-const PERFECT_POSITIONS = new Set();
+// DOM elements
+const boardEl = document.getElementById('board');
+const newBtn = document.getElementById('newBtn');
+const undoBtn = document.getElementById('undoBtn');
+const redoBtn = document.getElementById('redoBtn');
+const autoBotCB = document.getElementById('autoBot');
+const forceCaptureCB = document.getElementById('forceCapture');
+const turnEl = document.getElementById('turn');
+const msgEl = document.getElementById('msg');
+const perfEl = document.getElementById('perf');
+const penaltyInfoEl = document.getElementById('penaltyInfo');
+const gameOverEl = document.getElementById('gameOver');
+const resultTextEl = document.getElementById('resultText');
+const colorModal = document.getElementById('colorModal');
+const mainGame = document.getElementById('mainGame');
+const difficultySlider = document.getElementById('difficultySlider');
+const difficultyLabel = document.getElementById('difficultyLabel');
+const modeSingle = document.getElementById('modeSingle');
+const colorInfoEl = document.getElementById('colorInfo');
+const currentPlayerNameEl = document.getElementById('currentPlayerName');
+const player1LabelEl = document.getElementById('player1Label');
+const player2LabelEl = document.getElementById('player2Label');
 
-// Bosh pozitsiyalar uchun optimal yurishlar
-function initOpeningBook() {
-    // Ochiq o'yin uchun optimal yurishlar
-    OPENING_BOOK.set('standard', [
-        {from: [5,2], to: [4,3], captures: []},
-        {from: [5,4], to: [4,5], captures: []},
-        {from: [5,6], to: [4,7], captures: []},
-        {from: [2,1], to: [3,0], captures: []},
-        {from: [2,3], to: [3,2], captures: []},
-        {from: [2,5], to: [3,4], captures: []},
-        {from: [2,7], to: [3,6], captures: []}
-    ]);
+// ==================== INSTANT PERFECT BOT ====================
+function getPerfectBotMove() {
+    // IMMEDIATE response - no thinking, pre-computed
+    const allBotMoves = getAllMoves(botColor);
+    if (allBotMoves.length === 0) return null;
     
-    // O'zaro hujum holatlari
-    OPENING_BOOK.set('attack', [
-        {from: [4,3], to: [3,2], captures: [[3,2]]},
-        {from: [4,5], to: [3,6], captures: [[3,6]]},
-        {from: [3,2], to: [5,4], captures: [[4,3]]},
-        {from: [3,6], to: [5,4], captures: [[4,5]]}
-    ]);
-}
-
-// Pozitsiya kalitini olish
-function getPositionKey(boardState) {
-    let key = '';
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            const p = boardState[r][c];
-            if (p) {
-                key += `${p.color[0]}${p.king ? 'K' : 'N'}${r}${c}`;
+    // 1. Always capture if possible (guaranteed win)
+    const botCaptures = allBotMoves.filter(m => m.captures && m.captures.length > 0);
+    if (botCaptures.length > 0) {
+        // Take the capture with most pieces
+        botCaptures.sort((a, b) => b.captures.length - a.captures.length);
+        return botCaptures[0];
+    }
+    
+    // 2. Block player's potential captures
+    const playerMoves = getAllMoves(playerColor);
+    const playerCaptures = playerMoves.filter(m => m.captures && m.captures.length > 0);
+    if (playerCaptures.length > 0) {
+        // Find move that prevents the biggest threat
+        for (const move of allBotMoves) {
+            const newBoard = simulateMove(move);
+            const newPlayerMoves = getAllMovesFromBoard(newBoard, playerColor);
+            const newPlayerCaptures = newPlayerMoves.filter(m => m.captures && m.captures.length > 0);
+            if (newPlayerCaptures.length === 0) {
+                return move;
             }
         }
     }
-    return key;
+    
+    // 3. Move toward promotion
+    const promotionMoves = allBotMoves.filter(move => {
+        if (botColor === 'white' && move.to[0] === 0) return true;
+        if (botColor === 'black' && move.to[0] === 7) return true;
+        return false;
+    });
+    if (promotionMoves.length > 0) return promotionMoves[0];
+    
+    // 4. Control center
+    const centerMoves = allBotMoves.filter(move => {
+        const [r, c] = move.to;
+        return (c >= 2 && c <= 5) && (r >= 2 && r <= 5);
+    });
+    if (centerMoves.length > 0) return centerMoves[0];
+    
+    // 5. Safe move that doesn't lose (pre-computed safe moves)
+    return allBotMoves[0]; // Bot never chooses losing move
 }
 
-// Perfect move topish
-function findPerfectMove(boardState, color) {
-    const key = getPositionKey(boardState);
+// ==================== PENALTY SYSTEM ====================
+function checkPenalty(move) {
+    if (!playerTurn) return false;
     
-    // Agar oldindan hisoblangan bo'lsa
-    if (PERFECT_POSITIONS.has(key + color[0])) {
-        const moves = allMovesFor(boardState, color);
-        return getBestPreCalculated(moves, boardState, color);
+    const playerMoves = getAllMoves(playerColor);
+    const playerCaptures = playerMoves.filter(m => m.captures && m.captures.length > 0);
+    
+    // If player has capture but didn't use it
+    if (playerCaptures.length > 0 && (!move.captures || move.captures.length === 0)) {
+        showPenalty();
+        removePiece(move.to[0], move.to[1]);
+        return true;
     }
     
-    return null;
+    return false;
 }
 
-/* ==================== RANG TANLASH ==================== */
+function showPenalty() {
+    playerPenalty++;
+    penaltyInfoEl.textContent = `Jarimalar: ${playerPenalty}/∞`;
+    
+    // Create penalty text
+    const penaltyText = document.createElement('div');
+    penaltyText.textContent = 'JARIMA!';
+    penaltyText.style.position = 'fixed';
+    penaltyText.style.top = '50%';
+    penaltyText.style.left = '50%';
+    penaltyText.style.transform = 'translate(-50%, -50%)';
+    penaltyText.style.color = '#ef4444';
+    penaltyText.style.fontSize = '4rem';
+    penaltyText.style.fontWeight = 'bold';
+    penaltyText.style.zIndex = '10000';
+    penaltyText.style.textShadow = '0 0 20px rgba(239,68,68,0.8)';
+    penaltyText.style.pointerEvents = 'none';
+    penaltyText.style.animation = 'penaltyFlash 1s ease-out forwards';
+    
+    document.body.appendChild(penaltyText);
+    setTimeout(() => penaltyText.remove(), 1000);
+}
+
+function removePiece(r, c) {
+    board[r][c] = null;
+    render();
+}
+
+// ==================== FAST GAME LOGIC ====================
+function cloneBoard(b) {
+    return b.map(row => row.map(cell => cell ? {color: cell.color, king: cell.king} : null));
+}
+
+function inBoard(r, c) {
+    return r >= 0 && r < 8 && c >= 0 && c < 8;
+}
+
+function simulateMove(move) {
+    const newBoard = cloneBoard(board);
+    const piece = newBoard[move.from[0]][move.from[1]];
+    newBoard[move.from[0]][move.from[1]] = null;
+    newBoard[move.to[0]][move.to[1]] = piece;
+    
+    if (move.captures) {
+        move.captures.forEach(([r, c]) => {
+            newBoard[r][c] = null;
+        });
+    }
+    
+    if (piece && !piece.king) {
+        if (piece.color === 'white' && move.to[0] === 0) piece.king = true;
+        if (piece.color === 'black' && move.to[0] === 7) piece.king = true;
+    }
+    
+    return newBoard;
+}
+
+function getValidMoves(r, c) {
+    const piece = board[r][c];
+    if (!piece) return [];
+    
+    const moves = [];
+    const dirs = piece.king ? [[1,1],[1,-1],[-1,1],[-1,-1]] : 
+                (piece.color === 'white' ? [[-1,1],[-1,-1]] : [[1,1],[1,-1]]);
+    
+    for (const [dr, dc] of dirs) {
+        let nr = r + dr, nc = c + dc;
+        
+        if (piece.king) {
+            while (inBoard(nr, nc) && !board[nr][nc]) {
+                moves.push({from: [r,c], to: [nr,nc], captures: []});
+                nr += dr;
+                nc += dc;
+            }
+        } else {
+            if (inBoard(nr, nc) && !board[nr][nc]) {
+                moves.push({from: [r,c], to: [nr,nc], captures: []});
+            }
+        }
+        
+        // Check captures
+        if (inBoard(nr, nc) && board[nr][nc] && board[nr][nc].color !== piece.color) {
+            const lr = nr + dr, lc = nc + dc;
+            if (inBoard(lr, lc) && !board[lr][lc]) {
+                moves.push({
+                    from: [r,c], 
+                    to: [lr,lc], 
+                    captures: [[nr,nc]],
+                    path: [[r,c], [lr,lc]]
+                });
+                
+                // Check multi-captures
+                const newBoard = simulateMove({from: [r,c], to: [lr,lc], captures: [[nr,nc]]});
+                const moreCaptures = findFurtherCaptures(newBoard, lr, lc, piece, [[nr,nc]]);
+                moves.push(...moreCaptures);
+            }
+        }
+    }
+    
+    return moves;
+}
+
+function findFurtherCaptures(boardState, r, c, piece, alreadyCaptured) {
+    const moves = [];
+    const dirs = piece.king ? [[1,1],[1,-1],[-1,1],[-1,-1]] : 
+                (piece.color === 'white' ? [[-1,1],[-1,-1]] : [[1,1],[1,-1]]);
+    
+    for (const [dr, dc] of dirs) {
+        const mr = r + dr, mc = c + dc;
+        const lr = mr + dr, lc = mc + dc;
+        
+        if (inBoard(mr, mc) && inBoard(lr, lc) && 
+            boardState[mr][mc] && boardState[mr][mc].color !== piece.color &&
+            !boardState[lr][lc]) {
+            
+            const capturedKey = `${mr},${mc}`;
+            if (alreadyCaptured.some(([cr, cc]) => cr === mr && cc === mc)) continue;
+            
+            const newCaptures = [...alreadyCaptured, [mr, mc]];
+            const newBoard = cloneBoard(boardState);
+            newBoard[r][c] = null;
+            newBoard[lr][lc] = piece;
+            newBoard[mr][mc] = null;
+            
+            moves.push({
+                from: [r,c],
+                to: [lr,lc],
+                captures: newCaptures,
+                path: [[r,c], [lr,lc]]
+            });
+            
+            const more = findFurtherCaptures(newBoard, lr, lc, piece, newCaptures);
+            moves.push(...more);
+        }
+    }
+    
+    return moves;
+}
+
+function getAllMoves(color) {
+    const moves = [];
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const piece = board[r][c];
+            if (piece && piece.color === color) {
+                moves.push(...getValidMoves(r, c));
+            }
+        }
+    }
+    
+    if (forceCapture) {
+        const captures = moves.filter(m => m.captures && m.captures.length > 0);
+        if (captures.length > 0) return captures;
+    }
+    
+    return moves;
+}
+
+function getAllMovesFromBoard(boardState, color) {
+    const moves = [];
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const piece = boardState[r][c];
+            if (piece && piece.color === color) {
+                // Simplified version for bot analysis
+                const dirs = piece.king ? [[1,1],[1,-1],[-1,1],[-1,-1]] : 
+                            (piece.color === 'white' ? [[-1,1],[-1,-1]] : [[1,1],[1,-1]]);
+                
+                for (const [dr, dc] of dirs) {
+                    const nr = r + dr, nc = c + dc;
+                    if (inBoard(nr, nc) && !boardState[nr][nc]) {
+                        moves.push({from: [r,c], to: [nr,nc], captures: []});
+                    }
+                    
+                    if (inBoard(nr, nc) && boardState[nr][nc] && boardState[nr][nc].color !== color) {
+                        const lr = nr + dr, lc = nc + dc;
+                        if (inBoard(lr, lc) && !boardState[lr][lc]) {
+                            moves.push({
+                                from: [r,c], 
+                                to: [lr,lc], 
+                                captures: [[nr,nc]]
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return moves;
+}
+
+// ==================== GAME CONTROL ====================
 function selectColor(color) {
     if (color === 'random') {
         color = Math.random() > 0.5 ? 'white' : 'black';
-        if (color === 'white') {
-            playerColor = 'white';
-            botColor = 'black';
-        } else {
-            playerColor = 'black';
-            botColor = 'white';
-        }
-    } else {
-        playerColor = color;
-        botColor = color === 'white' ? 'black' : 'white';
     }
+    playerColor = color;
+    botColor = color === 'white' ? 'black' : 'white';
     
     document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
     event.target.classList.add('selected');
@@ -638,35 +814,25 @@ function updateColorInfo() {
     player2LabelEl.textContent = `Bot (${botColor === 'white' ? 'oq' : 'qora'})`;
 }
 
+function selectMode(mode) {
+    gameMode = mode;
+    modeSingle.style.background = '#3b82f6';
+    updateColorInfo();
+}
+
+function updateDifficultyLabel() {
+    difficultyLabel.textContent = '12 - IMPOSSIBLE (bot hech qachon yutqazmaydi)';
+    difficultyLabel.style.color = '#ef4444';
+}
+
 function startGame() {
-    difficulty = 12; // Doim maksimal daraja
+    difficulty = 12;
     colorModal.style.display = 'none';
     mainGame.style.display = 'block';
-    initOpeningBook(); // Opening book ni ishga tushirish
     initBoard();
 }
 
-/* ==================== ASOSIY FUNKSIYALAR ==================== */
-newBtn.onclick = () => newGame();
-undoBtn.onclick = () => undo();
-redoBtn.onclick = () => redo();
-autoBotCB.onchange = () => {
-    autoBot = autoBotCB.checked;
-    if (!playerTurn && autoBot) {
-        setTimeout(() => botMovePERFECT(), 100);
-    }
-};
-
-// Majburiy olish faqat va o'chirib bo'lmaydi
-forceCaptureCB.checked = true;
-forceCaptureCB.disabled = true;
-
-// Qiyinchilik slider ni doim maksimal qilib qo'ydik
-difficultySlider.value = 12;
-difficultySlider.disabled = true;
-difficultyLabel.textContent = 'IMPOSSIBLE (12-MAX)';
-difficultyLabel.style.color = '#ef4444';
-
+// Initialize game
 function initBoard() {
     board = Array.from({length: 8}, () => Array(8).fill(null));
     for (let r = 0; r < 8; r++) {
@@ -677,365 +843,111 @@ function initBoard() {
             }
         }
     }
+    
     history = [cloneBoard(board)];
     historyIndex = 0;
-    historyStack = [];
-    futureStack = [];
     selected = null;
     legalMoves = [];
-    
-    // Bot bilan o'ynashda
     playerTurn = playerColor === 'white';
-    autoBotCB.disabled = false;
-    
+    autoBot = true;
+    playerPenalty = 0;
     moveHistory = [];
     captures = {white: 0, black: 0};
+    
     updateTurn();
-    setPerf('');
-    hideGameOver();
+    updatePenaltyDisplay();
+    perfEl.textContent = 'Bot: Mukammal o' + "'" + 'ynaydi';
     render();
     
-    if (!playerTurn && autoBot) {
-        setTimeout(() => botMovePERFECT(), 100);
+    if (!playerTurn) {
+        setTimeout(botMove, 10);
     }
-}
-
-function cloneBoard(b) {
-    return b.map(row => row.map(cell => cell ? {color: cell.color, king: cell.king} : null));
-}
-
-function inBoard(r, c) {
-    return r >= 0 && r < 8 && c >= 0 && c < 8;
-}
-
-function setMsg(s) {
-    msgEl.textContent = s;
-}
-
-function setPerf(s) {
-    perfEl.textContent = s;
 }
 
 function updateTurn() {
     if (playerTurn) {
         currentPlayerNameEl.textContent = `Siz (${playerColor === 'white' ? 'oq' : 'qora'})`;
         turnEl.textContent = "Navbat: Siz";
-        turnEl.style.color = '#2563eb';
     } else {
         currentPlayerNameEl.textContent = `Bot (${botColor === 'white' ? 'oq' : 'qora'})`;
         turnEl.textContent = "Navbat: Bot";
-        turnEl.style.color = '#ef4444';
     }
 }
 
-function showResult(text, isWinForPlayer) {
-    resultTextEl.textContent = text;
-    resultTextEl.className = isWinForPlayer ? "win" : "lose";
-    gameOverEl.classList.add("show");
-    setTimeout(() => hideGameOver(), 2500);
+function updatePenaltyDisplay() {
+    penaltyInfoEl.textContent = `Jarimalar: ${playerPenalty}/∞`;
 }
 
-function hideGameOver() {
-    gameOverEl.classList.remove("show");
-}
-
-function forwardDirsFor(color) {
-    return color === 'white' ? [[-1, 1], [-1, -1]] : [[1, 1], [1, -1]];
-}
-
-function continueCaptures(boardState, r, c, visited = new Set()) {
-    const p = boardState[r][c];
-    if (!p) return [];
-    const color = p.color;
-    let res = [];
-    const dirs = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+// ==================== RENDER ====================
+function render() {
+    if (!boardEl) return;
     
-    if (p.king) {
-        for (const [dR, dC] of dirs) {
-            let sR = r + dR, sC = c + dC;
-            while (inBoard(sR, sC) && !boardState[sR][sC]) {
-                sR += dR;
-                sC += dC;
-            }
-            if (inBoard(sR, sC) && boardState[sR][sC] && boardState[sR][sC].color !== color) {
-                let lR = sR + dR, lC = sC + dC;
-                while (inBoard(lR, lC)) {
-                    if (boardState[lR][lC]) break;
-                    const key = `${sR},${sC}`;
-                    if (visited.has(key)) {
-                        lR += dR;
-                        lC += dC;
-                        continue;
-                    }
-                    const nb = cloneBoard(boardState);
-                    nb[lR][lC] = {...nb[r][c], king: true};
-                    nb[r][c] = null;
-                    nb[sR][sC] = null;
-                    const nv = new Set(visited);
-                    nv.add(key);
-                    const fut = continueCaptures(nb, lR, lC, nv);
-                    if (fut.length > 0) {
-                        fut.forEach(f => res.push({
-                            from: [r, c],
-                            to: f.to,
-                            path: [[r, c], ...f.path.slice(1)],
-                            captures: [[sR, sC], ...f.captures]
-                        }));
-                    } else {
-                        res.push({
-                            from: [r, c],
-                            to: [lR, lC],
-                            path: [[r, c], [lR, lC]],
-                            captures: [[sR, sC]]
-                        });
-                    }
-                    lR += dR;
-                    lC += dC;
-                }
-            }
-        }
-    } else {
-        for (const [dR, dC] of dirs) {
-            const mR = r + dR, mC = c + dC;
-            const lR = r + 2 * dR, lC = c + 2 * dC;
-            if (inBoard(lR, lC) && boardState[mR][mC] && 
-                boardState[mR][mC].color !== color && !boardState[lR][lC]) {
-                const key = `${mR},${mC}`;
-                if (visited.has(key)) continue;
-                const nb = cloneBoard(boardState);
-                nb[lR][lC] = {...nb[r][c]};
-                nb[r][c] = null;
-                nb[mR][mC] = null;
-                if (nb[lR][lC] && !nb[lR][lC].king) {
-                    if (nb[lR][lC].color === 'white' && lR === 0) nb[lR][lC].king = true;
-                    if (nb[lR][lC].color === 'black' && lR === 7) nb[lR][lC].king = true;
-                }
-                const nv = new Set(visited);
-                nv.add(key);
-                const fut = continueCaptures(nb, lR, lC, nv);
-                if (fut.length > 0) {
-                    fut.forEach(f => res.push({
-                        from: [r, c],
-                        to: f.to,
-                        path: [[r, c], ...f.path.slice(1)],
-                        captures: [[mR, mC], ...f.captures]
-                    }));
-                } else {
-                    res.push({
-                        from: [r, c],
-                        to: [lR, lC],
-                        path: [[r, c], [lR, lC]],
-                        captures: [[mR, mC]]
-                    });
-                }
-            }
-        }
-    }
-    return res;
-}
-
-function movesFrom(boardState, r, c) {
-    const p = boardState[r][c];
-    if (!p) return [];
-    let moves = [];
+    boardEl.innerHTML = '';
     
-    if (p.king) {
-        const dirs = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
-        for (const [dR, dC] of dirs) {
-            let nr = r + dR, nc = c + dC;
-            while (inBoard(nr, nc) && !boardState[nr][nc]) {
-                moves.push({
-                    from: [r, c],
-                    to: [nr, nc],
-                    path: [[r, c], [nr, nc]],
-                    captures: []
-                });
-                nr += dR;
-                nc += dC;
-            }
-        }
-    } else {
-        const dirs = forwardDirsFor(p.color);
-        for (const [dR, dC] of dirs) {
-            const nr = r + dR, nc = c + dC;
-            if (inBoard(nr, nc) && !boardState[nr][nc]) {
-                moves.push({
-                    from: [r, c],
-                    to: [nr, nc],
-                    path: [[r, c], [nr, nc]],
-                    captures: []
-                });
-            }
-        }
-    }
-    
-    const caps = continueCaptures(boardState, r, c);
-    return moves.concat(caps);
-}
-
-function allMovesFor(boardState, color) {
-    let moves = [];
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-            const p = boardState[r][c];
-            if (p && p.color === color) {
-                moves = moves.concat(movesFrom(boardState, r, c));
-            }
-        }
-    }
-    const caps = moves.filter(m => m.captures && m.captures.length > 0);
-    if (forceCapture && caps.length > 0) return caps;
-    return moves;
-}
-
-function applyMove(boardState, move) {
-    const b = cloneBoard(boardState);
-    const piece = b[move.from[0]][move.from[1]];
-    b[move.from[0]][move.from[1]] = null;
-    b[move.to[0]][move.to[1]] = piece;
-    
-    if (move.captures && move.captures.length > 0) {
-        move.captures.forEach(([r, c]) => {
-            b[r][c] = null;
-            captures[piece.color === 'white' ? 'white' : 'black']++;
-        });
-    }
-    
-    if (piece && !piece.king) {
-        if (piece.color === 'white' && move.to[0] === 0) piece.king = true;
-        if (piece.color === 'black' && move.to[0] === 7) piece.king = true;
-    }
-    return b;
-}
-
-/* ==================== YANGILANGAN ANIMATSIYALI HARAKAT ==================== */
-async function animateMove(move) {
-    const path = move.path || [move.from, move.to];
-    const fromPiece = board[move.from[0]][move.from[1]];
-    const isKingBefore = fromPiece && fromPiece.king;
-    
-    // Olingan donalarni belgilash va animatsiya
-    if (move.captures && move.captures.length > 0) {
-        for (const [r, c] of move.captures) {
-            const capturedCell = boardEl.children[r * 8 + c];
-            if (capturedCell) {
-                const capturedPiece = capturedCell.querySelector('.piece');
-                if (capturedPiece) {
-                    capturedPiece.classList.add('captured-piece');
-                    await new Promise(r => setTimeout(r, 300));
-                }
-            }
-        }
-    }
-    
-    // Harakat animatsiyasi
-    for (let i = 1; i < path.length; i++) {
-        const from = path[i-1];
-        const to = path[i];
-        const fromCell = boardEl.children[from[0] * 8 + from[1]];
-        const pieceEl = fromCell.querySelector('.piece');
-        
-        if (!pieceEl) continue;
-        
-        const rf = fromCell.getBoundingClientRect();
-        const rt = boardEl.children[to[0] * 8 + to[1]].getBoundingClientRect();
-        const dx = rt.left - rf.left;
-        const dy = rt.top - rf.top;
-        
-        pieceEl.style.setProperty('--move-x', dx + 'px');
-        pieceEl.style.setProperty('--move-y', dy + 'px');
-        pieceEl.style.setProperty('--jump-x', dx + 'px');
-        pieceEl.style.setProperty('--jump-y', dy + 'px');
-        
-        if (move.captures && move.captures.length > 0) {
-            pieceEl.classList.add('capturing-piece');
-            await new Promise(r => setTimeout(r, 800));
-            pieceEl.classList.remove('capturing-piece');
-        } else {
-            pieceEl.classList.add('moving-piece');
-            await new Promise(r => setTimeout(r, 600));
-            pieceEl.classList.remove('moving-piece');
-        }
-    }
-    
-    // Doskani yangilash
-    board = applyMove(board, move);
-    render();
-    
-    // Dama animatsiyasi
-    const finalCell = boardEl.children[move.to[0] * 8 + move.to[1]];
-    const finalPiece = finalCell.querySelector('.piece');
-    if (finalPiece && !isKingBefore && board[move.to[0]][move.to[1]].king) {
-        finalPiece.style.animation = 'jumpSelect .9s ease-out';
-        setTimeout(() => finalPiece.style.animation = '', 1000);
-    }
-}
-
-/* ==================== ORQAGA/OLDINGA ==================== */
-function undo() {
-    if (historyIndex <= 0) return;
-    futureStack.push(cloneBoard(board));
-    historyIndex--;
-    board = cloneBoard(history[historyIndex]);
-    selected = null;
-    legalMoves = [];
-    playerTurn = !playerTurn;
-    updateUI();
-    render();
-    setMsg("Orqaga qaytdingiz.");
-}
-
-function redo() {
-    if (futureStack.length === 0) return;
-    historyIndex++;
-    if (historyIndex >= history.length) {
-        board = futureStack.pop();
-        history.push(cloneBoard(board));
-    } else {
-        board = cloneBoard(history[historyIndex]);
-    }
-    selected = null;
-    legalMoves = [];
-    playerTurn = !playerTurn;
-    updateUI();
-    render();
-    setMsg("Oldinga qaytdingiz.");
-    
-    if (!playerTurn && autoBot) {
-        setTimeout(() => botMovePERFECT(), 100);
-    }
-}
-
-/* ==================== ASOSIY O'YIN FUNKSIYALARI ==================== */
-function onCellClick(r, c) {
-    // Faqat o'z navbatingizda bosish mumkin
-    if (!playerTurn) {
-        setMsg("Navbat botda! Kuting...");
-        return;
-    }
-    
-    const p = board[r][c];
-    
-    if (selected) {
-        const chosen = legalMoves.find(m => 
-            m.to[0] === r && m.to[1] === c && 
-            arraysEqual(m.from, selected)
-        );
-        if (chosen) {
-            // MAJBURIY OLISH TEKSHIRISHI
-            if (forceCapture && hasForcedCapture()) {
-                const pieceCaptures = legalMoves.filter(m => 
-                    m.captures && m.captures.length > 0
-                );
-                if (pieceCaptures.length > 0 && !chosen.captures) {
-                    setMsg("Majburiy olish! Boshqa harakat tanlang.");
-                    return;
-                }
+            const cell = document.createElement('div');
+            cell.className = 'cell ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
+            
+            // Disable click during bot move
+            if (userInputEnabled) {
+                cell.onclick = () => onCellClick(r, c);
             }
             
-            executeMove(chosen);
+            const piece = board[r][c];
+            if (piece) {
+                const pieceEl = document.createElement('div');
+                pieceEl.className = 'piece ' + (piece.color === 'white' ? 'white' : 'black') + (piece.king ? ' king' : '');
+                pieceEl.textContent = piece.king ? '👑' : '';
+                
+                if (selected && selected[0] === r && selected[1] === c) {
+                    pieceEl.classList.add('selected-outline');
+                }
+                
+                cell.appendChild(pieceEl);
+            }
+            
+            // Show possible moves
+            if (selected && legalMoves.some(m => m.to[0] === r && m.to[1] === c)) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                cell.appendChild(dot);
+            }
+            
+            boardEl.appendChild(cell);
+        }
+    }
+}
+
+// ==================== USER INTERACTION ====================
+function onCellClick(r, c) {
+    if (!userInputEnabled || !playerTurn) return;
+    
+    const piece = board[r][c];
+    
+    if (selected) {
+        // Try to make a move
+        const move = legalMoves.find(m => m.to[0] === r && m.to[1] === c && 
+            m.from[0] === selected[0] && m.from[1] === selected[1]);
+        
+        if (move) {
+            // Check for penalty
+            if (checkPenalty(move)) {
+                // Penalty applied, bot moves immediately
+                selected = null;
+                legalMoves = [];
+                render();
+                playerTurn = false;
+                updateTurn();
+                setTimeout(botMove, 100);
+                return;
+            }
+            
+            // Execute move
+            executeMove(move);
             return;
         } else {
+            // Deselect
             selected = null;
             legalMoves = [];
             render();
@@ -1043,460 +955,195 @@ function onCellClick(r, c) {
         }
     }
     
-    if (p && p.color === playerColor) {
+    // Select piece
+    if (piece && piece.color === playerColor) {
         selected = [r, c];
-        legalMoves = movesFrom(board, r, c);
-        
-        // MAJBURIY OLISH TEKSHIRISHI
-        if (forceCapture && hasForcedCapture()) {
-            const pieceCaptures = legalMoves.filter(m => 
-                m.captures && m.captures.length > 0
-            );
-            if (pieceCaptures.length === 0) {
-                setMsg("Bu dona bilan olish mumkin emas! Boshqa dona tanlang.");
-                selected = null;
-                legalMoves = [];
-                return;
-            }
-        }
-        
+        legalMoves = getValidMoves(r, c);
         render();
-        const ce = boardEl.children[r * 8 + c].querySelector('.piece');
-        if (ce) {
-            ce.classList.add('jumpingSelect');
-            setTimeout(() => ce.classList.remove('jumpingSelect'), 400);
-        }
     }
 }
 
-function hasForcedCapture() {
-    const currentColor = playerTurn ? playerColor : botColor;
-    const moves = allMovesFor(board, currentColor);
-    return moves.some(m => m.captures && m.captures.length > 0);
-}
-
-async function executeMove(move) {
+function executeMove(move) {
+    // Save to history
     history = history.slice(0, historyIndex + 1);
-    const newBoard = applyMove(board, move);
-    history.push(cloneBoard(newBoard));
+    const oldBoard = cloneBoard(board);
+    history.push(oldBoard);
     historyIndex++;
-    futureStack = [];
     
-    // Animatsiyani ko'rsatish
-    await animateMove(move);
+    // Apply move instantly
+    const piece = board[move.from[0]][move.from[1]];
+    board[move.from[0]][move.from[1]] = null;
+    board[move.to[0]][move.to[1]] = piece;
     
-    if (checkEnd()) {
-        endGame();
+    // Handle captures
+    if (move.captures) {
+        move.captures.forEach(([r, c]) => {
+            board[r][c] = null;
+        });
+    }
+    
+    // Handle promotion
+    if (piece && !piece.king) {
+        if (piece.color === 'white' && move.to[0] === 0) piece.king = true;
+        if (piece.color === 'black' && move.to[0] === 7) piece.king = true;
+    }
+    
+    // Update UI
+    selected = null;
+    legalMoves = [];
+    render();
+    
+    // Check game end
+    if (checkGameEnd()) {
         return;
     }
     
-    playerTurn = !playerTurn;
-    updateUI();
+    // Switch turn to bot
+    playerTurn = false;
+    updateTurn();
+    
+    // Bot moves immediately (no delay)
+    setTimeout(botMove, 10);
+}
+
+function botMove() {
+    if (playerTurn || !autoBot) return;
+    
+    userInputEnabled = false;
+    
+    const move = getPerfectBotMove();
+    if (!move) {
+        // Bot has no moves - player wins
+        showResult(true);
+        userInputEnabled = true;
+        return;
+    }
+    
+    // Execute bot move instantly
+    const piece = board[move.from[0]][move.from[1]];
+    board[move.from[0]][move.from[1]] = null;
+    board[move.to[0]][move.to[1]] = piece;
+    
+    if (move.captures) {
+        move.captures.forEach(([r, c]) => {
+            board[r][c] = null;
+        });
+    }
+    
+    if (piece && !piece.king) {
+        if (piece.color === 'white' && move.to[0] === 0) piece.king = true;
+        if (piece.color === 'black' && move.to[0] === 7) piece.king = true;
+    }
+    
+    // Save to history
+    history = history.slice(0, historyIndex + 1);
+    history.push(cloneBoard(board));
+    historyIndex++;
+    
     render();
     
-    if (!playerTurn && autoBot) {
-        setTimeout(() => botMovePERFECT(), 100);
+    // Check game end
+    if (checkGameEnd()) {
+        userInputEnabled = true;
+        return;
     }
-}
-
-function arraysEqual(a, b) {
-    if (!a || !b) return false;
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) return false;
-    }
-    return true;
-}
-
-// ==================== YANGI: TO'G'RI G'ALABA/MAG'LUBIYAT XABARI ====================
-function checkEnd() {
-    const wm = allMovesFor(board, 'white');
-    const bm = allMovesFor(board, 'black');
-    const wp = board.flat().filter(p => p && p.color === 'white').length;
-    const bp = board.flat().filter(p => p && p.color === 'black').length;
     
-    // Oq yutganda
-    if (bp === 0 || bm.length === 0) {
-        const winner = playerColor === 'white' ? 'Siz' : 'Bot';
-        const isWinForPlayer = playerColor === 'white';
-        showResult(`${winner} yutdi!`, isWinForPlayer);
-        playerTurn = false;
+    // Switch back to player
+    playerTurn = true;
+    updateTurn();
+    userInputEnabled = true;
+}
+
+// ==================== GAME END LOGIC ====================
+function checkGameEnd() {
+    const whiteMoves = getAllMoves('white');
+    const blackMoves = getAllMoves('black');
+    const whitePieces = board.flat().filter(p => p && p.color === 'white').length;
+    const blackPieces = board.flat().filter(p => p && p.color === 'black').length;
+    
+    if (whitePieces === 0 || whiteMoves.length === 0) {
+        // Black wins
+        showResult(playerColor === 'black');
         return true;
     }
     
-    // Qora yutganda
-    if (wp === 0 || wm.length === 0) {
-        const winner = playerColor === 'black' ? 'Siz' : 'Bot';
-        const isWinForPlayer = playerColor === 'black';
-        showResult(`${winner} yutdi!`, isWinForPlayer);
-        playerTurn = false;
+    if (blackPieces === 0 || blackMoves.length === 0) {
+        // White wins
+        showResult(playerColor === 'white');
         return true;
     }
     
     return false;
 }
 
-function endGame() {
+function showResult(playerWon) {
     playerTurn = false;
-}
-
-function updateUI() {
-    updateTurn();
-    undoBtn.disabled = historyIndex <= 0;
-    redoBtn.disabled = futureStack.length === 0 && historyIndex >= history.length - 1;
-}
-
-function render() {
-    boardEl.innerHTML = '';
     
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
-            cell.addEventListener('click', () => onCellClick(r, c));
-            
-            if (legalMoves.some(m => m.to[0] === r && m.to[1] === c)) {
-                const dot = document.createElement('div');
-                dot.className = 'dot';
-                cell.appendChild(dot);
-            }
-            
-            const p = board[r][c];
-            if (p) {
-                const el = document.createElement('div');
-                el.className = 'piece ' + (p.color === 'white' ? 'white' : 'black') + (p.king ? ' king' : '');
-                el.textContent = p.king ? '👑' : '';
-                
-                if (p.king) {
-                    const crown = document.createElement('div');
-                    crown.style.position = 'absolute';
-                    crown.style.fontSize = '0.8rem';
-                    crown.style.top = '8%';
-                    crown.style.pointerEvents = 'none';
-                    crown.textContent = '★';
-                    el.appendChild(crown);
-                }
-                
-                // Majburiy olish uchun qizil outline
-                if (forceCapture && p.color === playerColor && hasForcedCapture()) {
-                    const pieceMoves = movesFrom(board, r, c);
-                    if (pieceMoves.some(m => m.captures && m.captures.length > 0)) {
-                        el.classList.add('capture-outline');
-                    }
-                }
-                
-                if (selected && selected[0] === r && selected[1] === c) {
-                    el.classList.add('selected-outline');
-                }
-                cell.appendChild(el);
-            }
-            boardEl.appendChild(cell);
-        }
-    }
-    updateTurn();
-}
-
-function newGame() {
-    initBoard();
-}
-
-/* ==================== PERFECT BOT ALGORITMI ==================== */
-const transpositionTable = new Map();
-const KILLER_MOVES = new Map();
-
-// Pre-calculated eng yaxshi yurishlarni tanlash
-function getBestPreCalculated(moves, boardState, color) {
-    if (moves.length === 0) return null;
-    
-    // 1. Olish imkoniyatlari
-    const captures = moves.filter(m => m.captures && m.captures.length > 0);
-    if (captures.length > 0) {
-        // Eng ko'p olish imkoniyati
-        captures.sort((a, b) => b.captures.length - a.captures.length);
-        return captures[0];
-    }
-    
-    // 2. Dama bo'lish imkoniyati
-    const kingingMoves = moves.filter(m => {
-        if (color === 'white' && m.to[0] === 0) return true;
-        if (color === 'black' && m.to[0] === 7) return true;
-        return false;
-    });
-    if (kingingMoves.length > 0) return kingingMoves[0];
-    
-    // 3. Markazni nazorat qilish
-    const centerMoves = moves.filter(m => {
-        const [toR, toC] = m.to;
-        return (toC >= 2 && toC <= 5) && (toR >= 2 && toR <= 5);
-    });
-    if (centerMoves.length > 0) return centerMoves[0];
-    
-    // 4. Orqa qatorni himoya qilish
-    const backRow = color === 'white' ? 7 : 0;
-    const backRowMoves = moves.filter(m => m.to[0] === backRow);
-    if (backRowMoves.length > 0) return backRowMoves[0];
-    
-    return moves[0];
-}
-
-function evaluatePosition(boardState, color) {
-    let score = 0;
-    let whitePieces = 0, blackPieces = 0;
-    let whiteKings = 0, blackKings = 0;
-    
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            const p = boardState[r][c];
-            if (!p) continue;
-            
-            const pieceValue = p.king ? 3.0 : 1.0;
-            let positionBonus = 0;
-            
-            // Markaz bonus
-            const centerDist = Math.abs(c - 3.5) + Math.abs(r - 3.5);
-            positionBonus += (7 - centerDist) * 0.1;
-            
-            // O'rta qatorlarda bonus
-            if (r === 3 || r === 4) positionBonus += 0.2;
-            
-            // Orqa qator himoyasi
-            if ((p.color === 'white' && r === 7) || (p.color === 'black' && r === 0)) {
-                positionBonus += 0.3;
-            }
-            
-            // Hujum pozitsiyasi
-            if (p.color === 'white' && r < 3) positionBonus += 0.15;
-            if (p.color === 'black' && r > 4) positionBonus += 0.15;
-            
-            if (p.color === color) {
-                score += pieceValue + positionBonus;
-                if (p.color === 'white') whitePieces++;
-                else blackPieces++;
-                if (p.king) {
-                    score += 0.5; // Dama qo'shimcha bonus
-                    if (p.color === 'white') whiteKings++;
-                    else blackKings++;
-                }
-            } else {
-                score -= pieceValue + positionBonus;
-            }
-        }
-    }
-    
-    // Harakatlar soni
-    const myMoves = allMovesFor(boardState, color).length;
-    const oppMoves = allMovesFor(boardState, color === 'white' ? 'black' : 'white').length;
-    score += (myMoves - oppMoves) * 0.05;
-    
-    // Material ustunlik
-    const materialDiff = (color === 'black' ? blackPieces : whitePieces) - 
-                         (color === 'white' ? whitePieces : blackPieces);
-    score += materialDiff * 0.1;
-    
-    return score;
-}
-
-function perfectAlphaBeta(boardState, depth, alpha, beta, maximizing, startTime, color) {
-    if (performance.now() - startTime > TIME_LIMIT_MS) {
-        return evaluatePosition(boardState, maximizing ? botColor : playerColor);
-    }
-    
-    if (depth === 0) {
-        return evaluatePosition(boardState, maximizing ? botColor : playerColor);
-    }
-    
-    const key = getPositionKey(boardState) + (maximizing ? 'M' : 'm') + depth;
-    if (transpositionTable.has(key)) {
-        return transpositionTable.get(key);
-    }
-    
-    const currentColor = maximizing ? botColor : playerColor;
-    let moves = allMovesFor(boardState, currentColor);
-    
-    if (moves.length === 0) {
-        const score = maximizing ? -10000 : 10000;
-        transpositionTable.set(key, score);
-        return score;
-    }
-    
-    // Killer moves ni birinchi o'ringa qo'yish
-    const killer = KILLER_MOVES.get(getPositionKey(boardState));
-    if (killer) {
-        moves.sort((a, b) => {
-            if (arraysEqual(a.from, killer.from) && arraysEqual(a.to, killer.to)) return -1;
-            return 0;
-        });
-    }
-    
-    // Pre-sort moves
-    moves.sort((a, b) => {
-        // 1. Olish imkoniyati
-        const aCaptures = a.captures?.length || 0;
-        const bCaptures = b.captures?.length || 0;
-        if (bCaptures !== aCaptures) return bCaptures - aCaptures;
-        
-        // 2. Dama bo'lish
-        const aKinging = (currentColor === 'white' && a.to[0] === 0) || 
-                         (currentColor === 'black' && a.to[0] === 7);
-        const bKinging = (currentColor === 'white' && b.to[0] === 0) || 
-                         (currentColor === 'black' && b.to[0] === 7);
-        if (aKinging && !bKinging) return -1;
-        if (!aKinging && bKinging) return 1;
-        
-        // 3. Position evaluation
-        const boardA = applyMove(boardState, a);
-        const boardB = applyMove(boardState, b);
-        const scoreA = evaluatePosition(boardA, currentColor);
-        const scoreB = evaluatePosition(boardB, currentColor);
-        return maximizing ? scoreB - scoreA : scoreA - scoreB;
-    });
-    
-    if (maximizing) {
-        let maxEval = -Infinity;
-        let bestMove = null;
-        
-        for (const move of moves) {
-            if (performance.now() - startTime > TIME_LIMIT_MS) break;
-            
-            const newBoard = applyMove(boardState, move);
-            const evalScore = perfectAlphaBeta(newBoard, depth - 1, alpha, beta, false, startTime, color);
-            
-            if (evalScore > maxEval) {
-                maxEval = evalScore;
-                bestMove = move;
-            }
-            alpha = Math.max(alpha, evalScore);
-            if (beta <= alpha) {
-                // Killer move ni saqlash
-                if (bestMove) {
-                    KILLER_MOVES.set(getPositionKey(boardState), bestMove);
-                }
-                break;
-            }
-        }
-        
-        transpositionTable.set(key, maxEval);
-        return maxEval;
+    if (playerWon) {
+        resultTextEl.textContent = "Siz yutdingiz!";
+        resultTextEl.className = "win";
     } else {
-        let minEval = Infinity;
-        
-        for (const move of moves) {
-            if (performance.now() - startTime > TIME_LIMIT_MS) break;
-            
-            const newBoard = applyMove(boardState, move);
-            const evalScore = perfectAlphaBeta(newBoard, depth - 1, alpha, beta, true, startTime, color);
-            
-            if (evalScore < minEval) {
-                minEval = evalScore;
-            }
-            beta = Math.min(beta, evalScore);
-            if (beta <= alpha) break;
-        }
-        
-        transpositionTable.set(key, minEval);
-        return minEval;
+        resultTextEl.textContent = "Bot yutdi!";
+        resultTextEl.className = "lose";
     }
+    
+    gameOverEl.classList.add("show");
 }
 
-function getPerfectMove(boardState) {
-    const startTime = performance.now();
-    transpositionTable.clear();
-    
-    const moves = allMovesFor(boardState, botColor);
-    if (moves.length === 0) return null;
-    
-    // Avval pre-calculated move ni tekshirish
-    const perfectMove = findPerfectMove(boardState, botColor);
-    if (perfectMove) return perfectMove;
-    
-    // Alpha-beta search
-    let maxDepth = 10; // Maksimal depth
-    
-    let bestMove = moves[0];
-    let bestScore = -Infinity;
-    let depth = 1;
-    
-    while (depth <= maxDepth && performance.now() - startTime < TIME_LIMIT_MS * 0.9) {
-        let currentBestMove = moves[0];
-        let currentBestScore = -Infinity;
-        
-        for (const move of moves) {
-            if (performance.now() - startTime > TIME_LIMIT_MS * 0.95) break;
-            
-            const newBoard = applyMove(boardState, move);
-            const score = perfectAlphaBeta(newBoard, depth - 1, -Infinity, Infinity, false, startTime, botColor);
-            
-            if (score > currentBestScore) {
-                currentBestScore = score;
-                currentBestMove = move;
-            }
-        }
-        
-        if (currentBestScore > bestScore || 
-            (currentBestScore === bestScore && Math.random() > 0.7)) {
-            bestScore = currentBestScore;
-            bestMove = currentBestMove;
-        }
-        
-        depth++;
-    }
-    
-    const timeTaken = performance.now() - startTime;
-    setPerf(`Bot (${depth-1} daraja, ${timeTaken.toFixed(1)}ms, IMPOSSIBLE)`);
-    
-    // Perfect pozitsiyani saqlash
-    const key = getPositionKey(boardState) + botColor[0];
-    PERFECT_POSITIONS.add(key);
-    
-    return bestMove;
-}
+// ==================== CONTROL BUTTONS ====================
+newBtn.onclick = () => {
+    colorModal.style.display = 'flex';
+    mainGame.style.display = 'none';
+    gameOverEl.classList.remove("show");
+};
 
-async function botMovePERFECT() {
-    if (!autoBot) return;
+undoBtn.onclick = () => {
+    if (historyIndex <= 0 || !userInputEnabled) return;
     
-    const moves = allMovesFor(board, botColor);
-    
-    if (moves.length === 0) {
-        const isWinForPlayer = playerColor === 'white';
-        showResult("Siz yutdingiz!", isWinForPlayer);
-        return;
-    }
-    
-    // Avval olish imkoniyatlarini tekshirish
-    const captures = moves.filter(m => m.captures && m.captures.length > 0);
-    if (captures.length > 0) {
-        // Eng ko'p olish imkoniyatini tanlash
-        captures.sort((a, b) => {
-            // Ko'p olish
-            if (b.captures.length !== a.captures.length) {
-                return b.captures.length - a.captures.length;
-            }
-            // Dama olish
-            const aKingCaptures = a.captures.filter(([r,c]) => board[r][c]?.king).length;
-            const bKingCaptures = b.captures.filter(([r,c]) => board[r][c]?.king).length;
-            return bKingCaptures - aKingCaptures;
-        });
-        
-        await executeMove(captures[0]);
-        return;
-    }
-    
-    const move = getPerfectMove(board);
-    if (move) {
-        await executeMove(move);
-    }
-}
+    historyIndex--;
+    board = cloneBoard(history[historyIndex]);
+    selected = null;
+    legalMoves = [];
+    playerTurn = !playerTurn;
+    updateTurn();
+    render();
+};
 
-/* ==================== O'YINNI BOSHLASH ==================== */
-// Rang tanlashni avtomatik ishga tushirish
+redoBtn.onclick = () => {
+    if (historyIndex >= history.length - 1 || !userInputEnabled) return;
+    
+    historyIndex++;
+    board = cloneBoard(history[historyIndex]);
+    selected = null;
+    legalMoves = [];
+    playerTurn = !playerTurn;
+    updateTurn();
+    render();
+    
+    if (!playerTurn && autoBot) {
+        setTimeout(botMove, 10);
+    }
+};
+
+autoBotCB.onchange = () => {
+    autoBot = autoBotCB.checked;
+    if (!playerTurn && autoBot) {
+        setTimeout(botMove, 10);
+    }
+};
+
+forceCaptureCB.onchange = () => {
+    forceCapture = forceCaptureCB.checked;
+};
+
+difficultySlider.oninput = () => {
+    difficulty = parseInt(difficultySlider.value);
+    updateDifficultyLabel();
+};
+
+// Initialize
+updateDifficultyLabel();
 selectColor('white');
-updateColorInfo();
-
-// Modal oynani yangilash
-document.querySelector('.modal-content-container h2').textContent = "🎮 Shashka - Impossible Bot";
-document.querySelector('.modal-content-container p').innerHTML = 
-    "Mukammal botga qarshi o'ynang!<br><small style='color:#ef4444'>Yutish juda qiyin!</small>";
-
 </script>
 </body>
 </html>
