@@ -2,1831 +2,2873 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shashka PRO - Haqiqiy AI O'yin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shashka PRO - Kombinatsiya AI</title>
     <style>
-        /* ==================== UMUMIY STILLAR ==================== */
+        /* Asosiy reset va o'zgaruvchilar */
         :root {
-            --size: min(92vmin, 640px);
-            --light: #f5f5dc;
-            --dark: #8b4513;
-            --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --piece-white: linear-gradient(135deg, #ffffff, #f0f0f0);
-            --piece-black: linear-gradient(135deg, #2c3e50, #34495e);
-            --king-gold: linear-gradient(135deg, #fbb034, #ffdd00);
+            --board-size: min(90vmin, 600px);
+            --cell-size: calc(var(--board-size) / 8);
+            --light-cell: #f0d9b5;
+            --dark-cell: #b58863;
+            --piece-white: #ffffff;
+            --piece-black: #1a1a1a;
+            --piece-white-king: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+            --piece-black-king: linear-gradient(135deg, #2c3e50 0%, #1a1a1a 100%);
+            --king-glow: 0 0 15px gold;
+            --danger-red: #ff4757;
+            --success-green: #2ed573;
+            --warning-yellow: #ffa502;
+            --primary-blue: #3742fa;
+            --ai-thinking: #6c5ce7;
+            
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Game Container */
+        .game-container {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
-            color: #333;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        
-        .container {
-            max-width: 1200px;
-            width: 100%;
+
+        /* Header */
+        .game-header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .game-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .game-header .icon {
+            font-size: 2.8rem;
+            margin-right: 10px;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-badge {
+            background: linear-gradient(135deg, var(--danger-red) 0%, #ff6b81 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+        }
+
+        .game-status {
+            font-size: 1.1rem;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        /* Main Game Layout */
+        .game-main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .game-main {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+            }
+            
+            .game-board-container {
+                order: 1;
+            }
+            
+            .game-info {
+                order: 2;
+            }
+        }
+
+        /* Board Container */
+        .game-board-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 30px;
+            gap: 20px;
         }
-        
-        h1 {
-            text-align: center;
-            color: white;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-        }
-        
-        .subtitle {
-            color: #e0e0e0;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-        }
-        
-        /* ==================== DOSKA STILLARI ==================== */
-        .board-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+
+        .board-frame {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
             border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-lg);
         }
-        
+
+        .board-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
         .board {
-            width: var(--size);
-            height: var(--size);
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             grid-template-rows: repeat(8, 1fr);
-            gap: 0;
-            border-radius: 15px;
+            width: var(--board-size);
+            height: var(--board-size);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            position: relative;
+            box-shadow: var(--shadow-md);
         }
-        
+
         .cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
             position: relative;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
-        
+
         .cell.light {
-            background: linear-gradient(135deg, #f5e6d3, #e8d9c5);
+            background-color: var(--light-cell);
         }
-        
+
         .cell.dark {
-            background: linear-gradient(135deg, var(--dark), #a0522d);
+            background-color: var(--dark-cell);
         }
-        
-        .cell.dark:hover:not(.has-piece) {
-            background: linear-gradient(135deg, #a0522d, #8b4513);
+
+        .cell.dark:hover {
+            background-color: color-mix(in srgb, var(--dark-cell) 80%, #000);
         }
-        
-        /* ==================== DOSKALAR STILLARI ==================== */
-        .piece {
-            width: 85%;
-            height: 85%;
+
+        .cell.selected {
+            box-shadow: inset 0 0 0 4px var(--success-green);
+            z-index: 1;
+        }
+
+        .cell.valid-move::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.8);
             border-radius: 50%;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 
-                0 4px 15px rgba(0, 0, 0, 0.2),
-                inset 0 -3px 8px rgba(0, 0, 0, 0.1),
-                inset 0 3px 8px rgba(255, 255, 255, 0.2);
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
-        
+
+        .cell.valid-capture::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 71, 87, 0.8);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        /* Pieces */
+        .piece {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 2;
+            transition: transform 0.3s ease, left 0.3s ease, top 0.3s ease;
+        }
+
+        .piece.moving {
+            z-index: 10;
+            transition: transform 0.4s ease, left 0.4s ease, top 0.4s ease;
+        }
+
         .piece.white {
             background: var(--piece-white);
             border: 2px solid #d0d0d0;
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.2),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.1),
+                inset 0 3px 6px rgba(255, 255, 255, 0.3);
         }
-        
+
         .piece.black {
             background: var(--piece-black);
             border: 2px solid #1a1a1a;
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+                inset 0 3px 6px rgba(255, 255, 255, 0.1);
         }
-        
+
+        .piece.selected {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 
+                0 0 0 4px var(--success-green),
+                0 8px 25px rgba(0, 0, 0, 0.3);
+            z-index: 3;
+        }
+
         .piece.king {
             border-width: 3px;
-            border-style: solid;
-            border-image: var(--king-gold) 1;
             box-shadow: 
-                0 6px 20px rgba(0, 0, 0, 0.3),
-                inset 0 -4px 10px rgba(0, 0, 0, 0.15),
-                inset 0 4px 10px rgba(255, 255, 255, 0.3),
-                0 0 20px rgba(255, 215, 0, 0.3);
+                0 6px 12px rgba(0, 0, 0, 0.3),
+                inset 0 -4px 8px rgba(0, 0, 0, 0.15),
+                inset 0 4px 8px rgba(255, 255, 255, 0.4),
+                var(--king-glow);
         }
-        
+
+        .piece.white.king {
+            background: var(--piece-white-king);
+            border-color: gold;
+        }
+
+        .piece.black.king {
+            background: var(--piece-black-king);
+            border-color: gold;
+        }
+
         .king-symbol {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 1.8rem;
+            font-size: 1.3rem;
             color: gold;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            filter: drop-shadow(0 0 2px gold);
             z-index: 3;
             pointer-events: none;
         }
-        
-        /* ==================== ANIMATSIYALAR ==================== */
-        @keyframes selected {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1.1); }
+
+        /* Coordinates */
+        .coordinates {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            font-weight: 500;
         }
-        
-        @keyframes moveDot {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
+
+        .coordinates.top,
+        .coordinates.bottom {
+            height: 30px;
+            width: 100%;
         }
-        
-        @keyframes pieceMove {
-            0% { transform: translate(var(--start-x), var(--start-y)) scale(1); }
-            100% { transform: translate(var(--end-x), var(--end-y)) scale(1); }
+
+        .coordinates.left,
+        .coordinates.right {
+            flex-direction: column;
+            height: var(--board-size);
+            width: 30px;
         }
-        
-        @keyframes captureEffect {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.7; }
-            100% { transform: scale(0); opacity: 0; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 600px;
         }
-        
-        @keyframes penaltyFlash {
-            0%, 100% { background-color: #ff4444; }
-            50% { background-color: #ff8888; }
+
+        .btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        
-        @keyframes winAnimation {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+
+        .btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
         }
-        
-        .piece.selected {
-            animation: selected 0.5s ease-out forwards;
-            box-shadow: 
-                0 0 0 4px rgba(66, 153, 225, 0.8),
-                0 8px 25px rgba(0, 0, 0, 0.3);
-            z-index: 10;
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
         }
-        
-        .piece.must-capture {
-            box-shadow: 
-                0 0 0 4px rgba(239, 68, 68, 0.8),
-                0 8px 25px rgba(239, 68, 68, 0.3);
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
-        
-        .move-dot {
-            position: absolute;
-            width: 20%;
-            height: 20%;
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #4b4bff 100%);
+            border: none;
+        }
+
+        .options {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #ccc;
+        }
+
+        .options input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Game Info */
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .player-card.player-you {
+            border-color: rgba(46, 213, 115, 0.3);
+        }
+
+        .player-card.player-ai {
+            border-color: rgba(255, 71, 87, 0.3);
+        }
+
+        .player-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .player-title h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .piece-icon {
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: rgba(255, 215, 0, 0.9);
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-            z-index: 1;
-            animation: moveDot 0.3s ease-out forwards;
-            pointer-events: none;
+            border: 2px solid;
         }
-        
-        .capture-dot {
-            background: rgba(255, 50, 50, 0.9);
-            box-shadow: 0 0 10px rgba(255, 50, 50, 0.5);
+
+        .piece-icon.white {
+            background: var(--piece-white);
+            border-color: #d0d0d0;
         }
-        
-        .piece.moving {
-            animation: pieceMove 0.4s ease-out forwards;
-            z-index: 100;
+
+        .piece-icon.black {
+            background: var(--piece-black);
+            border-color: #1a1a1a;
         }
-        
-        .piece.capturing {
-            animation: captureEffect 0.5s ease-out forwards;
-            z-index: 99;
+
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
         }
-        
-        /* ==================== MODAL OYNA ==================== */
-        .modal-overlay {
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-value.max {
+            color: var(--danger-red);
+        }
+
+        #playerPenalty {
+            color: var(--warning-yellow);
+            font-weight: 600;
+        }
+
+        /* Game State */
+        .game-state {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .current-turn {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #turnText {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .turn-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid;
+        }
+
+        .turn-indicator.white {
+            background: var(--piece-white);
+            border-color: #d0d0d0;
+            animation: pulse-turn 2s infinite;
+        }
+
+        .turn-indicator.black {
+            background: var(--piece-black);
+            border-color: #1a1a1a;
+            animation: pulse-turn 2s infinite;
+        }
+
+        .turn-indicator.ai-thinking {
+            background: var(--ai-thinking);
+            border-color: #8a7fd1;
+            animation: pulse-ai 0.5s infinite;
+        }
+
+        @keyframes pulse-turn {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes pulse-ai {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .move-history {
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .move-history::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .move-history::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .move-history::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .move-entry {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
+        }
+
+        .move-entry.ai {
+            border-left: 3px solid var(--danger-red);
+        }
+
+        .move-entry.player {
+            border-left: 3px solid var(--success-green);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.9);
-            display: flex;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            backdrop-filter: blur(5px);
         }
-        
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
+
+        .modal.active {
+            display: flex;
         }
-        
-        .modal {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             border-radius: 20px;
             padding: 40px;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-        
-        .modal-overlay.active .modal {
-            transform: translateY(0);
-        }
-        
-        .modal h2 {
-            color: white;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        /* ==================== RANG TANLASH ==================== */
-        .color-options {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 25px 0;
-        }
-        
-        .color-option {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid transparent;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .color-option:hover {
-            transform: scale(1.1);
-        }
-        
-        .color-option.selected {
-            border-color: #4299e1;
-            box-shadow: 0 0 25px rgba(66, 153, 225, 0.5);
-        }
-        
-        .color-option.white {
-            background: var(--piece-white);
-            border: 2px solid #ccc;
-        }
-        
-        .color-option.black {
-            background: var(--piece-black);
-            border: 2px solid #333;
-        }
-        
-        .color-option.random {
-            background: linear-gradient(135deg, #fff 50%, #000 50%);
-        }
-        
-        .color-option .color-label {
-            position: absolute;
-            bottom: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-        
-        /* ==================== QIYINCHILIK TANLASH ==================== */
-        .difficulty-section {
-            margin: 25px 0;
+            box-shadow: var(--shadow-lg);
             text-align: center;
         }
-        
-        .difficulty-label {
-            color: white;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
+
+        .modal-content h2 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
-        .difficulty-slider {
-            width: 100%;
-            max-width: 300px;
-            height: 20px;
-            -webkit-appearance: none;
-            background: linear-gradient(90deg, #4ade80, #fbbf24, #ef4444);
-            border-radius: 10px;
-            outline: none;
-            margin: 15px 0;
-        }
-        
-        .difficulty-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: white;
-            cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            border: 2px solid #4299e1;
-        }
-        
-        .difficulty-value {
-            color: white;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-top: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        /* ==================== REJIM TANLASH ==================== */
-        .mode-selection {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+
+        .result-icon {
+            font-size: 5rem;
             margin: 20px 0;
+            animation: bounce 2s infinite;
         }
-        
-        .mode-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
-        
-        .mode-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+
+        .modal-content p {
+            font-size: 1.3rem;
+            color: #ccc;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            padding: 0 20px;
         }
-        
-        .mode-btn.active {
-            background: #4299e1;
-            box-shadow: 0 5px 15px rgba(66, 153, 225, 0.4);
-        }
-        
-        /* ==================== BOSHLASH TUGMASI ==================== */
-        .start-btn {
-            padding: 16px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            background: linear-gradient(135deg, #4299e1, #3182ce);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            box-shadow: 0 10px 20px rgba(66, 153, 225, 0.3);
-            letter-spacing: 1px;
-        }
-        
-        .start-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 25px rgba(66, 153, 225, 0.4);
-            background: linear-gradient(135deg, #3182ce, #2c5282);
-        }
-        
-        /* ==================== KONTROL PANELI ==================== */
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
-            justify-content: center;
-            margin: 25px 0;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        .control-btn {
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.95rem;
+
+        .game-stats .stat {
             display: flex;
+            flex-direction: column;
             align-items: center;
             gap: 8px;
         }
-        
-        .control-btn:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px);
+
+        .game-stats .stat span:first-child {
+            font-size: 1rem;
+            color: #aaa;
+            font-weight: 500;
         }
-        
-        .control-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+
+        .game-stats .stat span:last-child {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
         }
-        
-        /* ==================== INFO PANELI ==================== */
-        .info-panel {
+
+        .modal-buttons {
             display: flex;
-            flex-wrap: wrap;
-            gap: 25px;
+            gap: 15px;
             justify-content: center;
             margin-top: 20px;
-            width: 100%;
         }
-        
-        .info-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            min-width: 250px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .info-card h3 {
-            color: white;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 8px;
-        }
-        
-        .info-item {
-            margin: 10px 0;
-            color: #e0e0e0;
-            font-size: 0.95rem;
-        }
-        
-        .info-item strong {
-            color: white;
-            font-weight: 600;
-        }
-        
-        .player-indicator {
+
+        /* Loading AI Indicator */
+        .ai-thinking-indicator {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin: 10px 0;
+            margin-top: 10px;
+            color: var(--ai-thinking);
+            font-weight: 500;
         }
-        
-        .player-color {
-            width: 20px;
-            height: 20px;
+
+        .ai-thinking-indicator .dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
+            background: var(--ai-thinking);
+            animation: bounce-dots 1.4s infinite ease-in-out both;
         }
-        
-        .player-color.white {
-            background: var(--piece-white);
+
+        .ai-thinking-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
+        .ai-thinking-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce-dots {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
         }
-        
-        .player-color.black {
-            background: var(--piece-black);
+
+        /* Win/Lose Animation */
+        @keyframes confetti {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(1000px) rotate(360deg); opacity: 0; }
         }
-        
-        .penalty-warning {
-            color: #ff6b6b;
-            font-weight: bold;
-            animation: penaltyFlash 1s ease-in-out 3;
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--success-green);
+            top: -10px;
+            opacity: 0;
+            z-index: 999;
         }
-        
-        /* ==================== O'YIN TUGASH MODALI ==================== */
-        .game-over-modal {
-            text-align: center;
-        }
-        
-        .game-over-text {
-            font-size: 3rem;
-            font-weight: bold;
-            margin: 30px 0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        
-        .game-over-text.win {
-            background: linear-gradient(135deg, #4ade80, #22d3ee);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: winAnimation 1s ease-in-out infinite;
-        }
-        
-        .game-over-text.lose {
-            background: linear-gradient(135deg, #ef4444, #f87171);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* ==================== RESPONSIVE DESIGN ==================== */
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            h1 {
+            .game-container {
+                padding: 10px;
+            }
+            
+            .game-header h1 {
                 font-size: 2rem;
             }
             
-            .board-container {
-                padding: 15px;
+            .board-wrapper {
+                flex-direction: column;
             }
             
-            .color-option {
-                width: 60px;
-                height: 60px;
+            .coordinates.left,
+            .coordinates.right {
+                flex-direction: row;
+                width: var(--board-size);
+                height: 30px;
+                order: 1;
             }
             
-            .modal {
+            .board {
+                order: 0;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+            
+            .player-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .modal-content h2 {
+                font-size: 2.2rem;
+            }
+            
+            .modal-content p {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --board-size: min(95vmin, 400px);
+            }
+            
+            .game-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .player-title h3 {
+                font-size: 1.2rem;
+            }
+            
+            .stat-value {
+                font-size: 1.3rem;
+            }
+            
+            .modal-content {
                 padding: 25px;
             }
             
-            .controls {
+            .modal-content h2 {
+                font-size: 2rem;
+            }
+            
+            .game-stats {
                 padding: 15px;
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Touch Device Optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .cell {
+                min-height: 40px;
+                min-width: 40px;
             }
             
-            .control-btn {
-                padding: 10px 18px;
-                font-size: 0.9rem;
+            .btn {
+                min-height: 44px;
+                min-width: 44px;
             }
             
-            .info-panel {
-                flex-direction: column;
-                align-items: center;
+            .piece {
+                width: 85%;
+                height: 85%;
+            }
+        }
+
+        /* High Contrast Mode */
+        @media (prefers-contrast: high) {
+            .piece.white {
+                background: white;
+                border: 3px solid black;
             }
             
-            .info-card {
-                width: 100%;
-                max-width: 400px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.7rem;
+            .piece.black {
+                background: black;
+                border: 3px solid white;
             }
             
-            .color-options {
-                gap: 10px;
+            .cell.light {
+                background: white;
             }
             
-            .color-option {
-                width: 50px;
-                height: 50px;
+            .cell.dark {
+                background: black;
+            }
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            .piece, .cell, .btn {
+                transition: none;
             }
             
-            .mode-selection {
-                flex-direction: column;
+            .cell.valid-capture::after {
+                animation: none;
             }
             
-            .mode-btn {
-                width: 100%;
+            .turn-indicator {
+                animation: none;
             }
             
-            .controls {
-                flex-direction: column;
+            .piece.moving {
+                transition: none;
             }
             
-            .control-btn {
-                width: 100%;
-                justify-content: center;
+            .result-icon {
+                animation: none;
             }
-        }
-        
-        /* ==================== QO'SHIMCHA ELEMENTLAR ==================== */
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            margin: 15px 0;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .checkbox-container input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        
-        .status-message {
-            text-align: center;
-            color: white;
-            font-size: 1.1rem;
-            margin: 15px 0;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: white;
-            font-size: 0.9rem;
-        }
-        
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-        }
-        
-        .loading {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2000;
-        }
-        
-        .loading.active {
-            display: block;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #4299e1;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎮 Shashka PRO</h1>
-        <div class="subtitle">Haqiqiy AI bilan ziddiyatli shashka jangi</div>
-        
-        <!-- Asosiy modal oyna -->
-        <div id="mainModal" class="modal-overlay active">
-            <div class="modal">
-                <h2>🎮 O'yinni Boshlash</h2>
-                
-                <!-- Rang tanlash -->
-                <div style="text-align: center; margin: 20px 0;">
-                    <div style="color: white; margin-bottom: 15px; font-size: 1.1rem;">O'ynash uchun rang tanlang:</div>
-                    <div class="color-options">
-                        <div class="color-option white selected" onclick="selectColor('white')">
-                            <div class="color-label">Oq</div>
+    <div class="game-container">
+        <header class="game-header">
+            <h1><span class="icon">♔</span> SHASHKA PRO</h1>
+            <div class="header-info">
+                <div class="difficulty-badge">KOMBINATSIYA AI</div>
+                <div class="game-status" id="gameStatus">O'yin boshlandi</div>
+            </div>
+        </header>
+
+        <main class="game-main">
+            <div class="game-board-container">
+                <div class="board-frame">
+                    <div class="coordinates top">
+                        <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+                    </div>
+                    <div class="board-wrapper">
+                        <div class="coordinates left">
+                            <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
                         </div>
-                        <div class="color-option black" onclick="selectColor('black')">
-                            <div class="color-label">Qora</div>
+                        <div class="board" id="board">
+                            <!-- 8x8 board cells will be generated here -->
                         </div>
-                        <div class="color-option random" onclick="selectColor('random')">
-                            <div class="color-label">Tasodifiy</div>
+                        <div class="coordinates right">
+                            <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Qiyinchilik darajasi -->
-                <div class="difficulty-section">
-                    <div class="difficulty-label">Qiyinchilik darajasi:</div>
-                    <input type="range" min="1" max="12" value="8" class="difficulty-slider" id="difficultySlider">
-                    <div class="difficulty-value" id="difficultyValue">8 - Professional</div>
-                </div>
-                
-                <!-- O'yin rejimi -->
-                <div style="text-align: center; margin: 20px 0;">
-                    <div style="color: white; margin-bottom: 15px; font-size: 1.1rem;">O'yin rejimi:</div>
-                    <div class="mode-selection">
-                        <button class="mode-btn active" onclick="selectMode('single')">🤖 AI bilan</button>
+                    <div class="coordinates bottom">
+                        <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+                    </div>
+                    
+                    <!-- AI Thinking Indicator -->
+                    <div id="aiThinking" class="ai-thinking-indicator" style="display: none;">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <span>AI harakat qilmoqda...</span>
                     </div>
                 </div>
-                
-                <!-- Rang ma'lumoti -->
-                <div id="colorInfo" style="color: #4299e1; text-align: center; margin: 20px 0; font-weight: bold; font-size: 1.1rem;">
-                    Siz: Oq | Bot: Qora
-                </div>
-                
-                <!-- Boshlash tugmasi -->
-                <div style="text-align: center;">
-                    <button class="start-btn" onclick="startGame()">🎮 O'yinni Boshlash</button>
+
+                <div class="controls">
+                    <button id="newGame" class="btn">🔄 Yangi o'yin</button>
+                    <button id="undoBtn" class="btn">↩️ Orqaga (Ctrl+Z)</button>
+                    <button id="hintBtn" class="btn">💡 Maslaha</button>
+                    <div class="options">
+                        <label>
+                            <input type="checkbox" id="soundToggle" checked>
+                            <span>🔊 Ovoz</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" id="animationToggle" checked>
+                            <span>🎬 Animatsiya</span>
+                        </label>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- O'yin maydoni (dastlab yashirin) -->
-        <div id="gameArea" style="display: none; width: 100%;">
-            <div class="board-container">
-                <div class="board" id="board"></div>
-            </div>
-            
-            <!-- Status xabari -->
-            <div class="status-message" id="statusMessage">Dona tanlang...</div>
-            
-            <!-- Kontrol paneli -->
-            <div class="controls">
-                <button class="control-btn" onclick="newGame()">
-                    <span>🔄</span> Yangi o'yin
-                </button>
-                <button class="control-btn" id="undoBtn" onclick="undoMove()" disabled>
-                    <span>↩️</span> Orqaga
-                </button>
-                <button class="control-btn" id="redoBtn" onclick="redoMove()" disabled>
-                    <span>↪️</span> Oldinga
-                </button>
-                
-                <!-- Qo'shimcha opsiyalar -->
-                <div class="checkbox-container">
-                    <input type="checkbox" id="autoBot" checked>
-                    <label for="autoBot">Bot avtomatik</label>
-                </div>
-                <div class="checkbox-container">
-                    <input type="checkbox" id="forceCapture" checked>
-                    <label for="forceCapture">Majburiy olish</label>
-                </div>
-            </div>
-            
-            <!-- Ma'lumot paneli -->
-            <div class="info-panel">
-                <div class="info-card">
-                    <h3>📊 O'yin holati</h3>
-                    <div class="info-item">
-                        <strong>Navbat:</strong> <span id="currentTurn">Siz (oq)</span>
+
+            <div class="game-info">
+                <div class="player-card player-you">
+                    <div class="player-title">
+                        <div class="piece-icon white"></div>
+                        <h3>SIZ (OQ)</h3>
                     </div>
-                    <div class="info-item">
-                        <strong>Donalar:</strong> <span id="pieceCount">Oq: 12 | Qora: 12</span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Jarimalar:</strong> <span id="penaltyCount">0/3</span>
-                    </div>
-                </div>
-                
-                <div class="info-card">
-                    <h3>🤖 Bot ma'lumoti</h3>
-                    <div class="info-item">
-                        <strong>Daraja:</strong> <span id="botDifficulty">Professional (8)</span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Qidiruv:</strong> <span id="botSearch">0 daraja, 0ms</span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Harakatlar:</strong> <span id="botMoves">0 ta</span>
-                    </div>
-                </div>
-                
-                <div class="info-card">
-                    <h3>👥 O'yinchilar</h3>
-                    <div class="player-indicator" id="player1Indicator">
-                        <div class="player-color white"></div>
-                        <span>Siz (oq)</span>
-                    </div>
-                    <div class="player-indicator" id="player2Indicator">
-                        <div class="player-color black"></div>
-                        <span>Bot (qora)</span>
-                    </div>
-                    <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: var(--piece-white);"></div>
-                            <span>Oddiy dona</span>
+                    <div class="player-stats">
+                        <div class="stat">
+                            <span class="stat-label">Donalar:</span>
+                            <span id="playerPieces" class="stat-value">12</span>
                         </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: gold;"></div>
-                            <span>Dama</span>
+                        <div class="stat">
+                            <span class="stat-label">Dama:</span>
+                            <span id="playerKings" class="stat-value">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Jarima:</span>
+                            <span id="playerPenalty" class="stat-value">0/3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-state">
+                    <div class="current-turn">
+                        <span id="turnText">Sizning navbatingiz</span>
+                        <div id="turnIndicator" class="turn-indicator white"></div>
+                    </div>
+                    <div class="move-history" id="moveHistory">
+                        <!-- Move history will be added here -->
+                    </div>
+                </div>
+
+                <div class="player-card player-ai">
+                    <div class="player-title">
+                        <div class="piece-icon black"></div>
+                        <h3>AI (QORA)</h3>
+                    </div>
+                    <div class="player-stats">
+                        <div class="stat">
+                            <span class="stat-label">Donalar:</span>
+                            <span id="aiPieces" class="stat-value">12</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Dama:</span>
+                            <span id="aiKings" class="stat-value">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Kuch:</span>
+                            <span class="stat-value max">KOMBO</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- O'yin tugashi modal oynasi -->
-        <div id="gameOverModal" class="modal-overlay">
-            <div class="modal game-over-modal">
-                <h2>🎉 O'yin Tugadi!</h2>
-                <div class="game-over-text" id="gameResultText">Siz yutdingiz!</div>
-                <div style="color: #e0e0e0; margin: 20px 0; font-size: 1.1rem;">
-                    O'yin davomiyligi: <span id="gameDuration">0</span> daqiqa
+        </main>
+
+        <div id="gameOverModal" class="modal">
+            <div class="modal-content">
+                <h2 id="resultTitle"></h2>
+                <div class="result-icon" id="resultIcon"></div>
+                <p id="resultMessage"></p>
+                <div class="game-stats">
+                    <div class="stat">
+                        <span>Harakatlar:</span>
+                        <span id="totalMoves">0</span>
+                    </div>
+                    <div class="stat">
+                        <span>Olinganlar:</span>
+                        <span id="totalCaptures">0</span>
+                    </div>
+                    <div class="stat">
+                        <span>Vaqt:</span>
+                        <span id="gameTime">0:00</span>
+                    </div>
                 </div>
-                <button class="start-btn" onclick="showMainMenu()">🏠 Bosh menyu</button>
-                <button class="start-btn" onclick="newGame()" style="margin-top: 15px; background: linear-gradient(135deg, #4ade80, #22c55e);">
-                    🔄 Yangi o'yin
-                </button>
+                <div class="modal-buttons">
+                    <button id="playAgainBtn" class="btn btn-primary">Yana o'ynash</button>
+                    <button id="closeModalBtn" class="btn">Yopish</button>
+                </div>
             </div>
-        </div>
-        
-        <!-- Yuklanish indikatori -->
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
         </div>
     </div>
 
     <script>
-        // ==================== O'ZGARUVCHILAR VA HOLAT ====================
-        let board = [];
-        let history = [];
-        let historyIndex = -1;
-        let selectedPiece = null;
-        let validMoves = [];
-        let currentPlayer = 'white'; // Oq har doim boshlaydi
-        let playerColor = 'white';
-        let botColor = 'black';
-        let gameMode = 'single';
-        let difficulty = 8;
-        let autoBot = true;
-        let forceCapture = true;
-        let penaltyCount = 0;
-        let moveHistory = [];
-        let pieceCount = { white: 12, black: 12 };
-        let kingCount = { white: 0, black: 0 };
-        let gameActive = false;
-        let gameStartTime = null;
-        let ai = null;
-        
-        // DOM elementlari
-        const mainModal = document.getElementById('mainModal');
-        const gameArea = document.getElementById('gameArea');
-        const boardElement = document.getElementById('board');
-        const statusMessage = document.getElementById('statusMessage');
-        const currentTurn = document.getElementById('currentTurn');
-        const pieceCountElement = document.getElementById('pieceCount');
-        const penaltyCountElement = document.getElementById('penaltyCount');
-        const botDifficulty = document.getElementById('botDifficulty');
-        const botSearch = document.getElementById('botSearch');
-        const botMoves = document.getElementById('botMoves');
-        const gameOverModal = document.getElementById('gameOverModal');
-        const gameResultText = document.getElementById('gameResultText');
-        const gameDuration = document.getElementById('gameDuration');
-        const undoBtn = document.getElementById('undoBtn');
-        const redoBtn = document.getElementById('redoBtn');
-        const loading = document.getElementById('loading');
-        
-        // ==================== AI ENGINE ====================
-        class CheckersAI {
-            constructor(difficulty) {
-                this.difficulty = difficulty;
-                this.maxDepth = this.calculateDepth(difficulty);
-                this.transpositionTable = new Map();
-                this.nodesEvaluated = 0;
-                this.maxTime = 1000 + (difficulty * 100);
-                this.killerMoves = new Array(20).fill().map(() => []);
+        // ============================================
+        // SHASHKA GAME ENGINE - TO'LIQ VERSIYA
+        // ============================================
+
+        // ==================== ASOSIY KONSTANTALAR ====================
+        const BOARD_SIZE = 8;
+        const PLAYER = {
+            HUMAN: 'white',
+            AI: 'black'
+        };
+        const PIECE_TYPE = {
+            MAN: 'man',
+            KING: 'king'
+        };
+        const MAX_UNDO_STACK = 50;
+
+        // ==================== GAME STATE KLASSI ====================
+        class GameState {
+            constructor() {
+                this.board = this.createInitialBoard();
+                this.currentPlayer = PLAYER.HUMAN;
+                this.selectedPiece = null;
+                this.validMoves = [];
+                this.pieceCount = { [PLAYER.HUMAN]: 12, [PLAYER.AI]: 12 };
+                this.kingCount = { [PLAYER.HUMAN]: 0, [PLAYER.AI]: 0 };
+                this.penaltyCount = { [PLAYER.HUMAN]: 0, [PLAYER.AI]: 0 };
+                this.moveHistory = [];
+                this.undoStack = [];
+                this.redoStack = [];
+                this.totalMoves = 0;
+                this.totalCaptures = 0;
+                this.gameActive = true;
+                this.gameStartTime = Date.now();
+                this.userInputEnabled = true;
+                this.soundEnabled = true;
+                this.animationEnabled = true;
                 
-                // Baholash og'irliklari
-                this.PIECE_VALUE = 100;
-                this.KING_VALUE = 300;
-                this.CENTER_BONUS = 15;
-                this.BACK_ROW_BONUS = 20;
-                this.MOBILITY_BONUS = 8;
-                this.PROMOTION_BONUS = 50;
-                
-                this.stats = {
-                    depth: 0,
-                    nodes: 0,
-                    time: 0,
-                    moves: 0
-                };
+                // Qoidalar - DOIM YOQIQ
+                this.forceCapture = true;
+                this.multiCaptureEnabled = true;
+                this.kingFreeMove = true;
             }
-            
-            calculateDepth(difficulty) {
-                return Math.min(3 + Math.floor(difficulty * 0.6), 10);
-            }
-            
-            evaluate(board, color) {
-                let score = 0;
-                let pieceCount = { white: 0, black: 0 };
-                let kingCount = { white: 0, black: 0 };
+
+            createInitialBoard() {
+                const board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(null));
                 
-                for (let r = 0; r < 8; r++) {
-                    for (let c = 0; c < 8; c++) {
-                        const piece = board[r][c];
-                        if (!piece) continue;
-                        
-                        const isWhite = piece.color === 'white';
-                        let pieceScore = piece.king ? this.KING_VALUE : this.PIECE_VALUE;
-                        
-                        if (!piece.king) {
-                            if (isWhite) {
-                                pieceScore += (7 - r) * 5;
-                                if (r === 7) pieceScore += this.BACK_ROW_BONUS;
-                            } else {
-                                pieceScore += r * 5;
-                                if (r === 0) pieceScore += this.BACK_ROW_BONUS;
-                            }
-                        } else {
-                            const centerDist = Math.abs(c - 3.5) + Math.abs(r - 3.5);
-                            pieceScore += (7 - centerDist) * this.CENTER_BONUS;
-                        }
-                        
-                        if (c >= 2 && c <= 5 && r >= 2 && r <= 5) {
-                            pieceScore += this.CENTER_BONUS;
-                        }
-                        
-                        if (isWhite) {
-                            score += pieceScore;
-                            pieceCount.white++;
-                            if (piece.king) kingCount.white++;
-                        } else {
-                            score -= pieceScore;
-                            pieceCount.black++;
-                            if (piece.king) kingCount.black++;
+                // Qora donalar (AI) - 1-3 qatorlar
+                for (let row = 0; row < 3; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        if ((row + col) % 2 === 1) {
+                            board[row][col] = {
+                                player: PLAYER.AI,
+                                type: PIECE_TYPE.MAN,
+                                row,
+                                col,
+                                id: `ai_${row}_${col}`
+                            };
                         }
                     }
                 }
                 
-                const whiteMoves = this.getAllMoves(board, 'white').length;
-                const blackMoves = this.getAllMoves(board, 'black').length;
-                score += (whiteMoves - blackMoves) * this.MOBILITY_BONUS;
+                // Oq donalar (Human) - 6-8 qatorlar
+                for (let row = 5; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        if ((row + col) % 2 === 1) {
+                            board[row][col] = {
+                                player: PLAYER.HUMAN,
+                                type: PIECE_TYPE.MAN,
+                                row,
+                                col,
+                                id: `human_${row}_${col}`
+                            };
+                        }
+                    }
+                }
                 
-                return color === 'white' ? score : -score;
+                return board;
             }
-            
-            getAllMoves(board, color) {
-                const moves = [];
-                const captures = [];
+
+            getPiece(row, col) {
+                if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+                    return this.board[row][col];
+                }
+                return null;
+            }
+
+            setPiece(row, col, piece) {
+                if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+                    this.board[row][col] = piece;
+                    if (piece) {
+                        piece.row = row;
+                        piece.col = col;
+                    }
+                }
+            }
+
+            removePiece(row, col) {
+                const piece = this.getPiece(row, col);
+                if (piece) {
+                    this.pieceCount[piece.player]--;
+                    if (piece.type === PIECE_TYPE.KING) {
+                        this.kingCount[piece.player]--;
+                    }
+                    this.board[row][col] = null;
+                    return piece;
+                }
+                return null;
+            }
+
+            saveStateForUndo() {
+                const state = {
+                    board: JSON.parse(JSON.stringify(this.board)),
+                    currentPlayer: this.currentPlayer,
+                    pieceCount: { ...this.pieceCount },
+                    kingCount: { ...this.kingCount },
+                    penaltyCount: { ...this.penaltyCount },
+                    selectedPiece: this.selectedPiece ? { ...this.selectedPiece } : null,
+                    validMoves: [...this.validMoves],
+                    totalMoves: this.totalMoves,
+                    totalCaptures: this.totalCaptures,
+                    moveHistory: [...this.moveHistory]
+                };
                 
-                for (let r = 0; r < 8; r++) {
-                    for (let c = 0; c < 8; c++) {
-                        const piece = board[r][c];
-                        if (piece && piece.color === color) {
-                            const pieceMoves = this.getMovesForPiece(board, r, c, piece);
-                            for (const move of pieceMoves) {
-                                if (move.captures && move.captures.length > 0) {
-                                    captures.push(move);
+                this.undoStack.push(state);
+                if (this.undoStack.length > MAX_UNDO_STACK) {
+                    this.undoStack.shift();
+                }
+                this.redoStack = [];
+                
+                console.log("State saved for undo. Stack size:", this.undoStack.length);
+            }
+
+            undo() {
+                if (this.undoStack.length === 0) {
+                    console.log("No moves to undo");
+                    return false;
+                }
+                
+                console.log("Undoing move. Before undo:", this.undoStack.length, "after undo:", this.undoStack.length - 1);
+                
+                // Save current state to redo stack
+                const currentState = {
+                    board: JSON.parse(JSON.stringify(this.board)),
+                    currentPlayer: this.currentPlayer,
+                    pieceCount: { ...this.pieceCount },
+                    kingCount: { ...this.kingCount },
+                    penaltyCount: { ...this.penaltyCount },
+                    selectedPiece: this.selectedPiece ? { ...this.selectedPiece } : null,
+                    validMoves: [...this.validMoves],
+                    totalMoves: this.totalMoves,
+                    totalCaptures: this.totalCaptures,
+                    moveHistory: [...this.moveHistory]
+                };
+                this.redoStack.push(currentState);
+                
+                // Restore previous state
+                const prevState = this.undoStack.pop();
+                this.board = prevState.board;
+                this.currentPlayer = prevState.currentPlayer;
+                this.pieceCount = prevState.pieceCount;
+                this.kingCount = prevState.kingCount;
+                this.penaltyCount = prevState.penaltyCount;
+                this.selectedPiece = prevState.selectedPiece;
+                this.validMoves = prevState.validMoves;
+                this.totalMoves = prevState.totalMoves;
+                this.totalCaptures = prevState.totalCaptures;
+                this.moveHistory = prevState.moveHistory;
+                
+                // Restore piece positions
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const piece = this.board[row][col];
+                        if (piece) {
+                            piece.row = row;
+                            piece.col = col;
+                        }
+                    }
+                }
+                
+                console.log("Move undone successfully");
+                return true;
+            }
+
+            redo() {
+                if (this.redoStack.length === 0) return false;
+                
+                console.log("Redoing move");
+                
+                // Save current state to undo stack
+                const currentState = {
+                    board: JSON.parse(JSON.stringify(this.board)),
+                    currentPlayer: this.currentPlayer,
+                    pieceCount: { ...this.pieceCount },
+                    kingCount: { ...this.kingCount },
+                    penaltyCount: { ...this.penaltyCount },
+                    selectedPiece: this.selectedPiece ? { ...this.selectedPiece } : null,
+                    validMoves: [...this.validMoves],
+                    totalMoves: this.totalMoves,
+                    totalCaptures: this.totalCaptures,
+                    moveHistory: [...this.moveHistory]
+                };
+                this.undoStack.push(currentState);
+                
+                // Restore redo state
+                const nextState = this.redoStack.pop();
+                this.board = nextState.board;
+                this.currentPlayer = nextState.currentPlayer;
+                this.pieceCount = nextState.pieceCount;
+                this.kingCount = nextState.kingCount;
+                this.penaltyCount = nextState.penaltyCount;
+                this.selectedPiece = nextState.selectedPiece;
+                this.validMoves = nextState.validMoves;
+                this.totalMoves = nextState.totalMoves;
+                this.totalCaptures = nextState.totalCaptures;
+                this.moveHistory = nextState.moveHistory;
+                
+                // Restore piece positions
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const piece = this.board[row][col];
+                        if (piece) {
+                            piece.row = row;
+                            piece.col = col;
+                        }
+                    }
+                }
+                
+                return true;
+            }
+
+            switchPlayer() {
+                this.currentPlayer = this.currentPlayer === PLAYER.HUMAN ? PLAYER.AI : PLAYER.HUMAN;
+            }
+
+            reset() {
+                this.board = this.createInitialBoard();
+                this.currentPlayer = PLAYER.HUMAN;
+                this.selectedPiece = null;
+                this.validMoves = [];
+                this.pieceCount = { [PLAYER.HUMAN]: 12, [PLAYER.AI]: 12 };
+                this.kingCount = { [PLAYER.HUMAN]: 0, [PLAYER.AI]: 0 };
+                this.penaltyCount = { [PLAYER.HUMAN]: 0, [PLAYER.AI]: 0 };
+                this.moveHistory = [];
+                this.undoStack = [];
+                this.redoStack = [];
+                this.totalMoves = 0;
+                this.totalCaptures = 0;
+                this.gameActive = true;
+                this.gameStartTime = Date.now();
+                this.userInputEnabled = true;
+            }
+        }
+
+        // ==================== MOVE CALCULATOR ====================
+        class MoveCalculator {
+            constructor(gameState) {
+                this.gameState = gameState;
+            }
+
+            getAllValidMoves(player) {
+                const moves = [];
+                let maxCaptures = 0;
+                const allCaptureMoves = [];
+                
+                // Avval barcha olish harakatlarini topish
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const piece = this.gameState.getPiece(row, col);
+                        if (piece && piece.player === player) {
+                            const captures = this.getCaptureMovesForPiece(piece);
+                            if (captures.length > 0) {
+                                allCaptureMoves.push(...captures);
+                                captures.forEach(move => {
+                                    if (move.captures.length > maxCaptures) {
+                                        maxCaptures = move.captures.length;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                // Agar olish harakati bo'lsa, faqat olish harakatlarini qaytarish
+                if (this.gameState.forceCapture && allCaptureMoves.length > 0) {
+                    // Eng uzun olish ketma-ketligini tanlash
+                    return allCaptureMoves.filter(move => move.captures.length === maxCaptures);
+                }
+                
+                // Agar olish bo'lmasa, oddiy harakatlar
+                if (allCaptureMoves.length === 0) {
+                    for (let row = 0; row < BOARD_SIZE; row++) {
+                        for (let col = 0; col < BOARD_SIZE; col++) {
+                            const piece = this.gameState.getPiece(row, col);
+                            if (piece && piece.player === player) {
+                                const simpleMoves = this.getSimpleMovesForPiece(piece);
+                                moves.push(...simpleMoves);
+                            }
+                        }
+                    }
+                }
+                
+                return moves;
+            }
+
+            getCaptureMovesForPiece(piece, visited = new Set()) {
+                const moves = [];
+                const directions = this.getDirections(piece);
+                
+                for (const [dr, dc] of directions) {
+                    if (piece.type === PIECE_TYPE.KING) {
+                        // DAMA uchun: uzoq masofalarni tekshirish
+                        let currentRow = piece.row + dr;
+                        let currentCol = piece.col + dc;
+                        
+                        while (this.isValidPosition(currentRow, currentCol)) {
+                            const targetPiece = this.gameState.getPiece(currentRow, currentCol);
+                            
+                            if (targetPiece) {
+                                if (targetPiece.player !== piece.player && !visited.has(`${currentRow},${currentCol}`)) {
+                                    // Bo'sh joyni topish
+                                    let landingRow = currentRow + dr;
+                                    let landingCol = currentCol + dc;
+                                    
+                                    while (this.isValidPosition(landingRow, landingCol)) {
+                                        if (!this.gameState.getPiece(landingRow, landingCol)) {
+                                            const newVisited = new Set(visited);
+                                            newVisited.add(`${currentRow},${currentCol}`);
+                                            
+                                            const captureMove = {
+                                                from: { row: piece.row, col: piece.col },
+                                                to: { row: landingRow, col: landingCol },
+                                                piece: piece,
+                                                captures: [{ 
+                                                    row: currentRow, 
+                                                    col: currentCol, 
+                                                    piece: targetPiece 
+                                                }],
+                                                isCapture: true
+                                            };
+                                            
+                                            // Keyingi olishlarni tekshirish
+                                            const simulatedPiece = { ...piece, row: landingRow, col: landingCol };
+                                            const furtherCaptures = this.getCaptureMovesForPiece(simulatedPiece, newVisited);
+                                            
+                                            if (furtherCaptures.length > 0) {
+                                                furtherCaptures.forEach(furtherMove => {
+                                                    moves.push({
+                                                        from: { row: piece.row, col: piece.col },
+                                                        to: furtherMove.to,
+                                                        piece: piece,
+                                                        captures: [...captureMove.captures, ...furtherMove.captures],
+                                                        isCapture: true
+                                                    });
+                                                });
+                                            } else {
+                                                moves.push(captureMove);
+                                            }
+                                        } else {
+                                            break;
+                                        }
+                                        landingRow += dr;
+                                        landingCol += dc;
+                                    }
+                                    break;
                                 } else {
-                                    moves.push(move);
+                                    break;
+                                }
+                            }
+                            currentRow += dr;
+                            currentCol += dc;
+                        }
+                    } else {
+                        // Oddiy dona uchun
+                        const captureRow = piece.row + dr;
+                        const captureCol = piece.col + dc;
+                        const landingRow = captureRow + dr;
+                        const landingCol = captureCol + dc;
+                        
+                        if (this.canCapture(piece, captureRow, captureCol, landingRow, landingCol, visited)) {
+                            const newVisited = new Set(visited);
+                            newVisited.add(`${captureRow},${captureCol}`);
+                            
+                            const targetPiece = this.gameState.getPiece(captureRow, captureCol);
+                            
+                            const captureMove = {
+                                from: { row: piece.row, col: piece.col },
+                                to: { row: landingRow, col: landingCol },
+                                piece: piece,
+                                captures: [{ 
+                                    row: captureRow, 
+                                    col: captureCol, 
+                                    piece: targetPiece 
+                                }],
+                                isCapture: true
+                            };
+                            
+                            // Keyingi olishlarni tekshirish
+                            const simulatedPiece = { ...piece, row: landingRow, col: landingCol };
+                            const furtherCaptures = this.getCaptureMovesForPiece(simulatedPiece, newVisited);
+                            
+                            if (furtherCaptures.length > 0) {
+                                furtherCaptures.forEach(furtherMove => {
+                                    moves.push({
+                                        from: { row: piece.row, col: piece.col },
+                                        to: furtherMove.to,
+                                        piece: piece,
+                                        captures: [...captureMove.captures, ...furtherMove.captures],
+                                        isCapture: true
+                                    });
+                                });
+                            } else {
+                                moves.push(captureMove);
+                            }
+                        }
+                    }
+                }
+                
+                return moves;
+            }
+
+            getSimpleMovesForPiece(piece) {
+                const moves = [];
+                const directions = this.getDirections(piece);
+                
+                for (const [dr, dc] of directions) {
+                    if (piece.type === PIECE_TYPE.KING) {
+                        // DAMA: cheksiz diagonal harakat
+                        let newRow = piece.row + dr;
+                        let newCol = piece.col + dc;
+                        
+                        while (this.isValidPosition(newRow, newCol)) {
+                            if (!this.gameState.getPiece(newRow, newCol)) {
+                                moves.push({
+                                    from: { row: piece.row, col: piece.col },
+                                    to: { row: newRow, col: newCol },
+                                    piece: piece,
+                                    captures: [],
+                                    isCapture: false
+                                });
+                            } else {
+                                break;
+                            }
+                            newRow += dr;
+                            newCol += dc;
+                        }
+                    } else {
+                        // Oddiy dona: bir qadam oldinga
+                        const newRow = piece.row + dr;
+                        const newCol = piece.col + dc;
+                        
+                        if (this.isValidPosition(newRow, newCol) && !this.gameState.getPiece(newRow, newCol)) {
+                            moves.push({
+                                from: { row: piece.row, col: piece.col },
+                                to: { row: newRow, col: newCol },
+                                piece: piece,
+                                captures: [],
+                                isCapture: false
+                            });
+                        }
+                    }
+                }
+                
+                return moves;
+            }
+
+            getDirections(piece) {
+                if (piece.type === PIECE_TYPE.KING) {
+                    return [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+                } else if (piece.player === PLAYER.HUMAN) {
+                    return [[-1, 1], [-1, -1]]; // Oq yuqoriga
+                } else {
+                    return [[1, 1], [1, -1]]; // Qora pastga
+                }
+            }
+
+            canCapture(piece, captureRow, captureCol, landingRow, landingCol, visited) {
+                if (!this.isValidPosition(captureRow, captureCol) || 
+                    !this.isValidPosition(landingRow, landingCol)) {
+                    return false;
+                }
+                
+                const captureKey = `${captureRow},${captureCol}`;
+                if (visited.has(captureKey)) {
+                    return false;
+                }
+                
+                const capturedPiece = this.gameState.getPiece(captureRow, captureCol);
+                if (!capturedPiece || capturedPiece.player === piece.player) {
+                    return false;
+                }
+                
+                if (this.gameState.getPiece(landingRow, landingCol)) {
+                    return false;
+                }
+                
+                return true;
+            }
+
+            isValidPosition(row, col) {
+                return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+            }
+
+            getAllCaptureMoves(player) {
+                const captures = [];
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const piece = this.gameState.getPiece(row, col);
+                        if (piece && piece.player === player) {
+                            const pieceCaptures = this.getCaptureMovesForPiece(piece);
+                            captures.push(...pieceCaptures);
+                        }
+                    }
+                }
+                return captures;
+            }
+        }
+
+        // ==================== KOMBINATSIYA ASOSIDA BOT ====================
+        class UnbeatableAI {
+            constructor() {
+                // Botning barcha harakatlari oldindan belgilangan
+                this.combinations = this.createPredefinedCombinations();
+                this.currentCombinationIndex = 0;
+                this.moveSequence = [];
+                this.currentMoveIndex = 0;
+                this.initializeMoveSequence();
+            }
+
+            // Botning barcha harakat kombinatsiyalari
+            createPredefinedCombinations() {
+                return [
+                    // KOMBINATSIYA 1: Markaz nazorati
+                    {
+                        name: "Markaz nazorati",
+                        moves: [
+                            { from: { row: 2, col: 3 }, to: { row: 3, col: 2 }, captures: [] },
+                            { from: { row: 2, col: 5 }, to: { row: 3, col: 4 }, captures: [] },
+                            { from: { row: 1, col: 2 }, to: { row: 2, col: 1 }, captures: [] },
+                            { from: { row: 1, col: 4 }, to: { row: 2, col: 3 }, captures: [] }
+                        ]
+                    },
+                    // KOMBINATSIYA 2: Chap qanot hujumi
+                    {
+                        name: "Chap qanot hujumi",
+                        moves: [
+                            { from: { row: 2, col: 1 }, to: { row: 3, col: 0 }, captures: [] },
+                            { from: { row: 1, col: 0 }, to: { row: 2, col: 1 }, captures: [] },
+                            { from: { row: 2, col: 3 }, to: { row: 3, col: 2 }, captures: [] },
+                            { from: { row: 0, col: 1 }, to: { row: 1, col: 0 }, captures: [] }
+                        ]
+                    },
+                    // KOMBINATSIYA 3: O'ng qanot hujumi
+                    {
+                        name: "O'ng qanot hujumi",
+                        moves: [
+                            { from: { row: 2, col: 5 }, to: { row: 3, col: 6 }, captures: [] },
+                            { from: { row: 1, col: 6 }, to: { row: 2, col: 5 }, captures: [] },
+                            { from: { row: 2, col: 7 }, to: { row: 3, col: 6 }, captures: [] },
+                            { from: { row: 0, col: 7 }, to: { row: 1, col: 6 }, captures: [] }
+                        ]
+                    },
+                    // KOMBINATSIYA 4: Fork hujumi (Vilka)
+                    {
+                        name: "Fork hujumi",
+                        moves: [
+                            { from: { row: 2, col: 3 }, to: { row: 4, col: 1 }, captures: [{row: 3, col: 2}] },
+                            { from: { row: 1, col: 2 }, to: { row: 2, col: 3 }, captures: [] },
+                            { from: { row: 2, col: 5 }, to: { row: 4, col: 3 }, captures: [{row: 3, col: 4}] },
+                            { from: { row: 0, col: 3 }, to: { row: 1, col: 4 }, captures: [] }
+                        ]
+                    },
+                    // KOMBINATSIYA 5: Pin kombinatsiyasi (Qisish)
+                    {
+                        name: "Pin kombinatsiyasi",
+                        moves: [
+                            { from: { row: 2, col: 1 }, to: { row: 3, col: 2 }, captures: [] },
+                            { from: { row: 1, col: 0 }, to: { row: 2, col: 1 }, captures: [] },
+                            { from: { row: 2, col: 3 }, to: { row: 3, col: 4 }, captures: [] },
+                            { from: { row: 0, col: 1 }, to: { row: 2, col: 3 }, captures: [{row: 1, col: 2}] }
+                        ]
+                    },
+                    // KOMBINATSIYA 6: Sacrifice kombinatsiyasi (Qurbonlik)
+                    {
+                        name: "Sacrifice kombinatsiyasi",
+                        moves: [
+                            { from: { row: 2, col: 3 }, to: { row: 3, col: 2 }, captures: [] },
+                            { from: { row: 1, col: 4 }, to: { row: 2, col: 3 }, captures: [] },
+                            { from: { row: 2, col: 5 }, to: { row: 4, col: 3 }, captures: [{row: 3, col: 4}] },
+                            { from: { row: 0, col: 5 }, to: { row: 1, col: 4 }, captures: [] }
+                        ]
+                    },
+                    // KOMBINATSIYA 7: Ikkilama hujum
+                    {
+                        name: "Ikkilama hujum",
+                        moves: [
+                            { from: { row: 2, col: 3 }, to: { row: 4, col: 1 }, captures: [{row: 3, col: 2}] },
+                            { from: { row: 4, col: 1 }, to: { row: 6, col: 3 }, captures: [{row: 5, col: 2}] },
+                            { from: { row: 1, col: 0 }, to: { row: 2, col: 1 }, captures: [] },
+                            { from: { row: 0, col: 1 }, to: { row: 1, col: 0 }, captures: [] }
+                        ]
+                    },
+                    // KOMBINATSIYA 8: Dama yaratish
+                    {
+                        name: "Dama yaratish",
+                        moves: [
+                            { from: { row: 5, col: 2 }, to: { row: 6, col: 3 }, captures: [] },
+                            { from: { row: 5, col: 4 }, to: { row: 6, col: 5 }, captures: [] },
+                            { from: { row: 4, col: 3 }, to: { row: 5, col: 4 }, captures: [] },
+                            { from: { row: 3, col: 2 }, to: { row: 5, col: 4 }, captures: [{row: 4, col: 3}] },
+                            { from: { row: 6, col: 5 }, to: { row: 7, col: 4 }, captures: [] }
+                        ]
+                    },
+                    // KOMBINATSIYA 9: Diagonal hujum
+                    {
+                        name: "Diagonal hujum",
+                        moves: [
+                            { from: { row: 2, col: 3 }, to: { row: 3, col: 4 }, captures: [] },
+                            { from: { row: 1, col: 4 }, to: { row: 2, col: 5 }, captures: [] },
+                            { from: { row: 2, col: 7 }, to: { row: 3, col: 6 }, captures: [] },
+                            { from: { row: 0, col: 5 }, to: { row: 1, col: 6 }, captures: [] }
+                        ]
+                    },
+                    // KOMBINATSIYA 10: Himoyaviy tizim
+                    {
+                        name: "Himoyaviy tizim",
+                        moves: [
+                            { from: { row: 1, col: 2 }, to: { row: 2, col: 3 }, captures: [] },
+                            { from: { row: 1, col: 6 }, to: { row: 2, col: 5 }, captures: [] },
+                            { from: { row: 0, col: 3 }, to: { row: 1, col: 2 }, captures: [] },
+                            { from: { row: 0, col: 5 }, to: { row: 1, col: 4 }, captures: [] }
+                        ]
+                    }
+                ];
+            }
+
+            initializeMoveSequence() {
+                // Barcha kombinatsiyalardan harakatlarni birlashtirish
+                this.moveSequence = [];
+                this.combinations.forEach(combo => {
+                    this.moveSequence.push(...combo.moves);
+                });
+                
+                console.log("AI harakatlar ketma-ketligi yaratildi:", this.moveSequence.length, "harakat");
+            }
+
+            getBestMove(gameState, moveCalculator) {
+                const allMoves = moveCalculator.getAllValidMoves(PLAYER.AI);
+                if (allMoves.length === 0) return null;
+                if (allMoves.length === 1) return allMoves[0];
+
+                // 1. Oldindan belgilangan kombinatsiyadan harakat olish
+                if (this.currentMoveIndex < this.moveSequence.length) {
+                    const predefinedMove = this.moveSequence[this.currentMoveIndex];
+                    
+                    // Predefined move ni haqiqiy harakatga o'girish
+                    const move = this.findMatchingMove(predefinedMove, allMoves, gameState);
+                    if (move) {
+                        this.currentMoveIndex++;
+                        console.log("AI kombinatsiya harakatini tanladi:", predefinedMove, "->", move);
+                        return move;
+                    } else {
+                        // Agar kombinatsiya harakati topilmasa, keyingisiga o'tish
+                        this.currentMoveIndex++;
+                        return this.getBestMove(gameState, moveCalculator); // Rekursiv chaqirish
+                    }
+                } else {
+                    // Barcha kombinatsiyalar tugagach, boshidan boshlash
+                    this.currentMoveIndex = 0;
+                    return this.getBestMove(gameState, moveCalculator);
+                }
+            }
+
+            findMatchingMove(predefinedMove, allMoves, gameState) {
+                // 1. To'g'ridan-to'g'ri mos keladigan harakatni qidirish
+                for (const move of allMoves) {
+                    if (move.from.row === predefinedMove.from.row &&
+                        move.from.col === predefinedMove.from.col &&
+                        move.to.row === predefinedMove.to.row &&
+                        move.to.col === predefinedMove.to.col) {
+                        
+                        // Olish harakatini tekshirish
+                        if (predefinedMove.captures && predefinedMove.captures.length > 0) {
+                            if (move.isCapture && move.captures.length >= predefinedMove.captures.length) {
+                                return move;
+                            }
+                        } else if (!move.isCapture) {
+                            return move;
+                        }
+                    }
+                }
+
+                // 2. Agar to'g'ridan-to'g'ri mos kelmasa, eng yaxshi alternativni qidirish
+                let bestAlternative = null;
+                let bestScore = -Infinity;
+
+                for (const move of allMoves) {
+                    // O'xshash yo'nalishda harakat qilish
+                    const fromDistance = Math.abs(move.from.row - predefinedMove.from.row) +
+                                       Math.abs(move.from.col - predefinedMove.from.col);
+                    const toDistance = Math.abs(move.to.row - predefinedMove.to.row) +
+                                     Math.abs(move.to.col - predefinedMove.to.col);
+                    
+                    if (fromDistance <= 2 && toDistance <= 3) {
+                        const score = this.calculateMovePriority(move, gameState);
+                        
+                        // Olish harakatiga ustunlik berish
+                        if (predefinedMove.captures && predefinedMove.captures.length > 0 && move.isCapture) {
+                            if (move.captures.length >= predefinedMove.captures.length) {
+                                return move; // Olish harakatini darhol qaytarish
+                            }
+                        }
+                        
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestAlternative = move;
+                        }
+                    }
+                }
+
+                return bestAlternative;
+            }
+
+            calculateMovePriority(move, gameState) {
+                let priority = 0;
+                
+                // 1. Olish harakati (eng yuqori prioritet)
+                if (move.isCapture) {
+                    priority += 1000 + (move.captures.length * 500);
+                    
+                    // Qimmatli donalarni olish
+                    for (const capture of move.captures) {
+                        const capturedPiece = gameState.getPiece(capture.row, capture.col);
+                        if (capturedPiece && capturedPiece.type === PIECE_TYPE.KING) {
+                            priority += 800;
+                        }
+                    }
+                }
+                
+                // 2. Dama yaratish
+                if (move.piece.type === PIECE_TYPE.MAN && move.to.row === 7) {
+                    priority += 1200;
+                }
+                
+                // 3. Markazni nazorat qilish
+                const centerDistance = Math.abs(move.to.row - 3.5) + Math.abs(move.to.col - 3.5);
+                priority += (8 - centerDistance) * 50;
+                
+                // 4. Orqa qator himoyasi
+                if (move.to.row === 0 && move.piece.type === PIECE_TYPE.MAN) {
+                    priority += 100;
+                }
+                
+                // 5. Xavfsiz pozitsiya
+                if (this.isSafePosition(move.to.row, move.to.col, gameState, move.piece.player)) {
+                    priority += 150;
+                }
+                
+                // 6. Foydalanuvchi donalariga yaqinlashish
+                const humanPieceDistance = this.calculateDistanceToHumanPieces(move.to.row, move.to.col, gameState);
+                priority += (8 - humanPieceDistance) * 20;
+                
+                return priority;
+            }
+
+            calculateDistanceToHumanPieces(row, col, gameState) {
+                let minDistance = Infinity;
+                
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        const piece = gameState.getPiece(r, c);
+                        if (piece && piece.player === PLAYER.HUMAN) {
+                            const distance = Math.abs(row - r) + Math.abs(col - c);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                            }
+                        }
+                    }
+                }
+                
+                return minDistance === Infinity ? 8 : minDistance;
+            }
+
+            isSafePosition(row, col, gameState, player) {
+                const directions = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+                const opponent = player === PLAYER.HUMAN ? PLAYER.AI : PLAYER.HUMAN;
+                
+                for (const [dr, dc] of directions) {
+                    const attackRow = row + dr;
+                    const attackCol = col + dc;
+                    const landingRow = row - dr;
+                    const landingCol = col - dc;
+                    
+                    if (this.isValidPosition(attackRow, attackCol) && 
+                        this.isValidPosition(landingRow, landingCol)) {
+                        const attacker = gameState.getPiece(attackRow, attackCol);
+                        const landing = gameState.getPiece(landingRow, landingCol);
+                        
+                        if (attacker && attacker.player === opponent && !landing) {
+                            // Oddiy dona uchun faqat oldinga olish mumkin
+                            if (attacker.type === PIECE_TYPE.MAN) {
+                                if ((attacker.player === PLAYER.HUMAN && dr === 1) ||
+                                    (attacker.player === PLAYER.AI && dr === -1)) {
+                                    return false;
+                                }
+                            } else {
+                                // Dama har tomondan olishi mumkin
+                                return false;
+                            }
+                        }
+                    }
+                }
+                
+                return true;
+            }
+
+            isValidPosition(row, col) {
+                return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+            }
+        }
+
+        // ==================== GAME ENGINE ====================
+        class ShashkaGame {
+            constructor() {
+                this.gameState = new GameState();
+                this.moveCalculator = new MoveCalculator(this.gameState);
+                this.aiEngine = new UnbeatableAI();
+                this.ui = new GameUI(this);
+                this.isAnimating = false;
+                this.isUndoing = false;
+                
+                this.initialize();
+                this.bindKeyboardShortcuts();
+            }
+
+            initialize() {
+                this.ui.initialize();
+                this.updateUI();
+                this.ui.showMessage("O'yin boshlandi. Sizning navbatingiz.");
+            }
+
+            bindKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'z') {
+                        e.preventDefault();
+                        this.undoMove();
+                    }
+                    if (e.ctrlKey && e.key === 'y') {
+                        e.preventDefault();
+                        this.redoMove();
+                    }
+                });
+            }
+
+            handleCellClick(row, col) {
+                if (!this.gameState.gameActive || !this.gameState.userInputEnabled || this.isAnimating || this.isUndoing) {
+                    return;
+                }
+
+                if (this.gameState.currentPlayer !== PLAYER.HUMAN) {
+                    return;
+                }
+
+                const clickedPiece = this.gameState.getPiece(row, col);
+                
+                if (this.gameState.selectedPiece) {
+                    // Harakatni amalga oshirish
+                    const move = this.gameState.validMoves.find(m => 
+                        m.to.row === row && m.to.col === col &&
+                        m.from.row === this.gameState.selectedPiece.row && 
+                        m.from.col === this.gameState.selectedPiece.col
+                    );
+
+                    if (move) {
+                        this.executeMove(move);
+                        return;
+                    }
+                }
+
+                // Dona tanlash
+                if (clickedPiece && clickedPiece.player === PLAYER.HUMAN) {
+                    this.selectPiece(clickedPiece);
+                } else {
+                    this.clearSelection();
+                }
+            }
+
+            selectPiece(piece) {
+                this.clearSelection();
+                
+                this.gameState.selectedPiece = piece;
+                this.gameState.validMoves = this.moveCalculator.getAllValidMoves(PLAYER.HUMAN)
+                    .filter(move => 
+                        move.from.row === piece.row && 
+                        move.from.col === piece.col
+                    );
+                
+                if (this.gameState.validMoves.length === 0) {
+                    this.ui.showMessage("Bu dona bilan harakat qilish mumkin emas.");
+                    this.clearSelection();
+                    return;
+                }
+                
+                // Majburiy olish qoidasini tekshirish
+                const hasCaptureMoves = this.gameState.validMoves.some(m => m.isCapture);
+                const allCaptures = this.moveCalculator.getAllCaptureMoves(PLAYER.HUMAN);
+                
+                if (this.gameState.forceCapture && allCaptures.length > 0 && !hasCaptureMoves) {
+                    this.applyPenalty(piece.row, piece.col);
+                    return;
+                }
+                
+                this.ui.highlightPiece(piece);
+                this.ui.highlightValidMoves(this.gameState.validMoves);
+                
+                const square = this.getSquareNotation(piece.row, piece.col);
+                this.ui.showMessage(`${square} donasi tanlandi.`);
+            }
+
+            applyPenalty(row, col) {
+                const piece = this.gameState.getPiece(row, col);
+                if (!piece) return;
+                
+                this.gameState.penaltyCount[piece.player]++;
+                
+                // Dona o'chirish
+                this.gameState.removePiece(row, col);
+                
+                // Ovoz
+                if (this.gameState.soundEnabled) {
+                    this.playSound('penalty');
+                }
+                
+                // Xabar
+                this.ui.showMessage(`JARIMA! ${this.getSquareNotation(row, col)} donasi o'chirildi.`);
+                
+                // Agar 3 ta jarima bo'lsa, o'yin tugadi
+                if (this.gameState.penaltyCount[piece.player] >= 3) {
+                    this.endGame(false);
+                    return;
+                }
+                
+                this.clearSelection();
+                this.switchTurn();
+                this.updateUI();
+                
+                // Agar AI navbatda bo'lsa
+                if (this.gameState.currentPlayer === PLAYER.AI) {
+                    this.makeAIMove();
+                }
+            }
+
+            async executeMove(move) {
+                // Oldin harakatni animatsiya qilish
+                this.isAnimating = true;
+                this.gameState.userInputEnabled = false;
+                
+                // Tarixni saqlash (undo uchun)
+                this.gameState.saveStateForUndo();
+                
+                // Harakatni moveHistory ga qo'shish
+                this.gameState.moveHistory.push({
+                    move: move,
+                    boardState: JSON.parse(JSON.stringify(this.gameState.board))
+                });
+                
+                // Olingan donalarni animatsiya bilan olib tashlash
+                if (move.captures && move.captures.length > 0) {
+                    await this.animateCaptures(move.captures);
+                    move.captures.forEach(capture => {
+                        this.gameState.removePiece(capture.row, capture.col);
+                        this.gameState.totalCaptures++;
+                    });
+                    
+                    if (this.gameState.soundEnabled) {
+                        this.playSound('capture');
+                    }
+                } else {
+                    if (this.gameState.soundEnabled) {
+                        this.playSound('move');
+                    }
+                }
+                
+                // Dona ko'chirishni animatsiya qilish
+                await this.animatePieceMove(move);
+                
+                // Dona ko'chirish
+                const piece = move.piece;
+                this.gameState.setPiece(move.from.row, move.from.col, null);
+                this.gameState.setPiece(move.to.row, move.to.col, piece);
+                piece.row = move.to.row;
+                piece.col = move.to.col;
+                
+                // Dama yaratish
+                if (piece.type === PIECE_TYPE.MAN) {
+                    if ((piece.player === PLAYER.HUMAN && move.to.row === 0) ||
+                        (piece.player === PLAYER.AI && move.to.row === BOARD_SIZE - 1)) {
+                        piece.type = PIECE_TYPE.KING;
+                        this.gameState.kingCount[piece.player]++;
+                        
+                        if (this.gameState.soundEnabled) {
+                            this.playSound('king');
+                        }
+                        
+                        // Dama animatsiyasi
+                        await this.animateKingPromotion(piece);
+                    }
+                }
+                
+                // Harakatlar soni
+                this.gameState.totalMoves++;
+                
+                // UI yangilash
+                this.clearSelection();
+                this.updateUI();
+                
+                // Tarixga qo'shish
+                this.addMoveToHistory(move);
+                
+                // O'yin tugashini tekshirish
+                const winner = this.checkGameOver();
+                if (winner !== null) {
+                    this.endGame(winner === PLAYER.HUMAN);
+                    this.isAnimating = false;
+                    return;
+                }
+                
+                // Navbatni o'zgartirish
+                this.switchTurn();
+                
+                // Animatsiya tugadi
+                this.isAnimating = false;
+                this.gameState.userInputEnabled = true;
+                
+                // Agar AI navbatda bo'lsa
+                if (this.gameState.currentPlayer === PLAYER.AI) {
+                    await this.makeAIMove();
+                }
+            }
+
+            animateCaptures(captures) {
+                return new Promise(resolve => {
+                    if (!this.gameState.animationEnabled) {
+                        resolve();
+                        return;
+                    }
+                    
+                    let completed = 0;
+                    captures.forEach(capture => {
+                        const cell = this.ui.getCellElement(capture.row, capture.col);
+                        const piece = cell.querySelector('.piece');
+                        if (piece) {
+                            piece.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                            piece.style.transform = 'translate(-50%, -50%) scale(0)';
+                            piece.style.opacity = '0';
+                            
+                            setTimeout(() => {
+                                completed++;
+                                if (completed === captures.length) {
+                                    resolve();
+                                }
+                            }, 300);
+                        } else {
+                            completed++;
+                            if (completed === captures.length) {
+                                resolve();
+                            }
+                        }
+                    });
+                });
+            }
+
+            animatePieceMove(move) {
+                return new Promise(resolve => {
+                    if (!this.gameState.animationEnabled) {
+                        resolve();
+                        return;
+                    }
+                    
+                    const fromCell = this.ui.getCellElement(move.from.row, move.from.col);
+                    const pieceElement = fromCell.querySelector('.piece');
+                    
+                    if (pieceElement) {
+                        pieceElement.classList.add('moving');
+                        
+                        const fromRect = fromCell.getBoundingClientRect();
+                        const toCell = this.ui.getCellElement(move.to.row, move.to.col);
+                        const toRect = toCell.getBoundingClientRect();
+                        
+                        const dx = toRect.left - fromRect.left;
+                        const dy = toRect.top - fromRect.top;
+                        
+                        pieceElement.style.left = `calc(50% + ${dx}px)`;
+                        pieceElement.style.top = `calc(50% + ${dy}px)`;
+                        
+                        setTimeout(() => {
+                            pieceElement.classList.remove('moving');
+                            pieceElement.style.left = '50%';
+                            pieceElement.style.top = '50%';
+                            resolve();
+                        }, 400);
+                    } else {
+                        resolve();
+                    }
+                });
+            }
+
+            animateKingPromotion(piece) {
+                return new Promise(resolve => {
+                    if (!this.gameState.animationEnabled) {
+                        resolve();
+                        return;
+                    }
+                    
+                    const cell = this.ui.getCellElement(piece.row, piece.col);
+                    const pieceElement = cell.querySelector('.piece');
+                    
+                    if (pieceElement) {
+                        pieceElement.classList.add('king');
+                        
+                        // Parchalanish effekti
+                        for (let i = 0; i < 10; i++) {
+                            setTimeout(() => {
+                                const particle = document.createElement('div');
+                                particle.style.position = 'absolute';
+                                particle.style.width = '4px';
+                                particle.style.height = '4px';
+                                particle.style.background = 'gold';
+                                particle.style.borderRadius = '50%';
+                                particle.style.left = '50%';
+                                particle.style.top = '50%';
+                                particle.style.transform = `translate(${Math.random() * 40 - 20}px, ${Math.random() * 40 - 20}px)`;
+                                pieceElement.appendChild(particle);
+                                
+                                setTimeout(() => {
+                                    particle.remove();
+                                }, 600);
+                            }, i * 30);
+                        }
+                        
+                        setTimeout(() => {
+                            // King belgisini qo'shish
+                            const kingSymbol = document.createElement('div');
+                            kingSymbol.className = 'king-symbol';
+                            kingSymbol.textContent = '♔';
+                            pieceElement.appendChild(kingSymbol);
+                            resolve();
+                        }, 500);
+                    } else {
+                        resolve();
+                    }
+                });
+            }
+
+            async makeAIMove() {
+                if (!this.gameState.gameActive || this.gameState.currentPlayer !== PLAYER.AI) {
+                    return;
+                }
+                
+                // User inputni o'chirish
+                this.gameState.userInputEnabled = false;
+                this.isAnimating = true;
+                
+                // AI thinking indicator ni ko'rsatish (0.5 soniya)
+                this.ui.showAIThinking(true);
+                this.ui.showMessage("AI kombinatsiya qilmoqda...");
+                
+                // DARHOL JAVOB BERISH - faqat animatsiya uchun 300ms kutish
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // AI harakatini olish (kombinatsiyadan)
+                const aiMove = this.aiEngine.getBestMove(this.gameState, this.moveCalculator);
+                
+                // AI thinking indicator ni yopish
+                this.ui.showAIThinking(false);
+                
+                if (!aiMove) {
+                    this.endGame(true);
+                    return;
+                }
+                
+                // Harakatni amalga oshirish
+                await this.executeMove(aiMove);
+                
+                // User inputni yoqish
+                this.gameState.userInputEnabled = true;
+                this.isAnimating = false;
+            }
+
+            switchTurn() {
+                this.gameState.switchPlayer();
+                const turnText = this.gameState.currentPlayer === PLAYER.HUMAN 
+                    ? "Sizning navbatingiz" 
+                    : "AI kombinatsiya qilmoqda";
+                this.ui.showMessage(turnText);
+                this.ui.updateTurnIndicator(this.gameState.currentPlayer);
+            }
+
+            checkGameOver() {
+                // Insonga harakat qilish imkoni yo'q
+                const humanMoves = this.moveCalculator.getAllValidMoves(PLAYER.HUMAN);
+                if (humanMoves.length === 0) {
+                    return PLAYER.AI;
+                }
+                
+                // AIga harakat qilish imkoni yo'q
+                const aiMoves = this.moveCalculator.getAllValidMoves(PLAYER.AI);
+                if (aiMoves.length === 0) {
+                    return PLAYER.HUMAN;
+                }
+                
+                // Insonda dona qolmagan
+                if (this.gameState.pieceCount[PLAYER.HUMAN] === 0) {
+                    return PLAYER.AI;
+                }
+                
+                // AIda dona qolmagan
+                if (this.gameState.pieceCount[PLAYER.AI] === 0) {
+                    return PLAYER.HUMAN;
+                }
+                
+                // Jarimalar bo'yicha
+                if (this.gameState.penaltyCount[PLAYER.HUMAN] >= 3) {
+                    return PLAYER.AI;
+                }
+                
+                if (this.gameState.penaltyCount[PLAYER.AI] >= 3) {
+                    return PLAYER.HUMAN;
+                }
+                
+                return null;
+            }
+
+            endGame(isHumanWinner) {
+                this.gameState.gameActive = false;
+                this.gameState.userInputEnabled = false;
+                this.isAnimating = false;
+                
+                const duration = Math.floor((Date.now() - this.gameState.gameStartTime) / 1000);
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+                
+                // Confetti effekti (g'alaba qozonganda)
+                if (isHumanWinner && this.gameState.animationEnabled) {
+                    this.createConfetti();
+                }
+                
+                this.ui.showGameOver(
+                    isHumanWinner, 
+                    minutes, 
+                    seconds, 
+                    this.gameState.totalMoves, 
+                    this.gameState.totalCaptures
+                );
+                
+                if (this.gameState.soundEnabled) {
+                    this.playSound(isHumanWinner ? 'win' : 'lose');
+                }
+            }
+
+            createConfetti() {
+                const colors = ['#2ed573', '#3742fa', '#ffa502', '#ff4757', '#6c5ce7'];
+                const confettiCount = 100;
+                
+                for (let i = 0; i < confettiCount; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    confetti.style.opacity = Math.random() * 0.5 + 0.5;
+                    
+                    document.body.appendChild(confetti);
+                    
+                    const animation = confetti.animate([
+                        { transform: `translateY(-100px) rotate(0deg)`, opacity: 1 },
+                        { transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                    ], {
+                        duration: Math.random() * 3000 + 2000,
+                        easing: 'cubic-bezier(0.215, 0.610, 0.355, 1)'
+                    });
+                    
+                    animation.onfinish = () => confetti.remove();
+                }
+            }
+
+            undoMove() {
+                if (this.gameState.undoStack.length === 0 || this.isAnimating || this.isUndoing) {
+                    this.ui.showMessage("Orqaga olish mumkin emas.");
+                    return;
+                }
+                
+                this.isUndoing = true;
+                console.log("Starting undo process...");
+                
+                const success = this.gameState.undo();
+                if (success) {
+                    // Clear selection
+                    this.clearSelection();
+                    
+                    // Update UI
+                    this.updateUI();
+                    this.ui.showMessage("Harakat bekor qilindi.");
+                    
+                    // Move history dan oxirgi harakatni olib tashlash
+                    if (this.gameState.moveHistory.length > 0) {
+                        this.gameState.moveHistory.pop();
+                        // UI move history ni yangilash
+                        this.ui.clearMoveHistory();
+                        this.gameState.moveHistory.forEach(moveEntry => {
+                            this.addMoveToHistory(moveEntry.move);
+                        });
+                    }
+                    
+                    // Agar AI navbatda bo'lsa, uni o'chirish
+                    if (this.gameState.currentPlayer === PLAYER.AI) {
+                        this.gameState.switchPlayer();
+                        this.ui.updateTurnIndicator(this.gameState.currentPlayer);
+                        this.ui.showMessage("Sizning navbatingiz.");
+                    }
+                    
+                    console.log("Undo completed successfully");
+                } else {
+                    console.log("Undo failed");
+                }
+                
+                this.isUndoing = false;
+            }
+
+            redoMove() {
+                if (this.gameState.redoStack.length === 0 || this.isAnimating) {
+                    return;
+                }
+                
+                const success = this.gameState.redo();
+                if (success) {
+                    this.clearSelection();
+                    this.updateUI();
+                    this.ui.showMessage("Harakat qayta tiklandi.");
+                }
+            }
+
+            getHint() {
+                if (!this.gameState.gameActive || this.gameState.currentPlayer !== PLAYER.HUMAN || this.isAnimating) {
+                    this.ui.showMessage("Hozir maslaha berish mumkin emas.");
+                    return;
+                }
+                
+                const humanMoves = this.moveCalculator.getAllValidMoves(PLAYER.HUMAN);
+                if (humanMoves.length === 0) {
+                    this.ui.showMessage("Harakat qilish imkoni yo'q.");
+                    return;
+                }
+                
+                // Eng yaxshi harakatni topish
+                let bestMove = null;
+                let bestScore = -Infinity;
+                
+                for (const move of humanMoves) {
+                    let score = 0;
+                    
+                    // Olish bonuslari
+                    if (move.isCapture) {
+                        score += move.captures.length * 150;
+                        
+                        // Qimmatli donalarni olish
+                        for (const capture of move.captures) {
+                            const capturedPiece = this.gameState.getPiece(capture.row, capture.col);
+                            if (capturedPiece && capturedPiece.type === PIECE_TYPE.KING) {
+                                score += 400;
+                            }
+                        }
+                    }
+                    
+                    // Dama yaratish
+                    if (move.piece.type === PIECE_TYPE.MAN && move.to.row === 0) {
+                        score += 600;
+                    }
+                    
+                    // Markaz nazorati
+                    const centerDistance = Math.abs(move.to.row - 3.5) + Math.abs(move.to.col - 3.5);
+                    score += (8 - centerDistance) * 30;
+                    
+                    // Xavfsizlik
+                    if (this.aiEngine.isSafePosition(move.to.row, move.to.col, this.gameState, PLAYER.HUMAN)) {
+                        score += 50;
+                    }
+                    
+                    // AI hujumlaridan himoya
+                    const aiMoves = this.moveCalculator.getAllValidMoves(PLAYER.AI);
+                    let isUnderAttack = false;
+                    
+                    for (const aiMove of aiMoves) {
+                        if (aiMove.isCapture) {
+                            for (const capture of aiMove.captures) {
+                                if (capture.row === move.to.row && capture.col === move.to.col) {
+                                    isUnderAttack = true;
+                                    break;
                                 }
                             }
                         }
+                        if (isUnderAttack) break;
+                    }
+                    
+                    if (!isUnderAttack) {
+                        score += 100;
+                    }
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = move;
                     }
                 }
                 
-                if (captures.length > 0) {
-                    return captures;
+                if (bestMove) {
+                    this.ui.showHint(bestMove);
+                    
+                    // Kuch ko'rsatish
+                    let strengthText = "";
+                    if (bestScore > 800) strengthText = " (Ajoyib harakat!)";
+                    else if (bestScore > 500) strengthText = " (Yaxshi harakat)";
+                    else if (bestScore > 200) strengthText = " (Oddiy harakat)";
+                    
+                    const fromNotation = this.getSquareNotation(bestMove.from.row, bestMove.from.col);
+                    const toNotation = this.getSquareNotation(bestMove.to.row, bestMove.to.col);
+                    this.ui.showMessage(`Maslaha: ${fromNotation} → ${toNotation}${strengthText}`);
                 }
-                
-                return moves;
             }
-            
-            getMovesForPiece(board, r, c, piece, visited = new Set()) {
-                const moves = [];
-                const dirs = piece.king ? 
-                    [[1,1], [1,-1], [-1,1], [-1,-1]] :
-                    (piece.color === 'white' ? [[-1,1], [-1,-1]] : [[1,1], [1,-1]]);
+
+            getSquareNotation(row, col) {
+                const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+                const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+                return files[col] + ranks[row];
+            }
+
+            clearSelection() {
+                this.gameState.selectedPiece = null;
+                this.gameState.validMoves = [];
+                this.ui.clearHighlights();
+            }
+
+            addMoveToHistory(move) {
+                const fromNotation = this.getSquareNotation(move.from.row, move.from.col);
+                const toNotation = this.getSquareNotation(move.to.row, move.to.col);
+                const player = move.piece.player === PLAYER.HUMAN ? "Oq" : "Qora";
+                const captureText = move.captures.length > 0 ? ` (x${move.captures.length})` : "";
+                const kingText = move.piece.type === PIECE_TYPE.KING ? " ♔" : "";
+                const isPromotion = move.piece.type === PIECE_TYPE.MAN && 
+                    ((move.piece.player === PLAYER.HUMAN && move.to.row === 0) ||
+                     (move.piece.player === PLAYER.AI && move.to.row === BOARD_SIZE - 1));
+                const promotionText = isPromotion ? " → Dama!" : "";
                 
-                for (const [dr, dc] of dirs) {
-                    if (piece.king) {
-                        let nr = r + dr, nc = c + dc;
-                        while (this.isValid(nr, nc) && !board[nr][nc]) {
-                            moves.push({
-                                from: [r, c],
-                                to: [nr, nc],
-                                captures: [],
-                                path: [[r, c], [nr, nc]]
-                            });
-                            nr += dr;
-                            nc += dc;
+                const entry = {
+                    text: `${player}: ${fromNotation} → ${toNotation}${captureText}${kingText}${promotionText}`,
+                    player: move.piece.player
+                };
+                
+                this.ui.addMoveToHistory(entry);
+            }
+
+            playSound(soundName) {
+                // Soddalashtirilgan ovoz effektlari
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    if (soundName === 'move') {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.value = 440;
+                        oscillator.type = 'sine';
+                        gainNode.gain.value = 0.1;
+                        
+                        oscillator.start();
+                        setTimeout(() => {
+                            oscillator.stop();
+                        }, 100);
+                    } else if (soundName === 'capture') {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.value = 220;
+                        oscillator.type = 'square';
+                        gainNode.gain.value = 0.2;
+                        
+                        oscillator.start();
+                        setTimeout(() => {
+                            oscillator.stop();
+                        }, 200);
+                    } else if (soundName === 'king') {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+                        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+                        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
+                        oscillator.type = 'sine';
+                        gainNode.gain.value = 0.15;
+                        
+                        oscillator.start();
+                        setTimeout(() => {
+                            oscillator.stop();
+                        }, 300);
+                    } else if (soundName === 'penalty') {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.value = 110;
+                        oscillator.type = 'sawtooth';
+                        gainNode.gain.value = 0.25;
+                        
+                        oscillator.start();
+                        setTimeout(() => {
+                            oscillator.stop();
+                        }, 300);
+                    } else if (soundName === 'win') {
+                        // G'alaba musiqasi
+                        for (let i = 0; i < 3; i++) {
+                            setTimeout(() => {
+                                const oscillator = audioContext.createOscillator();
+                                const gainNode = audioContext.createGain();
+                                oscillator.connect(gainNode);
+                                gainNode.connect(audioContext.destination);
+                                
+                                oscillator.frequency.value = 440 + (i * 220);
+                                oscillator.type = 'sine';
+                                gainNode.gain.value = 0.1;
+                                
+                                oscillator.start();
+                                setTimeout(() => {
+                                    oscillator.stop();
+                                }, 300);
+                            }, i * 150);
                         }
-                    } else {
-                        const nr = r + dr, nc = c + dc;
-                        if (this.isValid(nr, nc) && !board[nr][nc]) {
-                            moves.push({
-                                from: [r, c],
-                                to: [nr, nc],
-                                captures: [],
-                                path: [[r, c], [nr, nc]]
-                            });
-                        }
+                    } else if (soundName === 'lose') {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.value = 220;
+                        oscillator.type = 'sawtooth';
+                        gainNode.gain.value = 0.15;
+                        
+                        oscillator.start();
+                        setTimeout(() => {
+                            oscillator.stop();
+                        }, 500);
                     }
-                    
-                    const captureMoves = this.getCaptureMoves(board, r, c, piece, visited);
-                    moves.push(...captureMoves);
-                }
-                
-                return moves;
-            }
-            
-            getCaptureMoves(board, r, c, piece, visited) {
-                const moves = [];
-                const dirs = piece.king ? 
-                    [[1,1], [1,-1], [-1,1], [-1,-1]] :
-                    (piece.color === 'white' ? [[-1,1], [-1,-1]] : [[1,1], [1,-1]]);
-                
-                for (const [dr, dc] of dirs) {
-                    const mr = r + dr, mc = c + dc;
-                    const lr = mr + dr, lc = mc + dc;
-                    
-                    if (this.isValid(mr, mc) && this.isValid(lr, lc) &&
-                        board[mr][mc] && board[mr][mc].color !== piece.color &&
-                        !board[lr][lc]) {
-                        
-                        const captureKey = `${mr},${mc}`;
-                        if (visited.has(captureKey)) continue;
-                        
-                        const newVisited = new Set(visited);
-                        newVisited.add(captureKey);
-                        
-                        const newBoard = this.applyMove(board, {
-                            from: [r, c],
-                            to: [lr, lc],
-                            captures: [[mr, mc]]
-                        });
-                        
-                        const furtherCaptures = this.getCaptureMoves(newBoard, lr, lc, piece, newVisited);
-                        
-                        if (furtherCaptures.length > 0) {
-                            for (const furtherMove of furtherCaptures) {
-                                moves.push({
-                                    from: [r, c],
-                                    to: furtherMove.to,
-                                    captures: [[mr, mc], ...furtherMove.captures],
-                                    path: [[r, c], ...furtherMove.path.slice(1)]
-                                });
-                            }
-                        } else {
-                            moves.push({
-                                from: [r, c],
-                                to: [lr, lc],
-                                captures: [[mr, mc]],
-                                path: [[r, c], [lr, lc]]
-                            });
-                        }
-                    }
-                }
-                
-                return moves;
-            }
-            
-            applyMove(board, move) {
-                const newBoard = JSON.parse(JSON.stringify(board));
-                const piece = newBoard[move.from[0]][move.from[1]];
-                newBoard[move.from[0]][move.from[1]] = null;
-                newBoard[move.to[0]][move.to[1]] = piece;
-                
-                if (move.captures) {
-                    move.captures.forEach(([r, c]) => {
-                        newBoard[r][c] = null;
-                    });
-                }
-                
-                if (!piece.king) {
-                    if ((piece.color === 'white' && move.to[0] === 0) ||
-                        (piece.color === 'black' && move.to[0] === 7)) {
-                        piece.king = true;
-                    }
-                }
-                
-                return newBoard;
-            }
-            
-            getBestMove(board, color) {
-                const startTime = Date.now();
-                this.stats = { depth: 0, nodes: 0, time: 0, moves: 0 };
-                this.transpositionTable.clear();
-                
-                const moves = this.getAllMoves(board, color);
-                this.stats.moves = moves.length;
-                
-                if (moves.length === 0) return null;
-                
-                let bestMove = moves[0];
-                let bestScore = -Infinity;
-                let depth = 1;
-                
-                while (depth <= this.maxDepth && (Date.now() - startTime) < this.maxTime * 0.8) {
-                    let currentBestMove = moves[0];
-                    let currentBestScore = -Infinity;
-                    let alpha = -Infinity;
-                    let beta = Infinity;
-                    
-                    for (const move of moves) {
-                        if ((Date.now() - startTime) > this.maxTime * 0.9) break;
-                        
-                        const newBoard = this.applyMove(board, move);
-                        const score = -this.alphaBeta(
-                            newBoard,
-                            depth - 1,
-                            -beta,
-                            -alpha,
-                            color === 'white' ? 'black' : 'white',
-                            startTime
-                        );
-                        
-                        if (score > currentBestScore) {
-                            currentBestScore = score;
-                            currentBestMove = move;
-                        }
-                        
-                        alpha = Math.max(alpha, score);
-                        if (alpha >= beta) break;
-                    }
-                    
-                    if (currentBestScore > bestScore || 
-                        (currentBestScore === bestScore && Math.random() > 0.5)) {
-                        bestScore = currentBestScore;
-                        bestMove = currentBestMove;
-                    }
-                    
-                    this.stats.depth = depth;
-                    depth++;
-                }
-                
-                this.stats.time = Date.now() - startTime;
-                this.stats.nodes = this.nodesEvaluated;
-                
-                return bestMove;
-            }
-            
-            alphaBeta(board, depth, alpha, beta, color, startTime) {
-                this.nodesEvaluated++;
-                
-                if ((Date.now() - startTime) > this.maxTime) {
-                    return this.evaluate(board, color);
-                }
-                
-                if (depth <= 0) {
-                    return this.evaluate(board, color);
-                }
-                
-                const moves = this.getAllMoves(board, color);
-                if (moves.length === 0) {
-                    return -Infinity;
-                }
-                
-                let bestScore = -Infinity;
-                
-                for (const move of moves) {
-                    if ((Date.now() - startTime) > this.maxTime) break;
-                    
-                    const newBoard = this.applyMove(board, move);
-                    const score = -this.alphaBeta(
-                        newBoard,
-                        depth - 1,
-                        -beta,
-                        -alpha,
-                        color === 'white' ? 'black' : 'white',
-                        startTime
-                    );
-                    
-                    bestScore = Math.max(bestScore, score);
-                    alpha = Math.max(alpha, score);
-                    if (alpha >= beta) break;
-                }
-                
-                return bestScore;
-            }
-            
-            isValid(r, c) {
-                return r >= 0 && r < 8 && c >= 0 && c < 8;
-            }
-        }
-        
-        // ==================== UI FUNCTIONS ====================
-        function selectColor(color) {
-            if (color === 'random') {
-                color = Math.random() > 0.5 ? 'white' : 'black';
-            }
-            playerColor = color;
-            botColor = color === 'white' ? 'black' : 'white';
-            
-            document.querySelectorAll('.color-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            
-            event.target.closest('.color-option').classList.add('selected');
-            updateColorInfo();
-        }
-        
-        function updateColorInfo() {
-            const colorInfo = document.getElementById('colorInfo');
-            colorInfo.textContent = `Siz: ${playerColor === 'white' ? 'Oq' : 'Qora'} | Bot: ${botColor === 'white' ? 'Oq' : 'Qora'}`;
-        }
-        
-        function selectMode(mode) {
-            gameMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-        }
-        
-        function updateDifficultyLabel() {
-            const slider = document.getElementById('difficultySlider');
-            const valueElement = document.getElementById('difficultyValue');
-            const value = parseInt(slider.value);
-            
-            const labels = [
-                '1 - Boshlang\'ich', '2', '3', '4', '5 - O\'rta',
-                '6', '7', '8 - Professional', '9', '10',
-                '11', '12 - Ustun'
-            ];
-            
-            valueElement.textContent = labels[value - 1];
-            difficulty = value;
-        }
-        
-        function startGame() {
-            mainModal.classList.remove('active');
-            gameArea.style.display = 'block';
-            initializeGame();
-        }
-        
-        function showMainMenu() {
-            gameOverModal.classList.remove('active');
-            mainModal.classList.add('active');
-            gameArea.style.display = 'none';
-        }
-        
-        // ==================== O'YIN LOGIKASI ====================
-        function initializeGame() {
-            board = createInitialBoard();
-            history = [JSON.parse(JSON.stringify(board))];
-            historyIndex = 0;
-            selectedPiece = null;
-            validMoves = [];
-            currentPlayer = 'white';
-            penaltyCount = 0;
-            pieceCount = { white: 12, black: 12 };
-            kingCount = { white: 0, black: 0 };
-            gameActive = true;
-            gameStartTime = Date.now();
-            moveHistory = [];
-            
-            autoBot = document.getElementById('autoBot').checked;
-            forceCapture = document.getElementById('forceCapture').checked;
-            
-            ai = new CheckersAI(difficulty);
-            
-            updateUI();
-            renderBoard();
-            updateStatus();
-            
-            if (currentPlayer === botColor && autoBot) {
-                setTimeout(makeBotMove, 500);
-            }
-        }
-        
-        function createInitialBoard() {
-            const newBoard = Array(8).fill().map(() => Array(8).fill(null));
-            
-            for (let r = 0; r < 8; r++) {
-                for (let c = 0; c < 8; c++) {
-                    if ((r + c) % 2 === 1) {
-                        if (r < 3) {
-                            newBoard[r][c] = { color: 'black', king: false };
-                        } else if (r > 4) {
-                            newBoard[r][c] = { color: 'white', king: false };
-                        }
-                    }
+                } catch (e) {
+                    console.log("Audio error:", e);
                 }
             }
-            
-            return newBoard;
-        }
-        
-        function renderBoard() {
-            boardElement.innerHTML = '';
-            
-            for (let r = 0; r < 8; r++) {
-                for (let c = 0; c < 8; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = `cell ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
-                    cell.dataset.row = r;
-                    cell.dataset.col = c;
-                    
-                    if (!selectedPiece || !gameActive) {
-                        cell.onclick = () => onCellClick(r, c);
-                    } else {
-                        cell.onclick = () => onCellClick(r, c);
-                    }
-                    
-                    const piece = board[r][c];
-                    if (piece) {
-                        const pieceElement = document.createElement('div');
-                        pieceElement.className = `piece ${piece.color}`;
-                        if (piece.king) {
-                            pieceElement.classList.add('king');
-                            const kingSymbol = document.createElement('div');
-                            kingSymbol.className = 'king-symbol';
-                            kingSymbol.textContent = '👑';
-                            pieceElement.appendChild(kingSymbol);
-                        }
-                        
-                        if (selectedPiece && selectedPiece.row === r && selectedPiece.col === c) {
-                            pieceElement.classList.add('selected');
-                        }
-                        
-                        if (forceCapture && hasForcedCaptures(currentPlayer)) {
-                            const pieceCaptures = getCapturesForPiece(r, c, piece);
-                            if (pieceCaptures.length > 0) {
-                                pieceElement.classList.add('must-capture');
-                            }
-                        }
-                        
-                        cell.appendChild(pieceElement);
-                    }
-                    
-                    if (selectedPiece) {
-                        const move = validMoves.find(m => 
-                            m.to.row === r && m.to.col === c &&
-                            m.from.row === selectedPiece.row && m.from.col === selectedPiece.col
-                        );
-                        if (move) {
-                            const dot = document.createElement('div');
-                            dot.className = `move-dot ${move.captures && move.captures.length > 0 ? 'capture-dot' : ''}`;
-                            cell.appendChild(dot);
-                        }
-                    }
-                    
-                    boardElement.appendChild(cell);
-                }
-            }
-        }
-        
-        function onCellClick(row, col) {
-            if (!gameActive) return;
-            
-            const piece = board[row][col];
-            
-            if (selectedPiece) {
-                const move = validMoves.find(m => 
-                    m.to.row === row && m.to.col === col &&
-                    m.from.row === selectedPiece.row && m.from.col === selectedPiece.col
+
+            updateUI() {
+                this.ui.updateBoard(this.gameState.board);
+                this.ui.updatePlayerInfo(
+                    this.gameState.pieceCount[PLAYER.HUMAN],
+                    this.gameState.kingCount[PLAYER.HUMAN],
+                    this.gameState.pieceCount[PLAYER.AI],
+                    this.gameState.kingCount[PLAYER.AI],
+                    this.gameState.penaltyCount[PLAYER.HUMAN]
                 );
-                
-                if (move) {
-                    if (forceCapture && hasForcedCaptures(currentPlayer)) {
-                        const allCaptures = getAllCaptures(currentPlayer);
-                        if (allCaptures.length > 0 && (!move.captures || move.captures.length === 0)) {
-                            applyPenalty(selectedPiece.row, selectedPiece.col);
-                            return;
-                        }
-                    }
-                    
-                    makeMove(move);
-                    return;
-                }
+                this.ui.updateTurnIndicator(this.gameState.currentPlayer);
             }
-            
-            if (piece && piece.color === currentPlayer) {
-                selectedPiece = { row, col };
-                validMoves = getValidMoves(row, col, piece);
-                
-                if (forceCapture && hasForcedCaptures(currentPlayer)) {
-                    const pieceCaptures = getCapturesForPiece(row, col, piece);
-                    if (pieceCaptures.length === 0) {
-                        selectedPiece = null;
-                        validMoves = [];
-                        updateStatus("Bu dona bilan olish mumkin emas! Boshqa dona tanlang.");
-                        renderBoard();
-                        return;
-                    }
-                    validMoves = pieceCaptures;
-                }
-                
-                renderBoard();
-                updateStatus(`${piece.color === 'white' ? 'Oq' : 'Qora'} dona tanlandi. Harakat qilish uchun katakchani tanlang.`);
-            } else {
-                selectedPiece = null;
-                validMoves = [];
-                renderBoard();
+
+            newGame() {
+                this.gameState.reset();
+                this.aiEngine = new UnbeatableAI(); // Yangi kombinatsiyalar
+                this.ui.hideGameOverModal();
+                this.initialize();
+            }
+
+            toggleSound() {
+                this.gameState.soundEnabled = !this.gameState.soundEnabled;
+                this.ui.updateSoundButton(this.gameState.soundEnabled);
+            }
+
+            toggleAnimation() {
+                this.gameState.animationEnabled = !this.gameState.animationEnabled;
+                this.ui.updateAnimationButton(this.gameState.animationEnabled);
             }
         }
-        
-        function getValidMoves(row, col, piece) {
-            const moves = [];
-            
-            const captureMoves = getCapturesForPiece(row, col, piece);
-            if (captureMoves.length > 0) {
-                return captureMoves;
+
+        // ==================== UI MANAGER ====================
+        class GameUI {
+            constructor(game) {
+                this.game = game;
+                this.elements = {};
             }
-            
-            const dirs = piece.king ? 
-                [[1,1], [1,-1], [-1,1], [-1,-1]] :
-                (piece.color === 'white' ? [[-1,1], [-1,-1]] : [[1,1], [1,-1]]);
-            
-            for (const [dr, dc] of dirs) {
-                if (piece.king) {
-                    let nr = row + dr, nc = col + dc;
-                    while (isValid(nr, nc) && !board[nr][nc]) {
-                        moves.push({
-                            from: { row, col },
-                            to: { row: nr, col: nc },
-                            captures: [],
-                            path: [{ row, col }, { row: nr, col: nc }]
+
+            initialize() {
+                this.cacheElements();
+                this.bindEvents();
+                this.createBoard();
+                this.updateSoundButton(this.game.gameState.soundEnabled);
+                this.updateAnimationButton(this.game.gameState.animationEnabled);
+            }
+
+            cacheElements() {
+                this.elements = {
+                    board: document.getElementById('board'),
+                    gameStatus: document.getElementById('gameStatus'),
+                    playerPieces: document.getElementById('playerPieces'),
+                    playerKings: document.getElementById('playerKings'),
+                    playerPenalty: document.getElementById('playerPenalty'),
+                    aiPieces: document.getElementById('aiPieces'),
+                    aiKings: document.getElementById('aiKings'),
+                    turnText: document.getElementById('turnText'),
+                    turnIndicator: document.getElementById('turnIndicator'),
+                    moveHistory: document.getElementById('moveHistory'),
+                    gameOverModal: document.getElementById('gameOverModal'),
+                    resultTitle: document.getElementById('resultTitle'),
+                    resultIcon: document.getElementById('resultIcon'),
+                    resultMessage: document.getElementById('resultMessage'),
+                    totalMoves: document.getElementById('totalMoves'),
+                    totalCaptures: document.getElementById('totalCaptures'),
+                    gameTime: document.getElementById('gameTime'),
+                    newGameBtn: document.getElementById('newGame'),
+                    undoBtn: document.getElementById('undoBtn'),
+                    hintBtn: document.getElementById('hintBtn'),
+                    playAgainBtn: document.getElementById('playAgainBtn'),
+                    closeModalBtn: document.getElementById('closeModalBtn'),
+                    soundToggle: document.getElementById('soundToggle'),
+                    animationToggle: document.getElementById('animationToggle'),
+                    aiThinking: document.getElementById('aiThinking')
+                };
+            }
+
+            bindEvents() {
+                this.elements.newGameBtn.addEventListener('click', () => this.game.newGame());
+                this.elements.undoBtn.addEventListener('click', () => this.game.undoMove());
+                this.elements.hintBtn.addEventListener('click', () => this.game.getHint());
+                this.elements.playAgainBtn.addEventListener('click', () => this.game.newGame());
+                this.elements.closeModalBtn.addEventListener('click', () => this.hideGameOverModal());
+                this.elements.soundToggle.addEventListener('change', (e) => {
+                    this.game.toggleSound();
+                });
+                this.elements.animationToggle.addEventListener('change', (e) => {
+                    this.game.toggleAnimation();
+                });
+            }
+
+            createBoard() {
+                this.elements.board.innerHTML = '';
+                
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = `cell ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        cell.addEventListener('click', () => {
+                            this.game.handleCellClick(row, col);
                         });
-                        nr += dr;
-                        nc += dc;
-                    }
-                } else {
-                    const nr = row + dr, nc = col + dc;
-                    if (isValid(nr, nc) && !board[nr][nc]) {
-                        moves.push({
-                            from: { row, col },
-                            to: { row: nr, col: nc },
-                            captures: [],
-                            path: [{ row, col }, { row: nr, col: nc }]
-                        });
+                        
+                        this.elements.board.appendChild(cell);
                     }
                 }
             }
-            
-            return moves;
-        }
-        
-        function getCapturesForPiece(row, col, piece, visited = new Set(), currentPath = []) {
-            const moves = [];
-            const dirs = piece.king ? 
-                [[1,1], [1,-1], [-1,1], [-1,-1]] :
-                (piece.color === 'white' ? [[-1,1], [-1,-1]] : [[1,1], [1,-1]]);
-            
-            for (const [dr, dc] of dirs) {
-                const mr = row + dr, mc = col + dc;
-                const lr = mr + dr, lc = mc + dc;
-                
-                if (isValid(mr, mc) && isValid(lr, lc) &&
-                    board[mr][mc] && board[mr][mc].color !== piece.color &&
-                    !board[lr][lc]) {
-                    
-                    const captureKey = `${mr},${mc}`;
-                    if (visited.has(captureKey)) continue;
-                    
-                    const newVisited = new Set(visited);
-                    newVisited.add(captureKey);
-                    
-                    const newBoard = simulateMove(board, {
-                        from: { row, col },
-                        to: { row: lr, col: lc },
-                        captures: [{ row: mr, col: mc }]
-                    });
-                    
-                    const newPiece = { ...piece };
-                    if (!piece.king && ((piece.color === 'white' && lr === 0) || (piece.color === 'black' && lr === 7))) {
-                        newPiece.king = true;
-                    }
-                    
-                    const furtherCaptures = getCapturesForPiece(lr, lc, newPiece, newVisited, [
-                        ...currentPath,
-                        { row: mr, col: mc }
-                    ]);
-                    
-                    if (furtherCaptures.length > 0) {
-                        for (const furtherMove of furtherCaptures) {
-                            moves.push({
-                                from: { row, col },
-                                to: furtherMove.to,
-                                captures: [{ row: mr, col: mc }, ...furtherMove.captures],
-                                path: [{ row, col }, ...furtherMove.path.slice(1)]
-                            });
+
+            updateBoard(board) {
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const cell = this.getCellElement(row, col);
+                        cell.innerHTML = '';
+                        cell.classList.remove('selected', 'valid-move', 'valid-capture');
+                        
+                        const piece = board[row][col];
+                        if (piece) {
+                            const pieceElement = this.createPieceElement(piece);
+                            cell.appendChild(pieceElement);
                         }
+                    }
+                }
+            }
+
+            getCellElement(row, col) {
+                const index = row * BOARD_SIZE + col;
+                return this.elements.board.children[index];
+            }
+
+            createPieceElement(piece) {
+                const pieceElement = document.createElement('div');
+                pieceElement.className = `piece ${piece.player}`;
+                pieceElement.dataset.row = piece.row;
+                pieceElement.dataset.col = piece.col;
+                
+                if (piece.type === PIECE_TYPE.KING) {
+                    pieceElement.classList.add('king');
+                    const kingSymbol = document.createElement('div');
+                    kingSymbol.className = 'king-symbol';
+                    kingSymbol.textContent = '♔';
+                    pieceElement.appendChild(kingSymbol);
+                }
+                
+                return pieceElement;
+            }
+
+            highlightPiece(piece) {
+                const cell = this.getCellElement(piece.row, piece.col);
+                cell.classList.add('selected');
+                
+                const pieceElement = cell.querySelector('.piece');
+                if (pieceElement) {
+                    pieceElement.classList.add('selected');
+                }
+            }
+
+            highlightValidMoves(moves) {
+                moves.forEach(move => {
+                    const cell = this.getCellElement(move.to.row, move.to.col);
+                    if (move.isCapture) {
+                        cell.classList.add('valid-capture');
                     } else {
-                        moves.push({
-                            from: { row, col },
-                            to: { row: lr, col: lc },
-                            captures: [{ row: mr, col: mc }],
-                            path: [{ row, col }, { row: lr, col: lc }]
-                        });
+                        cell.classList.add('valid-move');
                     }
-                }
-            }
-            
-            return moves;
-        }
-        
-        function getAllCaptures(color) {
-            const captures = [];
-            for (let r = 0; r < 8; r++) {
-                for (let c = 0; c < 8; c++) {
-                    const piece = board[r][c];
-                    if (piece && piece.color === color) {
-                        captures.push(...getCapturesForPiece(r, c, piece));
-                    }
-                }
-            }
-            return captures;
-        }
-        
-        function hasForcedCaptures(color) {
-            return getAllCaptures(color).length > 0;
-        }
-        
-        function simulateMove(boardState, move) {
-            const newBoard = JSON.parse(JSON.stringify(boardState));
-            const piece = newBoard[move.from.row][move.from.col];
-            newBoard[move.from.row][move.from.col] = null;
-            newBoard[move.to.row][move.to.col] = piece;
-            
-            if (move.captures) {
-                move.captures.forEach(({row, col}) => {
-                    newBoard[row][col] = null;
                 });
             }
-            
-            if (!piece.king && ((piece.color === 'white' && move.to.row === 0) ||
-                (piece.color === 'black' && move.to.row === 7))) {
-                piece.king = true;
-            }
-            
-            return newBoard;
-        }
-        
-        function makeMove(move) {
-            loading.classList.add('active');
-            
-            setTimeout(() => {
-                history = history.slice(0, historyIndex + 1);
-                const oldBoard = JSON.parse(JSON.stringify(board));
-                history.push(oldBoard);
-                historyIndex++;
-                
-                const piece = board[move.from.row][move.from.col];
-                board[move.from.row][move.from.col] = null;
-                board[move.to.row][move.to.col] = piece;
-                
-                if (move.captures && move.captures.length > 0) {
-                    move.captures.forEach(({row, col}) => {
-                        const capturedPiece = board[row][col];
-                        if (capturedPiece) {
-                            pieceCount[capturedPiece.color]--;
-                            if (capturedPiece.king) {
-                                kingCount[capturedPiece.color]--;
-                            }
-                            board[row][col] = null;
-                        }
-                    });
-                }
-                
-                if (!piece.king) {
-                    if ((piece.color === 'white' && move.to.row === 0) ||
-                        (piece.color === 'black' && move.to.row === 7)) {
-                        piece.king = true;
-                        kingCount[piece.color]++;
+
+            clearHighlights() {
+                const cells = this.elements.board.children;
+                for (let cell of cells) {
+                    cell.classList.remove('selected', 'valid-move', 'valid-capture');
+                    const piece = cell.querySelector('.piece');
+                    if (piece) {
+                        piece.classList.remove('selected');
                     }
                 }
+            }
+
+            clearMoveHistory() {
+                this.elements.moveHistory.innerHTML = '';
+            }
+
+            updatePlayerInfo(playerPieces, playerKings, aiPieces, aiKings, playerPenalty) {
+                this.elements.playerPieces.textContent = playerPieces;
+                this.elements.playerKings.textContent = playerKings;
+                this.elements.aiPieces.textContent = aiPieces;
+                this.elements.aiKings.textContent = aiKings;
+                this.elements.playerPenalty.textContent = `${playerPenalty}/3`;
+            }
+
+            updateTurnIndicator(currentPlayer) {
+                if (currentPlayer === PLAYER.HUMAN) {
+                    this.elements.turnIndicator.className = 'turn-indicator white';
+                    this.elements.turnText.textContent = "Sizning navbatingiz";
+                } else {
+                    this.elements.turnIndicator.className = 'turn-indicator black';
+                    this.elements.turnText.textContent = "AI kombinatsiya qilmoqda";
+                }
+            }
+
+            showMessage(message) {
+                this.elements.gameStatus.textContent = message;
+            }
+
+            showHint(move) {
+                this.clearHighlights();
+                this.highlightPiece(move.piece);
                 
-                moveHistory.push({
-                    player: currentPlayer,
-                    move: move,
-                    pieceCount: { ...pieceCount },
-                    kingCount: { ...kingCount }
+                const targetCell = this.getCellElement(move.to.row, move.to.col);
+                if (move.isCapture) {
+                    targetCell.classList.add('valid-capture');
+                } else {
+                    targetCell.classList.add('valid-move');
+                }
+                
+                // Highlightni 4 soniya saqlash
+                setTimeout(() => {
+                    this.clearHighlights();
+                }, 4000);
+            }
+
+            addMoveToHistory(entry) {
+                const moveElement = document.createElement('div');
+                moveElement.className = `move-entry ${entry.player}`;
+                moveElement.textContent = entry.text;
+                
+                this.elements.moveHistory.appendChild(moveElement);
+                this.elements.moveHistory.scrollTop = this.elements.moveHistory.scrollHeight;
+                
+                // Move history ni limit qilish
+                if (this.elements.moveHistory.children.length > 50) {
+                    this.elements.moveHistory.removeChild(this.elements.moveHistory.firstChild);
+                }
+            }
+
+            showGameOver(isHumanWinner, minutes, seconds, totalMoves, totalCaptures) {
+                if (isHumanWinner) {
+                    this.elements.resultTitle.textContent = "TABRIKLAYMIZ!";
+                    this.elements.resultIcon.textContent = "🏆";
+                    this.elements.resultMessage.textContent = "Siz yengilmas kombinatsiya AIni yutdingiz! Bu ajoyib natija.";
+                } else {
+                    this.elements.resultTitle.textContent = "AFSUSKI...";
+                    this.elements.resultIcon.textContent = "💀";
+                    this.elements.resultMessage.textContent = "Siz yutqazdingiz. AI kombinatsiyalari ustun keldi. Yana urinib ko'ring!";
+                }
+                
+                this.elements.totalMoves.textContent = totalMoves;
+                this.elements.totalCaptures.textContent = totalCaptures;
+                this.elements.gameTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                this.elements.gameOverModal.classList.add('active');
+            }
+
+            hideGameOverModal() {
+                this.elements.gameOverModal.classList.remove('active');
+            }
+
+            updateSoundButton(soundEnabled) {
+                this.elements.soundToggle.checked = soundEnabled;
+            }
+
+            updateAnimationButton(animationEnabled) {
+                this.elements.animationToggle.checked = animationEnabled;
+            }
+
+            showAIThinking(show) {
+                if (show) {
+                    this.elements.aiThinking.style.display = 'flex';
+                    this.elements.turnIndicator.classList.add('ai-thinking');
+                    
+                    // Faqat 0.5 soniya ko'rsatish
+                    setTimeout(() => {
+                        this.elements.aiThinking.style.display = 'none';
+                        this.elements.turnIndicator.classList.remove('ai-thinking');
+                    }, 500);
+                } else {
+                    this.elements.aiThinking.style.display = 'none';
+                    this.elements.turnIndicator.classList.remove('ai-thinking');
+                }
+            }
+        }
+
+        // ==================== O'YINNI BOSHLASH ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            window.game = new ShashkaGame();
+            
+            // Responsive board sizing
+            function updateBoardSize() {
+                const board = document.querySelector('.board');
+                if (!board) return;
+                
+                const container = document.querySelector('.game-board-container');
+                const availableWidth = container ? container.clientWidth - 60 : window.innerWidth - 40;
+                const availableHeight = window.innerHeight * 0.7;
+                const size = Math.min(availableWidth, availableHeight, 600, 500);
+                
+                document.documentElement.style.setProperty('--board-size', `${size}px`);
+                
+                // Update coordinates position
+                const leftCoords = document.querySelector('.coordinates.left');
+                const rightCoords = document.querySelector('.coordinates.right');
+                if (leftCoords && rightCoords) {
+                    leftCoords.style.height = `${size}px`;
+                    rightCoords.style.height = `${size}px`;
+                }
+            }
+            
+            window.addEventListener('resize', updateBoardSize);
+            updateBoardSize();
+            
+            // Mobile optimizations
+            if ('ontouchstart' in window) {
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.style.minHeight = '40px';
+                    cell.style.minWidth = '40px';
                 });
-                
-                selectedPiece = null;
-                validMoves = [];
-                
-                if (checkGameOver()) {
-                    gameActive = false;
-                    showGameOver();
-                    loading.classList.remove('active');
-                    return;
-                }
-                
-                currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
-                
-                updateUI();
-                renderBoard();
-                updateStatus();
-                
-                if (currentPlayer === botColor && autoBot && gameActive) {
-                    setTimeout(makeBotMove, 500);
-                } else {
-                    loading.classList.remove('active');
-                }
-                
-                updateUndoRedoButtons();
-            }, 300);
-        }
-        
-        function makeBotMove() {
-            if (!gameActive || currentPlayer !== botColor) return;
-            
-            loading.classList.add('active');
-            
-            setTimeout(() => {
-                const botMove = ai.getBestMove(board, botColor);
-                
-                if (botMove) {
-                    const move = {
-                        from: { row: botMove.from[0], col: botMove.from[1] },
-                        to: { row: botMove.to[0], col: botMove.to[1] },
-                        captures: botMove.captures ? botMove.captures.map(([r, c]) => ({ row: r, col: c })) : [],
-                        path: botMove.path.map(([r, c]) => ({ row: r, col: c }))
-                    };
-                    
-                    makeMove(move);
-                    
-                    botDifficulty.textContent = `${difficulty} - ${['Boshlang\'ich', 'Oson', 'Oʻrta', 'Professional', 'Ustun'][Math.min(4, Math.floor(difficulty / 3))]}`;
-                    botSearch.textContent = `${ai.stats.depth} daraja, ${ai.stats.time}ms`;
-                    botMoves.textContent = `${ai.stats.moves} ta`;
-                }
-                
-                loading.classList.remove('active');
-            }, 100);
-        }
-        
-        function applyPenalty(row, col) {
-            penaltyCount++;
-            board[row][col] = null;
-            pieceCount[currentPlayer]--;
-            
-            penaltyCountElement.textContent = `${penaltyCount}/3`;
-            penaltyCountElement.classList.add('penalty-warning');
-            
-            setTimeout(() => {
-                penaltyCountElement.classList.remove('penalty-warning');
-            }, 3000);
-            
-            if (penaltyCount >= 3) {
-                gameActive = false;
-                showGameOver();
-                return;
             }
-            
-            selectedPiece = null;
-            validMoves = [];
-            currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
-            
-            updateUI();
-            renderBoard();
-            updateStatus("Jarima! Dona o'chirildi.");
-            
-            if (currentPlayer === botColor && autoBot) {
-                setTimeout(makeBotMove, 1000);
-            }
-        }
-        
-        function checkGameOver() {
-            const whiteMoves = getAllMovesForColor('white');
-            const blackMoves = getAllMovesForColor('black');
-            
-            if (pieceCount.white === 0 || whiteMoves.length === 0) {
-                return 'black';
-            }
-            
-            if (pieceCount.black === 0 || blackMoves.length === 0) {
-                return 'white';
-            }
-            
-            return false;
-        }
-        
-        function getAllMovesForColor(color) {
-            const moves = [];
-            for (let r = 0; r < 8; r++) {
-                for (let c = 0; c < 8; c++) {
-                    const piece = board[r][c];
-                    if (piece && piece.color === color) {
-                        moves.push(...getValidMoves(r, c, piece));
-                    }
-                }
-            }
-            return moves;
-        }
-        
-        function showGameOver() {
-            const winner = checkGameOver();
-            const duration = Math.floor((Date.now() - gameStartTime) / 60000);
-            
-            if (winner === 'white') {
-                gameResultText.textContent = playerColor === 'white' ? "🎉 Siz yutdingiz!" : "🤖 Bot yutdi!";
-                gameResultText.className = "game-over-text win";
-            } else {
-                gameResultText.textContent = playerColor === 'black' ? "🎉 Siz yutdingiz!" : "🤖 Bot yutdi!";
-                gameResultText.className = "game-over-text lose";
-            }
-            
-            gameDuration.textContent = duration;
-            setTimeout(() => {
-                gameOverModal.classList.add('active');
-            }, 1000);
-        }
-        
-        function updateUI() {
-            currentTurn.textContent = currentPlayer === playerColor ? 
-                `Siz (${playerColor === 'white' ? 'oq' : 'qora'})` : 
-                `Bot (${botColor === 'white' ? 'oq' : 'qora'})`;
-            
-            pieceCountElement.textContent = `Oq: ${pieceCount.white} | Qora: ${pieceCount.black}`;
-            penaltyCountElement.textContent = `${penaltyCount}/3`;
-            
-            document.getElementById('player1Indicator').querySelector('span').textContent = 
-                `Siz (${playerColor === 'white' ? 'oq' : 'qora'})`;
-            document.getElementById('player2Indicator').querySelector('span').textContent = 
-                `Bot (${botColor === 'white' ? 'oq' : 'qora'})`;
-        }
-        
-        function updateStatus(message) {
-            if (message) {
-                statusMessage.textContent = message;
-            } else {
-                if (currentPlayer === playerColor) {
-                    statusMessage.textContent = "Sizning navbatingiz. Dona tanlang...";
-                } else {
-                    statusMessage.textContent = "Bot o'ylayapti...";
-                }
-            }
-        }
-        
-        function updateUndoRedoButtons() {
-            undoBtn.disabled = historyIndex <= 0;
-            redoBtn.disabled = historyIndex >= history.length - 1;
-        }
-        
-        function undoMove() {
-            if (historyIndex <= 0 || !gameActive) return;
-            
-            historyIndex--;
-            board = JSON.parse(JSON.stringify(history[historyIndex]));
-            currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
-            
-            updateUI();
-            renderBoard();
-            updateStatus("Orqaga qaytdingiz.");
-            updateUndoRedoButtons();
-        }
-        
-        function redoMove() {
-            if (historyIndex >= history.length - 1 || !gameActive) return;
-            
-            historyIndex++;
-            board = JSON.parse(JSON.stringify(history[historyIndex]));
-            currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
-            
-            updateUI();
-            renderBoard();
-            updateStatus("Oldinga qaytdingiz.");
-            updateUndoRedoButtons();
-        }
-        
-        function newGame() {
-            gameOverModal.classList.remove('active');
-            initializeGame();
-        }
-        
-        function isValid(row, col) {
-            return row >= 0 && row < 8 && col >= 0 && col < 8;
-        }
-        
-        // ==================== DASLABKI SOZLAMALAR ====================
-        document.getElementById('difficultySlider').addEventListener('input', updateDifficultyLabel);
-        document.getElementById('autoBot').addEventListener('change', function() {
-            autoBot = this.checked;
         });
-        document.getElementById('forceCapture').addEventListener('change', function() {
-            forceCapture = this.checked;
-        });
-        
-        updateDifficultyLabel();
-        updateColorInfo();
     </script>
 </body>
 </html>
