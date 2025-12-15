@@ -102,89 +102,79 @@
         }
 
         /* Main Game Layout */
-       /* Game main layout */
-.game-main {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 20px; /* 30px dan 20px ga */
-}
+        .game-main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
 
-@media (max-width: 1024px) {
-    .game-main {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto;
-        gap: 15px;
-    }
-}
+        @media (max-width: 1024px) {
+            .game-main {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+                gap: 20px;
+            }
+        }
 
-@media (max-width: 768px) {
-    .game-container {
-        padding: 10px;
-        gap: 15px;
-    }
-    
-    .game-header {
-        padding: 15px;
-    }
-    
-    .game-header h1 {
-        font-size: 1.8rem; /* 2rem dan 1.8rem ga */
-    }
-    
-    .difficulty-badge {
-        padding: 6px 12px; /* 8px 20px dan 6px 12px ga */
-        font-size: 0.9rem;
-    }
-    
-    .game-status {
-        font-size: 0.9rem;
-    }
-}
-
-/* Kichik telefonlar uchun qo'shimcha optimizatsiyalar */
-@media (max-width: 480px) {
-    .game-header h1 {
-        font-size: 1.5rem;
-    }
-    
-    .player-title h3 {
-        font-size: 1rem; /* 1.2rem dan 1rem ga */
-    }
-    
-    .player-card {
-        padding: 15px; /* 25px dan 15px ga */
-    }
-    
-    .stat {
-        padding: 8px; /* 12px dan 8px ga */
-    }
-    
-    .stat-label {
-        font-size: 0.75rem; /* 0.85rem dan 0.75rem ga */
-    }
-    
-    .stat-value {
-        font-size: 1.1rem; /* 1.3rem dan 1.1rem ga */
-    }
-    
-    .controls {
-        padding: 15px; /* 20px dan 15px ga */
-        gap: 10px;
-    }
-    
-    .btn {
-        padding: 10px 14px; /* 12px 24px dan 10px 14px ga */
-        font-size: 0.9rem;
-    }
-}
-            
-            .game-board-container {
-                order: 1;
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 15px;
+                gap: 15px;
             }
             
-            .game-info {
-                order: 2;
+            .game-header {
+                padding: 15px;
+            }
+            
+            .game-header h1 {
+                font-size: 2rem;
+            }
+            
+            .difficulty-badge {
+                padding: 6px 15px;
+                font-size: 1rem;
+            }
+            
+            .game-status {
+                font-size: 1rem;
+            }
+        }
+
+        /* Kichik telefonlar uchun qo'shimcha optimizatsiyalar */
+        @media (max-width: 480px) {
+            .game-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .player-title h3 {
+                font-size: 1rem;
+            }
+            
+            .player-card {
+                padding: 15px;
+            }
+            
+            .stat {
+                padding: 8px;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+            }
+            
+            .stat-value {
+                font-size: 1.1rem;
+            }
+            
+            .controls {
+                padding: 15px;
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 10px 14px;
+                font-size: 0.9rem;
             }
         }
 
@@ -207,8 +197,8 @@
 
         .board-wrapper {
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 15px;
         }
 
         .board {
@@ -289,7 +279,7 @@
             border-radius: 50%;
             cursor: pointer;
             z-index: 2;
-           transition: transform 0.15s ease, left 0.15s ease, top 0.15s ease;
+            transition: transform 0.15s ease, left 0.15s ease, top 0.15s ease;
         }
 
         .piece.moving {
@@ -353,29 +343,6 @@
             filter: drop-shadow(0 0 2px gold);
             z-index: 3;
             pointer-events: none;
-        }
-
-        /* Coordinates */
-        .coordinates {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .coordinates.top,
-        .coordinates.bottom {
-            height: 30px;
-            width: 100%;
-        }
-
-        .coordinates.left,
-        .coordinates.right {
-            flex-direction: column;
-            height: var(--board-size);
-            width: 30px;
         }
 
         /* Controls */
@@ -536,26 +503,25 @@
         }
 
         /* Game State */
-        /* Game state - mobil uchun */
-.game-state {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 15px; /* 25px dan 15px ga */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-}
+        .game-state {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
 
-/* Move history - mobil uchun */
-.move-history {
-    max-height: 150px; /* 200px dan 150px ga */
-    font-size: 0.85rem; /* 0.95rem dan 0.85rem ga */
-}
+        /* Move history */
+        .move-history {
+            max-height: 150px;
+            font-size: 0.85rem;
+        }
 
-.move-entry {
-    padding: 8px 12px; /* 10px 15px dan 8px 12px ga */
-    margin-bottom: 6px;
-    font-size: 0.8rem; /* 0.85rem ga */
-}
+        .move-entry {
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
 
         .current-turn {
             display: flex;
@@ -794,18 +760,6 @@
                 flex-direction: column;
             }
             
-            .coordinates.left,
-            .coordinates.right {
-                flex-direction: row;
-                width: var(--board-size);
-                height: 30px;
-                order: 1;
-            }
-            
-            .board {
-                order: 0;
-            }
-            
             .controls {
                 flex-direction: column;
                 align-items: stretch;
@@ -939,37 +893,20 @@
         <main class="game-main">
             <div class="game-board-container">
                 <div class="board-frame">
-                    <!-- ESKI KOD (OLIB TASHLANG) -->
-<div class="coordinates top">
-    <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
-</div>
-<div class="coordinates left">
-    <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
-</div>
-<div class="coordinates right">
-    <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
-</div>
-<div class="coordinates bottom">
-    <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
-</div>
-
-<!-- YANGI KOD -->
-<div class="board-frame">
-    <!-- Faqat board qolsin -->
-    <div class="board-wrapper">
-        <div class="board" id="board">
-            <!-- 8x8 board cells will be generated here -->
-        </div>
-    </div>
-    
-    <!-- AI Thinking Indicator -->
-    <div id="aiThinking" class="ai-thinking-indicator" style="display: none;">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <span>AI harakat qilmoqda...</span>
-    </div>
-</div>
+                    <div class="board-wrapper">
+                        <div class="board" id="board">
+                            <!-- 8x8 board cells will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- AI Thinking Indicator -->
+                    <div id="aiThinking" class="ai-thinking-indicator" style="display: none;">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <span>AI harakat qilmoqda...</span>
+                    </div>
+                </div>
 
                 <div class="controls">
                     <button id="newGame" class="btn">🔄 Yangi o'yin</button>
@@ -2919,138 +2856,137 @@
         document.addEventListener('DOMContentLoaded', () => {
             window.game = new ShashkaGame();
             
-          // Responsive board sizing - coordinates yo'q
-function updateBoardSize() {
-    const board = document.querySelector('.board');
-    if (!board) return;
-    
-    // Ekran o'lchamiga qarab board o'lchamini hisoblash
-    const isMobile = window.innerWidth <= 768;
-    
-    if (isMobile) {
-        // MOBIL: ekran kengligiga moslashuvchi
-        const maxSize = Math.min(window.innerWidth * 0.92, window.innerHeight * 0.65);
-        const size = Math.max(maxSize, 300); // Minimum 300px
-        document.documentElement.style.setProperty('--board-size', `${size}px`);
-        
-        // Mobil uchun cell o'lchamini sozlash
-        const cellSize = size / 8;
-        document.querySelectorAll('.cell').forEach(cell => {
-            cell.style.minHeight = `${cellSize}px`;
-            cell.style.minWidth = `${cellSize}px`;
-        });
-    } else {
-        // DESKTOP: oldingi logika
-        const container = document.querySelector('.game-board-container');
-        const availableWidth = container ? container.clientWidth - 40 : window.innerWidth - 40;
-        const availableHeight = window.innerHeight * 0.7;
-        const size = Math.min(availableWidth, availableHeight, 600, 500);
-        document.documentElement.style.setProperty('--board-size', `${size}px`);
-    }
-}
+            // Responsive board sizing - coordinates yo'q
+            function updateBoardSize() {
+                const board = document.querySelector('.board');
+                if (!board) return;
+                
+                // Ekran o'lchamiga qarab board o'lchamini hisoblash
+                const isMobile = window.innerWidth <= 768;
+                
+                if (isMobile) {
+                    // MOBIL: ekran kengligiga moslashuvchi
+                    const maxSize = Math.min(window.innerWidth * 0.92, window.innerHeight * 0.65);
+                    const size = Math.max(maxSize, 300); // Minimum 300px
+                    document.documentElement.style.setProperty('--board-size', `${size}px`);
+                    
+                    // Mobil uchun cell o'lchamini sozlash
+                    const cellSize = size / 8;
+                    document.querySelectorAll('.cell').forEach(cell => {
+                        cell.style.minHeight = `${cellSize}px`;
+                        cell.style.minWidth = `${cellSize}px`;
+                    });
+                } else {
+                    // DESKTOP: oldingi logika
+                    const container = document.querySelector('.game-board-container');
+                    const availableWidth = container ? container.clientWidth - 40 : window.innerWidth - 40;
+                    const availableHeight = window.innerHeight * 0.7;
+                    const size = Math.min(availableWidth, availableHeight, 600, 500);
+                    document.documentElement.style.setProperty('--board-size', `${size}px`);
+                }
+            }
 
-// DOM yuklanganda bir marta chaqirish
-document.addEventListener('DOMContentLoaded', () => {
-    updateBoardSize();
-});
+            // DOM yuklanganda bir marta chaqirish
+            document.addEventListener('DOMContentLoaded', () => {
+                updateBoardSize();
+            });
 
-// Ekran o'lchamini o'zgartirganda
-window.addEventListener('resize', updateBoardSize);
-window.addEventListener('orientationchange', updateBoardSize);
+            // Ekran o'lchamini o'zgartirganda
+            window.addEventListener('resize', updateBoardSize);
+            window.addEventListener('orientationchange', updateBoardSize);
 
-// Mobile optimizations
-if ('ontouchstart' in window) {
-    // Touch device optimizations
-    document.addEventListener('DOMContentLoaded', () => {
-        // CSS qo'shish
-        const mobileCSS = `
-            /* Mobile optimizations */
-            @media (hover: none) and (pointer: coarse) {
-                .cell {
-                    min-height: 35px !important;
-                    min-width: 35px !important;
-                }
-                
-                .piece {
-                    width: 80% !important;
-                    height: 80% !important;
-                }
-                
-                .btn {
-                    min-height: 44px;
-                    min-width: 44px;
-                }
+            // Mobile optimizations
+            if ('ontouchstart' in window) {
+                // Touch device optimizations
+                document.addEventListener('DOMContentLoaded', () => {
+                    // CSS qo'shish
+                    const mobileCSS = `
+                        /* Mobile optimizations */
+                        @media (hover: none) and (pointer: coarse) {
+                            .cell {
+                                min-height: 35px !important;
+                                min-width: 35px !important;
+                            }
+                            
+                            .piece {
+                                width: 80% !important;
+                                height: 80% !important;
+                            }
+                            
+                            .btn {
+                                min-height: 44px;
+                                min-width: 44px;
+                            }
+                        }
+                        
+                        /* Small phones */
+                        @media (max-width: 375px) {
+                            .cell {
+                                min-height: 30px !important;
+                                min-width: 30px !important;
+                            }
+                            
+                            .piece {
+                                width: 75% !important;
+                                height: 75% !important;
+                            }
+                            
+                            .king-symbol {
+                                font-size: 0.9rem !important;
+                            }
+                        }
+                    `;
+                    
+                    const style = document.createElement('style');
+                    style.textContent = mobileCSS;
+                    document.head.appendChild(style);
+                    
+                    // Touch event optimizations
+                    document.querySelectorAll('.cell, .piece, .btn').forEach(el => {
+                        el.style.touchAction = 'manipulation';
+                        el.style.webkitTapHighlightColor = 'transparent';
+                    });
+                });
             }
             
-            /* Small phones */
-            @media (max-width: 375px) {
-                .cell {
-                    min-height: 30px !important;
-                    min-width: 30px !important;
+            // Piece uchun kattalashtirish
+            const style = document.createElement('style');
+            style.textContent = `
+                @media (hover: none) and (pointer: coarse) {
+                    .piece {
+                        width: 80% !important;
+                        height: 80% !important;
+                    }
+                    
+                    .king-symbol {
+                        font-size: 1.1rem !important;
+                    }
+                    
+                    .cell.valid-move::after {
+                        width: 15px !important;
+                        height: 15px !important;
+                    }
+                    
+                    .cell.valid-capture::after {
+                        width: 18px !important;
+                        height: 18px !important;
+                    }
                 }
-                
-                .piece {
-                    width: 75% !important;
-                    height: 75% !important;
-                }
-                
-                .king-symbol {
-                    font-size: 0.9rem !important;
-                }
-            }
-        `;
-        
-        const style = document.createElement('style');
-        style.textContent = mobileCSS;
-        document.head.appendChild(style);
-        
-        // Touch event optimizations
-        document.querySelectorAll('.cell, .piece, .btn').forEach(el => {
-            el.style.touchAction = 'manipulation';
-            el.style.webkitTapHighlightColor = 'transparent';
-        });
-    });
-}
-    
-    // Piece uchun kattalashtirish
-    const style = document.createElement('style');
-    style.textContent = `
-        @media (hover: none) and (pointer: coarse) {
-            .piece {
-                width: 80% !important;
-                height: 80% !important;
-            }
+            `;
+            document.head.appendChild(style);
             
-            .king-symbol {
-                font-size: 1.1rem !important;
-            }
+            // Button touch areas
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.style.touchAction = 'manipulation';
+                btn.style.userSelect = 'none';
+            });
             
-            .cell.valid-move::after {
-                width: 15px !important;
-                height: 15px !important;
+            // Board touch optimizations
+            const board = document.querySelector('.board');
+            if (board) {
+                board.style.touchAction = 'manipulation';
+                board.style.webkitTapHighlightColor = 'transparent';
             }
-            
-            .cell.valid-capture::after {
-                width: 18px !important;
-                height: 18px !important;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Button touch areas
-    document.querySelectorAll('.btn').forEach(btn => {
-        btn.style.touchAction = 'manipulation';
-        btn.style.userSelect = 'none';
-    });
-    
-    // Board touch optimizations
-    const board = document.querySelector('.board');
-    if (board) {
-        board.style.touchAction = 'manipulation';
-        board.style.webkitTapHighlightColor = 'transparent';
-    }
-}
         });
     </script>
 </body>
